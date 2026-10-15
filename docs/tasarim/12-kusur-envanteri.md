@@ -115,7 +115,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
   çalışmaz.
 - **Test:** Yay ile 5 düz vuruş: oyuncu konumu değişmez (≤ 2 cm). Kılıç aynı.
 
-### C2 ☐ Eski motorun alan ve duvarları
+### C2 ✅ Eski motorun alan ve duvarları — `a5c5bd0e` (#191)
 - **Belirti:** ekranın %87'sini kaplayan efekt (`MechanicField`); kamera `MechanicWall` içinde.
 - **Yer:** `Game/Skills/Mechanics/MechanicWorldRuntime.cs` (satır 84, 118, 217),
   `ManifestationDirector.zMechanicsServices.cs` satır 68. Dilim kontrolü yok.
@@ -125,10 +125,11 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 
 ### C3 ☐ Eski motorun ezdiği değerler
 - `Game/Skills/Launch/CastSideEffects.cs` satır 122 (arena alanını sahne değeriyle eziyor), eski motorun
-  0,85 boss çarpışıcısı (#170 notu). Dilimde okunmaz.
+  0,85 boss çarpışıcısı (#170 notu). Dilimde okunmaz. → `14` Aşama 3, madde 2.
 
 ### C4 ☐ Bağımlılık haritası
 - Dilimin eriştiği eski motor dosyası sayısı ölçülür; C1–C3 sonrası yeniden ölçülür (her PR'da düşmeli).
+  → `14` Aşama 3, madde 1.
 
 ---
 

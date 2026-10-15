@@ -69,16 +69,24 @@ Kaynak: `11` Adım 3–4 (K3, K4), envanter B3, C2, C3, C4, D9, D10, Y12, Y14, Y
 **Telefonda göreceğin:** 3 dk Kılıç + Yay ile dövüş; ekranı kaplayan dev efekt yok, kamera hiçbir duvarın içine
 girmiyor, minyon ve kozanın içinden yürünmüyor; logcat'te `[V4-FALLBACK]` satırı 0.
 
-### Aşama 3 — Deneme döngüsü: öl, kazan, tekrar dene
-Kaynak: `13` §3 [K] (diriliş yok, zor zindan, tekrar deneme), `10` O-17.1–O-17.3, Y19.
-1. Boss uyuyor, 6 m'ye yaklaşınca ya da vurunca 2 s'de uyanır (O-17.1).
-2. Ölünce 2 s → "Tekrar" / "Silah değiştir"; tekrar 3 s içinde arenada (O-17.2).
-3. Boss ölünce 2 s sonra sonuç: süre, skill sayısı, en çok hasar veren kombo, deneme sayısı; boss canı yüzdesi
-   ölüm ekranında da büyük yazılır (O-17.3; `13` §5 "boss canı büyük yazılır" [Ö] ise onay gerekir).
-4. Test APK'sında ölümsüzlük (DevHp, Y19) varsayılan kapalı, panelden açılır.
+### Aşama 3 — Eski motoru sil
+Kaynak: AGENTS.md "taşıma bitince silinecek", `11` Adım 4, envanter C3, C4. Mustafa 15 Ekim'de öne aldı
+(eski Aşama 3 "Deneme döngüsü" planından çıktı, bkz. §5). Dal `asama/3-eski-motor-sil`; her madde ayrı PR.
+1. Bağımlılık haritası (C4): dilimin eriştiği eski motor dosyası sayısını çıkaran araç; sayı her PR'da yeniden
+   ölçülür, PR'a yazılır ve düşmelidir.
+2. Ezilen değerler (C3): `CastSideEffects.cs` arena alanı ezmesi ve eski motorun 0,85 boss çarpışıcısı dilimde
+   okunmaz.
+3. v4 `ManifestationDirector`'dan ayrılır: v4'ün kullandığı hasar, şifa, poise, animasyon ve konum sahipliği
+   v4'ün kendi sınıfına taşınır (bugün 9 v4 dosyası `ManifestationDirector` alıyor). Davranış değişmez; O_ ve
+   Gözcü ile gösterilir. Yalnız eski motorda çalışan hücre (ör. 6-x, 9-x, x-6, x-4) bulunursa PR'a yazılır ve
+   silmeden önce Mustafa'ya sorulur.
+4. Bayrak kalkar: `RuleEngineV4Feature` silinir, v4 tek yol olur; bayrak kapalı dalları gider.
+5. Silme: `MechanicGrammar`, `SkillExecutorRouter`, eski executor'lar, 24 el ayarı, `element-sistemi.json`; ona bağlı
+   `Core` dosyaları tek tek ayrılır (eski motora ait olan silinir, v4'ün kullandığı kalır). `[Category("EskiMotor")]`
+   testleri, CI'daki haftalık EskiMotor + SweepV2 işi ve AGENTS.md'deki "DONDURULDU" maddesi kaldırılır.
 
-**Telefonda göreceğin:** gerçek bir deneme: boss uyanıyor, ölebiliyorsun, ekranda "Tekrar" çıkıyor ve 3 s'de
-yeniden dövüşüyorsun; boss'u öldürürsen sonuç kartı ve deneme sayısı.
+**Telefonda göreceğin:** 3 dk Kılıç + Yay ile dövüş bugünkü gibi çalışıyor (dodge, düz vuruş, dilimdeki skiller,
+boss); logcat'te `[V4-FALLBACK]` satırı 0; bağımlılık haritasında eski motor dosyası 0.
 
 ### Aşama 4 — Skiller kurala göre I: Zarar, Şifa, Hareket, Koruma
 Kaynak: `09` [K] (Hareket kimseye vurmaz, Koruma saldırmaz, hasar ritimle bir kez), envanter D3, D4, Y9, Y11, Y17.
@@ -139,3 +147,5 @@ uygulamayı kapatıp açınca değer kalıyor.
 - Çok oyunculu (O-14.x): A-13.9, A-13.10.
 - Parry (Koruma), just-frame (Tetikli), kombo kademesi: `13` §8–9 [Ö].
 - Zaman fiili 2 rünlü hücreleri: `09` [AÇIK].
+- Deneme döngüsü (boss uyanması O-17.1, ölüm/"Tekrar" ekranı O-17.2, sonuç kartı O-17.3, Y19 DevHp varsayılanı):
+  plandan kaldırıldı, 15 Ekim, Mustafa. O-17.x ölçüleri ve `13` §3 [K] belgede kalır.
