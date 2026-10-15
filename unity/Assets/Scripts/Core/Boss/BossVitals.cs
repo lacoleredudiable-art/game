@@ -73,6 +73,22 @@ namespace Dovus.Core.Boss
             return hpBefore > threshold && hpAfter <= threshold;
         }
 
+        /// <summary>
+        /// Debug: canı <paramref name="ratio"/> × tavana indirir. Hasar yolundan geçer (ApplyDamage),
+        /// böylece <see cref="HpChanged"/> ve HUD normal kayıpla aynı görür. Asla öldürmez (en az 1 can
+        /// kalır); zaten bu orandan aşağıdaysa, ya da boss yere düşmüşse hiçbir şey yapmaz. Değişim olduysa true.
+        /// </summary>
+        public bool SkipToHpRatio(float ratio)
+        {
+            if (_isDown)
+                return false;
+            float target = Math.Max(1f, _maxHp * Math.Min(1f, Math.Max(0f, ratio)));
+            if (_hp <= target)
+                return false;
+            ApplyDamage(_hp - target);
+            return true;
+        }
+
         /// <summary>Tam canla ayağa kalkar (§11: noktalama, bitiş değil).</summary>
         public void Revive()
         {
