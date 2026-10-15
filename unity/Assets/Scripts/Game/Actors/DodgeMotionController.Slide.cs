@@ -1,3 +1,4 @@
+using Dovus.Game.Diagnostics;
 using Dovus.Core.Dodge;
 using Dovus.Game.Boss;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace Dovus.Game.Actors
             {
                 // Hiç yol alamadan çarptı: hak geri verilir (i-frame sürer).
                 _inputCtl?.Charges?.Refund(1f);
-                Debug.Log($"[DODGE] engelde-hak-iade yol={traveled:F3}m");
+                DebugConfig.DevLog($"[DODGE] engelde-hak-iade yol={traveled:F3}m");
             }
 
             bool started = _slide.Begin(

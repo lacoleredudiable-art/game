@@ -104,7 +104,7 @@ namespace Dovus.Game.Casting.Input
                     && HexagonPointerHits.HitDodgeButton(pos, _s.Tuning))
                     _dodge.TriggerDodge();
                 else
-                    Debug.Log($"[DODGE] InputLocked ekran dokunusu yutuldu olu={dodgeLocked}");
+                    DebugConfig.DevLog($"[DODGE] InputLocked ekran dokunusu yutuldu olu={dodgeLocked}");
                 return;
             }
 
