@@ -77,9 +77,9 @@ public class DebugToolsTests
     [Test]
     public void DebugSkipToPhase2_IsGatedByDebugConfig_AndUsesSharedThreshold()
     {
-        string src = Game("Boss/BossDirector.Debug.cs");
-        Assert.That(src, Does.Contain("if (!DebugConfig.Enabled || _bossVitals == null)"));
-        Assert.That(src, Does.Contain("_bossVitals.SkipToHpRatio(BossDirectorRules.EnrageHpRatio)"));
+        string src = Game("Boss/BossDebugTools.cs");
+        Assert.That(src, Does.Contain("if (!DebugConfig.Enabled || vitals == null)"));
+        Assert.That(src, Does.Contain("vitals.SkipToHpRatio(BossDirectorRules.EnrageHpRatio)"));
         Assert.That(src, Does.Contain("DebugConfig.DevLog("));
     }
 
