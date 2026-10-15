@@ -1,5 +1,6 @@
 using Dovus.Core.Input;
 using Dovus.Game.Config;
+using Dovus.Game.Config.Sections;
 using UnityEngine;
 
 namespace Dovus.Game.Casting
@@ -276,6 +277,23 @@ namespace Dovus.Game.Casting
             float mid = screenWidth * 0.5f;
             return mirrorForLeftHand ? screenPos.x < mid : screenPos.x >= mid;
         }
+
+        /// <summary>
+        /// Sanal çubuk bölgesi (O-4.3): ekranın solundan xFrac genişlik, alttan yFrac yükseklik.
+        /// Unity ekran koordinatı alttan başlar. Ayna açıkken bölge sağ kenara geçer.
+        /// </summary>
+        public static bool IsStickZone(Vector2 screenPos, bool mirrorForLeftHand, int screenWidth, int screenHeight,
+            float xFrac, float yFrac)
+        {
+            bool inX = mirrorForLeftHand
+                ? screenPos.x > screenWidth * (1f - xFrac)
+                : screenPos.x < screenWidth * xFrac;
+            return inX && screenPos.y < screenHeight * yFrac;
+        }
+
+        public static bool IsStickZone(Vector2 screenPos, InputSettings input, int screenWidth, int screenHeight) =>
+            IsStickZone(screenPos, input.MirrorForLeftHand, screenWidth, screenHeight,
+                input.JoystickZoneWidthFrac, input.JoystickZoneHeightFrac);
 
         /// <summary>Safe üst inset — HUD margin ile birlikte.</summary>
         public static float SafeTopInsetPx()
