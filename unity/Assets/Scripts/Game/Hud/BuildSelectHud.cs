@@ -40,11 +40,10 @@ namespace Dovus.Game.Hud
         GameClockHost _clock;
         ManifestationDirector _manifestation;
         Sprite _circle;
+        BuildSelectElementRow _elements;
         readonly List<EquipmentItem> _weapons = new();
         readonly Dictionary<string, Image> _weaponChipImages = new();
         readonly Dictionary<string, Text> _weaponChipBadges = new();
-        readonly Dictionary<int, Image> _elementChipImages = new();
-        int _elementId = -1;
 
         GameObject _screen;
         readonly List<RectTransform> _safeRects = new();
@@ -123,7 +122,7 @@ namespace Dovus.Game.Hud
                     _weapons.Add(swap.Slot(1));
             }
 
-            _elementId = _manifestation?.SelectedElementPaint?.Id ?? -1;
+            _elements?.Reset(_manifestation?.SelectedElementPaint?.Id ?? -1);
 
             IsOpen = true;
             _screen.SetActive(true);
@@ -215,13 +214,6 @@ namespace Dovus.Game.Hud
             Refresh();
         }
 
-        void SelectElement(int elementId)
-        {
-            _elementId = elementId;
-            SetStatus(string.Empty);
-            Refresh();
-        }
-
         int WeaponsCarried => _manifestation?.WeaponSwap?.Rules.WeaponsCarried ?? 0;
 
         bool WeaponsReady => WeaponsCarried < 2 || _weapons.Count == WeaponsCarried;
@@ -302,8 +294,8 @@ namespace Dovus.Game.Hud
             _view?.SetLoadout(loadout);
             if (_manifestation != null && _weapons.Count > 0)
                 _manifestation.SetWeaponLoadout(_weapons[0], _weapons.Count > 1 ? _weapons[1] : null);
-            if (_manifestation != null && _elementId >= 0)
-                _manifestation.TrySetElementPaint(_elementId);
+            if (_elements != null && _manifestation != null)
+                _manifestation.TrySetElementPaint(_elements.SelectedId);
             _hasApplied = true;
             string className = _presetIndex >= 0 ? _skills.MainClasses[_presetIndex].Name : "özel";
             string weaponNames = _weapons.Count > 0
