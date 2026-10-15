@@ -25,6 +25,7 @@ namespace Dovus.Game.DevTools
         readonly HumanBodyBones[] _footBones =
             { HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot, HumanBodyBones.LeftToes, HumanBodyBones.RightToes };
         readonly Collider[] _overlap = new Collider[OverlapCapacity];
+        readonly RaycastHit[] _lineHits = new RaycastHit[OverlapCapacity];
         readonly List<AnimatorClipInfo> _clipInfos = new();
         readonly GozcuScreenCover _cover = new();
         readonly List<(string line, float until)> _shown = new();
@@ -118,6 +119,7 @@ namespace Dovus.Game.DevTools
             CheckCameraSpeed(cam);
             CheckCameraInCollider(cam);
             CheckCameraInBossBody(cam);
+            CheckPlayerBehindObstacle(cam);
             // Oyunun ana kamerası FOV'u eşiğin altına düşmemeli; düşerse ihlal, izdüşüm anlamsız olduğundan
             // ekran ölçümleri (oyuncu ekranda mı, efekt kaplaması) o kare yapılmaz.
             if (cam.fieldOfView < _rules.CameraFovMinDeg)
@@ -248,6 +250,35 @@ namespace Dovus.Game.DevTools
                 if (col == null || col == _probe || col.transform.IsChildOf(_player))
                     continue;
                 Report(GozcuRule.CameraInCollider, col.name);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// O-5.10: kamera → oyuncu gövdesi doğrusu çarpışıcılı bir engeli (sütun, duvar) kesiyorsa oyuncu engelin
+        /// arkasında kalıyor demektir. Oyuncu ve boss kökleri (O-5.11: boss arada kalabilir) ve tetikler sayılmaz.
+        /// Değer: engelin adı.
+        /// </summary>
+        void CheckPlayerBehindObstacle(Camera cam)
+        {
+            Vector3 from = cam.transform.position;
+            Vector3 body = _player.position + Vector3.up * (KinematicMotorControllerDefaults.CapsuleTopLiftM * 0.5f);
+            Vector3 delta = body - from;
+            float dist = delta.magnitude;
+            if (dist <= 0f)
+                return;
+            int n = Physics.RaycastNonAlloc(from, delta / dist, _lineHits, dist, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+            {
+                Collider col = _lineHits[i].collider;
+                if (col == null || col == _probe || col.transform.IsChildOf(_player)
+                    || (_bossBody != null && col.transform.IsChildOf(_bossBody)))
+                    continue;
+                // Hareketli gövdeler (minyon, dost) engel değil; yalnız sabit gövdeli yapılar (sütun, koza) ve duvar.
+                var host = col.GetComponentInParent<RuleEngineV4PhysicsBodyHost>();
+                if (host != null && host.WeightTier != RuleEngineV4WeightTier.Anchored)
+                    continue;
+                Report(GozcuRule.PlayerBehindObstacle, col.name);
                 return;
             }
         }

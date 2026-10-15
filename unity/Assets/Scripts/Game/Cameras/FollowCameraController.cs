@@ -285,6 +285,8 @@ namespace Dovus.Game.Cameras
                 dt);
             // Yumuşatma kamerayı gövdeye geç bırakabilir; O-5.15 her karedir.
             transform.position = _collision.KeepOutOfBossBody(playerAim, transform.position, _tuning.Camera);
+            // O-5.10: yumuşatma sütun/duvar içinden yol çizebilir; engel denetimi yumuşatmadan sonra da yapılır.
+            transform.position = _collision.KeepOutOfObstacles(playerAim, transform.position, _tuning.Camera);
             _sliceGuard?.UpdateFade(playerAim, transform.position);
 
             Vector3 lookTarget = playerAim;

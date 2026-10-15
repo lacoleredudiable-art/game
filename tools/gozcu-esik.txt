@@ -11,6 +11,7 @@ govde_collider_icinde 0 engel
 v4_fallback 0 engel
 kamera_aci_hizi 2 engel
 kamera_collider_icinde 0 engel
+oyuncu_engel_arkasinda 0 engel
 oyuncu_ekran_disi 1 engel
 kamera_fov_gecersiz 0 engel
 # O-4.9 dodge/minyon: ölçülene kadar uyarı, ölçülünce engel (teşhis 6).
