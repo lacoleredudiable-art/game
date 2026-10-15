@@ -267,7 +267,7 @@ namespace Dovus.Game.DevTools
             float dist = delta.magnitude;
             if (dist <= 0f)
                 return;
-            int n = Physics.RaycastNonAlloc(from, delta / dist, _lineHits, dist, ~0, QueryTriggerInteraction.Ignore);
+            int n = Physics.RaycastNonAlloc(new Ray(from, delta / dist), _lineHits, dist, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < n; i++)
             {
                 Collider col = _lineHits[i].collider;
