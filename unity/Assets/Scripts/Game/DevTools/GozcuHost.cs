@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
+using Dovus.Game.Cameras;
 using Dovus.Game.Skills;
 using Dovus.Game.Skills.RuleEngineV4;
 using UnityEngine;
@@ -256,7 +257,8 @@ namespace Dovus.Game.DevTools
 
         /// <summary>
         /// O-5.10: kamera → oyuncu gövdesi doğrusu çarpışıcılı bir engeli (sütun, duvar) kesiyorsa oyuncu engelin
-        /// arkasında kalıyor demektir. Oyuncu ve boss kökleri (O-5.11: boss arada kalabilir) ve tetikler sayılmaz.
+        /// arkasında kalıyor demektir. Oyuncu ve boss kökleri (O-5.11: boss arada kalabilir), sütunlar
+        /// (O-5.10, saydamlaşır) ve tetikler sayılmaz.
         /// Değer: engelin adı.
         /// </summary>
         void CheckPlayerBehindObstacle(Camera cam)
@@ -268,6 +270,7 @@ namespace Dovus.Game.DevTools
             if (dist <= 0f)
                 return;
             int n = Physics.RaycastNonAlloc(new Ray(from, delta / dist), _lineHits, dist, ~0, QueryTriggerInteraction.Ignore);
+            var follow = cam.GetComponent<FollowCameraController>();
             for (int i = 0; i < n; i++)
             {
                 Collider col = _lineHits[i].collider;
@@ -277,6 +280,10 @@ namespace Dovus.Game.DevTools
                 // Hareketli gövdeler (minyon, dost) engel değil; yalnız sabit gövdeli yapılar (sütun, koza) ve duvar.
                 var host = col.GetComponentInParent<RuleEngineV4PhysicsBodyHost>();
                 if (host != null && host.WeightTier != RuleEngineV4WeightTier.Anchored)
+                    continue;
+                // O-5.10 [K 2026-10-15]: arada kalan sütun kural gereği saydamlaşır (doğruluğu O_5_10 PlayMode testinde);
+                // kamera ona göre öne gelmez, bu yüzden engel sayılmaz.
+                if (follow != null && follow.SliceGuard != null && follow.SliceGuard.IsColumn(col.transform))
                     continue;
                 Report(GozcuRule.PlayerBehindObstacle, col.name);
                 return;

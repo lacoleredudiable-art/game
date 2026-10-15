@@ -126,6 +126,8 @@ namespace Dovus.Game.Cameras
         /// <summary>Bağlanmamışsa kilit mesafesi boss merkezinden, çarpışma gövdeyi saymaz.</summary>
         public void BindBossBody(CameraBossBody body) => _collision.BindBossBody(body);
         public CameraBossBody BossBody => _collision.BossBody;
+        /// <summary>O-5.10: sütun gövdeleri; çarpışma onları kamerayı öne çeken engel saymaz.</summary>
+        public void BindColumns(CameraBossBody[] columns) => _collision.BindColumns(columns);
         public CameraSliceGuard SliceGuard { get => _sliceGuard; set => _sliceGuard = value; }
 
         void Awake()
@@ -275,6 +277,7 @@ namespace Dovus.Game.Cameras
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
             desired = _collision.Resolve(playerAim, desired, dt, _tuning.Camera);
             desired = _collision.KeepOutOfBossBody(playerAim, desired, _tuning.Camera);
+            desired = _collision.KeepOutOfColumns(playerAim, desired, _tuning.Camera);
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,
@@ -285,8 +288,8 @@ namespace Dovus.Game.Cameras
                 dt);
             // Yumuşatma kamerayı gövdeye geç bırakabilir; O-5.15 her karedir.
             transform.position = _collision.KeepOutOfBossBody(playerAim, transform.position, _tuning.Camera);
-            // O-5.10: yumuşatma sütun/duvar içinden yol çizebilir; engel denetimi yumuşatmadan sonra da yapılır.
-            transform.position = _collision.KeepOutOfObstacles(playerAim, transform.position, _tuning.Camera);
+            // O-5.10: yumuşatma kamerayı sütunun içinden geçirebilir; sütun sınırı da her karedir.
+            transform.position = _collision.KeepOutOfColumns(playerAim, transform.position, _tuning.Camera);
             _sliceGuard?.UpdateFade(playerAim, transform.position);
 
             Vector3 lookTarget = playerAim;

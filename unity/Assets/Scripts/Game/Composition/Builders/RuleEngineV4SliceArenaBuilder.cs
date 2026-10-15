@@ -21,6 +21,7 @@ namespace Dovus.Game.Composition.Builders
             root.transform.SetParent(ctx.Host.transform, false);
 
             Transform columns = BuildColumns(root.transform, arena);
+            ctx.SliceColumns = columns;
             BuildOuterWall(root.transform, arena);
             RuleEngineV4SliceArenaShellBuilder.BuildWall(root.transform, arena);
             RuleEngineV4SliceArenaShellBuilder.BuildBeyondGround(root.transform, (visuals ?? RuleEngineV4SliceArenaVisuals.Disabled).Beyond,
@@ -50,57 +51,11 @@ namespace Dovus.Game.Composition.Builders
                 body.WeightTier = RuleEngineV4WeightTier.Anchored;
                 body.BodyRadiusM = r;
                 go.AddComponent<RuleEngineV4MarkOnlySurfaceHost>();
-                AddCameraBlocker(go.transform);
                 var renderer = go.GetComponent<Renderer>();
                 if (renderer != null)
                     renderer.material.color = new Color(0.45f, 0.42f, 0.38f);
             }
             return columnsRoot.transform;
-        }
-
-        /// <summary>
-        /// Unity'nin Cylinder ilkeli silindir değil kapsül çarpışıcı taşır: tepe ve dip yarım küre olduğundan görünen
-        /// sütun (tepesi 1 m yarıçapa açılır) kamera taramasına göre dışarıda kalıyordu (teşhis 7, O-5.10).
-        /// Gerçek silindir (yarıçap r, boy h; ölçek ebeveynden gelir) çocuk olarak eklenir; oyuncu çarpışıcısı ve ilkelin kendisi değişmez.
-        /// </summary>
-        static void AddCameraBlocker(Transform column)
-        {
-            var child = new GameObject("CameraBlocker");
-            child.transform.SetParent(column, false);
-            int layer = LayerMask.NameToLayer("CameraBlocker");
-            child.layer = layer >= 0 ? layer : 0;
-            // Ana ilkelin ölçeği (2r, h/2, 2r) ve boyu 2 birim: yerel birim silindir (yarıçap 0,5, boy 2) tam r×h verir.
-            var mesh = new Mesh { name = "CameraBlockerCylinder" };
-            int n = RuleEngineV4SliceArenaBuilderDefaults.ColumnBlockerSegments;
-            var verts = new Vector3[n * 2];
-            var tris = new int[(n - 2) * 3 * 2 + n * 6];
-            for (int i = 0; i < n; i++)
-            {
-                float a = i * (2f * Mathf.PI / n);
-                float x = Mathf.Cos(a) * 0.5f;
-                float z = Mathf.Sin(a) * 0.5f;
-                verts[i] = new Vector3(x, -1f, z);
-                verts[n + i] = new Vector3(x, 1f, z);
-            }
-            int t = 0;
-            for (int i = 0; i < n; i++)
-            {
-                int j = (i + 1) % n;
-                tris[t++] = i; tris[t++] = n + i; tris[t++] = j;
-                tris[t++] = j; tris[t++] = n + i; tris[t++] = n + j;
-            }
-            for (int i = 1; i < n - 1; i++)
-            {
-                tris[t++] = 0; tris[t++] = i + 1; tris[t++] = i;
-                tris[t++] = n; tris[t++] = n + i; tris[t++] = n + i + 1;
-            }
-            mesh.vertices = verts;
-            mesh.triangles = tris;
-            mesh.RecalculateBounds();
-            mesh.RecalculateNormals();
-            var mc = child.AddComponent<MeshCollider>();
-            mc.sharedMesh = mesh;
-            mc.convex = true;
         }
 
         static void BuildOuterWall(Transform parent, RuleEngineV4SliceArena arena)

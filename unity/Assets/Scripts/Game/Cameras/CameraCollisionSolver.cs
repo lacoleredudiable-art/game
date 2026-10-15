@@ -20,6 +20,7 @@ namespace Dovus.Game.Cameras
         float _smoothedAlongM;
         float _alongVelocity;
         CameraBossBody _bossBody;
+        CameraBossBody[] _columns = new CameraBossBody[0];
 
         /// <summary>Son karede pivot→istenen mesafe ekseninde çekiş (m).</summary>
         public float PulledInM { get; private set; }
@@ -27,6 +28,22 @@ namespace Dovus.Game.Cameras
         public CameraBossBody BossBody => _bossBody;
 
         public void BindBossBody(CameraBossBody body) => _bossBody = body;
+
+        /// <summary>
+        /// O-5.10 [K 2026-10-15]: sütunlar kamerayı öne çekmez (taramadan çıkar, saydamlaşır); kamera sütunun içine
+        /// de giremez (<see cref="KeepOutOfColumns"/>). <see cref="BindFiltering"/>'den sonra çağrılır.
+        /// </summary>
+        public void BindColumns(CameraBossBody[] columns)
+        {
+            _columns = columns ?? new CameraBossBody[0];
+            var roots = new List<Transform>(_ignoreRoots ?? new Transform[0]);
+            foreach (CameraBossBody c in _columns)
+            {
+                if (c?.Root != null)
+                    roots.Add(c.Root);
+            }
+            _ignoreRoots = roots.ToArray();
+        }
 
         /// <summary>Karakter/VFX kökleri spherecast'ten çıkar; layer mask burada kurulur.</summary>
         public void BindFiltering(Transform playerRoot, Transform bossRoot, Transform allyRoot)
@@ -74,7 +91,6 @@ namespace Dovus.Game.Cameras
                 _layerMask,
                 QueryTriggerInteraction.Ignore);
             float best = targetAlong;
-            bool obstructed = false;
             for (int i = 0; i < hitCount; i++)
             {
                 RaycastHit h = Hits[i];
@@ -82,18 +98,11 @@ namespace Dovus.Game.Cameras
                     continue;
                 float along = h.distance - cam.CameraCollisionMarginM;
                 if (along < best)
-                {
                     best = along;
-                    obstructed = true;
-                }
             }
 
             // O-5.11: boss gövdesi kamerayı öne çekmez (boss saydamlaşır); gövdeye girmeyi KeepOutOfBossBody önler.
-            // O-5.10: engel varken "en yakın" alt sınırı geçersizdir; kamera engelin ÖNÜNDE, pivota yakın durur
-            // (alt sınır kamerayı sütunun içine koyuyordu). Engel yoksa alt sınır aynen geçerli.
-            float blockedAlong = obstructed
-                ? Mathf.Max(FollowCameraControllerDefaults.MinTargetAlongM, best)
-                : Mathf.Max(cam.CameraCollisionMinDistanceM, best);
+            float blockedAlong = Mathf.Max(cam.CameraCollisionMinDistanceM, best);
             bool pullingIn = blockedAlong < _smoothedAlongM - 0.001f;
             float smooth = pullingIn
                 ? cam.CameraCollisionPullInSmoothSec
@@ -123,36 +132,18 @@ namespace Dovus.Game.Cameras
             return safe;
         }
 
-        /// <summary>
-        /// O-5.10 yumuşatma sonrası denetim: pivottan kameraya giden yol bir engeli kesiyorsa kamera engelin önüne
-        /// alınır. Yumuşatma (SmoothDamp) sütunun içinden geçen bir yol çizebilir; hedef çözümü bunu görmez.
-        /// </summary>
-        public Vector3 KeepOutOfObstacles(Vector3 pivot, Vector3 camPos, CameraSettings cam)
+        /// <summary>O-5.10 sert sınır: boss gövdesindeki gibi kamera sütunun içindeyse çıkışının arkasına alınır (öne gelmez).</summary>
+        public Vector3 KeepOutOfColumns(Vector3 pivot, Vector3 camPos, CameraSettings cam)
         {
-            Vector3 delta = camPos - pivot;
-            float dist = delta.magnitude;
-            if (dist < FollowCameraControllerDefaults.MinTargetAlongM)
-                return camPos;
-
-            Vector3 dir = delta / dist;
-            int hitCount = Physics.SphereCastNonAlloc(
-                pivot, SphereRadiusM(cam), dir, Hits, dist, _layerMask, QueryTriggerInteraction.Ignore);
-            float best = dist;
-            for (int i = 0; i < hitCount; i++)
+            for (int i = 0; i < _columns.Length; i++)
             {
-                RaycastHit h = Hits[i];
-                if (!IsBlocking(h.collider))
+                if (_columns[i] == null
+                    || !_columns[i].TryKeepOut(pivot, camPos, SphereRadiusM(cam), cam.CameraCollisionMarginM, out Vector3 safe))
                     continue;
-                float along = h.distance - cam.CameraCollisionMarginM;
-                if (along < best)
-                    best = along;
+                _smoothedAlongM = Mathf.Min(_smoothedAlongM, (safe - pivot).magnitude);
+                camPos = safe;
             }
-
-            if (best >= dist)
-                return camPos;
-            best = Mathf.Max(FollowCameraControllerDefaults.MinTargetAlongM, best);
-            _smoothedAlongM = Mathf.Min(_smoothedAlongM, best);
-            return pivot + dir * best;
+            return camPos;
         }
 
         static float SphereRadiusM(CameraSettings cam) =>

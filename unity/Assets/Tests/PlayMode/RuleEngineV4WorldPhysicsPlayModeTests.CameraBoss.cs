@@ -77,7 +77,6 @@ namespace Dovus.Tests.PlayMode
         /// <summary>O-5.7 çıkış testi: dönüş turu ve dışarı yürüyüş eşikleri. Kaynakta yok, test toleransı (tasarım sayısı değil).</summary>
         const float ExitLapMinDeg = 150f;
         const float ExitFreeEdgeM = 6f;
-        const float ExitYawExtraTolDeg = 30f;
         const float ExitOffscreenMaxSec = 0.3f;
         const float ExitTailSec = 1.5f;
 
@@ -293,12 +292,14 @@ namespace Dovus.Tests.PlayMode
         }
 
         /// <summary>
-        /// O-5.7 (yumuşak geçiş): oyuncu 2 m'de boss çevresinde dönüp 5 m'nin ötesine yürüyünce tutulan yaw farkı tek
-        /// karede silinmez; kamera boss yönünden fazla dönmez, oyuncu kadrajdan uzun süre çıkmaz. Eşikler test toleransı.
+        /// O-5.7 (yumuşak geçiş, [K 2026-10-15] "yavaşça dönsün"): oyuncu 2 m'de boss çevresinde dönüp 5 m'nin ötesine
+        /// yürüyünce kamera donmuş yaw farkını geri alır (normal takip), ama tavanın altında (O-5.6) ve oyuncuyu
+        /// kadrajdan uzun süre çıkarmadan. Toplam dönüş sınırlanmaz: geri dönüş kuralın kendisi. Kadraj eşiği test toleransı.
         /// </summary>
         [UnityTest]
-        public IEnumerator O_5_7_Boss2mdenCikis_YawSicramaz()
+        public IEnumerator O_5_7_Boss2mdenCikis_YavasDoner_OyuncuKadrajda()
         {
+            float maxDps = SliceCameraValue("turn_rate_max_dps");
             float edgeM = SliceCameraValue("boss_yaw_freeze_edge_m");
             float lookM = SliceCameraValue("look_height_m");
             FreezeBoss();
@@ -368,9 +369,8 @@ namespace Dovus.Tests.PlayMode
                     if (v.z < 0f || v.x < 0f || v.x > 1f)
                         offscreenSec += b.TimeSec - a.TimeSec;
                 }
-                if (Mathf.Abs(camYawDelta - bearingDelta) > ExitYawExtraTolDeg)
-                    fails.Add($"çıkışta kamera yaw'ı boss yönünden {Mathf.Abs(camYawDelta - bearingDelta):0}° fazla döndü " +
-                              $"(kamera {camYawDelta:0}°, boss yönü {bearingDelta:0}°; sınır {ExitYawExtraTolDeg:0}°)");
+                JudgeTurnRate(samples.GetRange(Mathf.Max(0, exitStart - 1), samples.Count - Mathf.Max(0, exitStart - 1)),
+                    maxDps, fails);
                 if (offscreenSec > ExitOffscreenMaxSec)
                     fails.Add($"çıkışta oyuncu {offscreenSec:0.00} sn kadraj dışında (sınır {ExitOffscreenMaxSec:0.0} sn)");
                 Debug.Log($"[O-5.7] çıkış: kamera {camYawDelta:0}°, boss yönü {bearingDelta:0}°, kadraj dışı {offscreenSec:0.00} sn");
