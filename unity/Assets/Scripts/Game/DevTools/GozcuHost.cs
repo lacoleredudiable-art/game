@@ -3,6 +3,7 @@ using System.Globalization;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Skills;
+using Dovus.Game.Skills.RuleEngineV4;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -44,6 +45,12 @@ namespace Dovus.Game.DevTools
         bool _hasCameraRotation;
         bool _noCameraWarned;
         int _fallbackLogs;
+        Vector3 _lastPlayerXZ;
+        bool _hasLastPlayer;
+        DodgeMotionController _dodge;
+        MotionTemplateBodyHost _templateBody;
+        const float TeleportStepFactor = 2f;
+        const float InBodyMinDepthM = 0.05f;
         GUIStyle _style;
 
         public int ReportedCount => _reporter?.Reported ?? 0;
@@ -98,6 +105,8 @@ namespace Dovus.Game.DevTools
             CheckFeet();
             CheckBody();
             CheckClip();
+            CheckPlayerTeleport();
+            CheckPlayerInBody();
             if (_fallbackLogs > _rules.FallbackLogMax)
                 Report(GozcuRule.Fallback, _fallbackLogs.ToString(CultureInfo.InvariantCulture));
             Camera cam = GameCamera();
@@ -253,6 +262,66 @@ namespace Dovus.Game.DevTools
             float depth = _bossBodyRadiusM - new Vector2(p.x - c.x, p.z - c.z).magnitude;
             if (depth > 0f && p.y < c.y + _bossBodyTopAboveRootM)
                 Report(GozcuRule.CameraInBossBody, Cm(depth));
+        }
+
+        /// <summary>
+        /// Sahipsiz atlama: dodge ve kalıp yer değiştirmesi yokken kare adımı yürüme hızı × dt × 2'yi aşarsa ışınlanma.
+        /// Dodge / kalıp kare adımı bilgidir, engel değil (eşik ölçülünce konur).
+        /// </summary>
+        void CheckPlayerTeleport()
+        {
+            Vector3 now = new Vector3(_player.position.x, 0f, _player.position.z);
+            if (!_hasLastPlayer)
+            {
+                _hasLastPlayer = true;
+                _lastPlayerXZ = now;
+                return;
+            }
+            float step = (now - _lastPlayerXZ).magnitude;
+            _lastPlayerXZ = now;
+            if (_dodge == null)
+                _dodge = _player.GetComponent<DodgeMotionController>();
+            if (_templateBody == null)
+                _templateBody = _player.GetComponent<MotionTemplateBodyHost>();
+            if ((_dodge != null && _dodge.IsDisplacing) || (_templateBody != null && _templateBody.IsDisplacing)
+                || _motor == null)
+                return;
+            float limit = _motor.Tuning.Player.WalkSpeedMps * Time.deltaTime * TeleportStepFactor
+                          + KinematicMotorControllerDefaults.MoveStopInsetM;
+            if (step > limit)
+                Report(GozcuRule.PlayerTeleport, string.Format(CultureInfo.InvariantCulture,
+                    "adim={0:0.00}m,sahip=yok", step));
+        }
+
+        /// <summary>O-4.9 G: oyuncu merkezi minyon / dost / boss silindirinin içinde (derinlik &gt; 5 cm).</summary>
+        void CheckPlayerInBody()
+        {
+            if (_motor == null)
+                return;
+            var wp = RuleEngineV4WorldPhysicsRuntime.Active;
+            float playerR = _motor.BodyRadiusM;
+            Vector3 p = _player.position;
+            foreach (RuleEngineV4PhysicsBodyHost body in FindObjectsByType<RuleEngineV4PhysicsBodyHost>(FindObjectsSortMode.None))
+            {
+                if (body.transform == _player || body.transform.IsChildOf(_player))
+                    continue;
+                if (body.TryGetComponent(out TargetableHost mark) && !mark.IsAvailable)
+                    continue;
+                float bodyR;
+                if (body.WeightTier == RuleEngineV4WeightTier.Boss)
+                    bodyR = _bossBodyRadiusM;
+                else if (body.TryGetComponent(out AllyDummyController _))
+                    bodyR = wp.BodyRadiusPlayerM;
+                else if (body.TryGetComponent(out SliceLightMinionHost _))
+                    bodyR = wp.BodyRadiusCreatureM;
+                else
+                    continue;
+                Vector3 c = body.transform.position;
+                float dist = new Vector2(p.x - c.x, p.z - c.z).magnitude;
+                float depth = playerR + bodyR - dist;
+                if (depth > InBodyMinDepthM)
+                    Report(GozcuRule.PlayerInBody, Cm(depth) + "@" + body.name);
+            }
         }
 
         void CheckPlayerOnScreen(Camera cam)

@@ -17,7 +17,9 @@ namespace Dovus.Game.Composition.Builders
             if (ctx.Tuning == null || !ctx.Tuning.RuleEngineV4.SliceScene)
                 return;
 
-            float r = Mathf.Max(RuleEngineV4SliceBuilderDefaults.MinRadiusFloorM, ctx.Tuning.RuleEngineV4.SliceMinionRadiusM);
+            // Yarıçapın tek kaynağı world_physics.body_radius_creature_m (çizim, collider, yürüme ve dodge gövdesi aynı değer).
+            float r = Mathf.Max(RuleEngineV4SliceBuilderDefaults.MinRadiusFloorM,
+                RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusCreatureM);
             float h = Mathf.Max(RuleEngineV4SliceBuilderDefaults.MinHeightFloorM, ctx.Tuning.RuleEngineV4.SliceMinionHeightM);
             int hp = Mathf.Max(1, RuleEngineV4Feature.Enabled
                 ? Mathf.RoundToInt(ctx.Host.RuleEngineV4Scale.LightCreatureMaxHp)
