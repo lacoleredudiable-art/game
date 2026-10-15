@@ -132,6 +132,10 @@ namespace Dovus.Game.Cameras
             return safe;
         }
 
+        /// <summary>Boss gövdesi (O-5.15) ve sütunlar (O-5.10): kamera ikisinin de içine giremez.</summary>
+        public Vector3 KeepOutOfBodies(Vector3 pivot, Vector3 camPos, CameraSettings cam) =>
+            KeepOutOfColumns(pivot, KeepOutOfBossBody(pivot, camPos, cam), cam);
+
         /// <summary>O-5.10 sert sınır: boss gövdesindeki gibi kamera sütunun içindeyse çıkışının arkasına alınır (öne gelmez).</summary>
         public Vector3 KeepOutOfColumns(Vector3 pivot, Vector3 camPos, CameraSettings cam)
         {
