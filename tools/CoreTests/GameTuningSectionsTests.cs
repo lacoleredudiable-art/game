@@ -57,7 +57,7 @@ public class GameTuningSectionsTests
         var names = CollectSectionFieldNames();
         var legacy = CollectFormerLegacyFieldNames();
         Assert.That(names, Is.SupersetOf(legacy), "bölüm tipleri eski düz alan kümesini kapsamalı");
-        Assert.That(names.Count, Is.EqualTo(248), "BossSettings.ActiveBossResourcePath bölümde ek alan");
+        Assert.That(names.Count, Is.EqualTo(250), "BossSettings.ActiveBossResourcePath + InputSettings.JoystickZoneWidthFrac/JoystickZoneHeightFrac (O-4.3) bölümde ek alan");
     }
 
     [Test]
