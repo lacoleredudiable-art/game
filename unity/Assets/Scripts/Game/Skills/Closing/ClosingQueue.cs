@@ -1,3 +1,4 @@
+using Dovus.Core.RuleEngineV4;
 using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
@@ -138,7 +139,8 @@ namespace Dovus.Game.Skills.Closing
 
             string impactStyle = "burst_soft";
             string trailStyle = string.Empty;
-            if (!p.IsBasicStrike && _host.Skills != null && p.Words != null)
+            // Dilimde eski motorun trail yolu çalışmaz (Adım 4); v4 kendi efektini çizer.
+            if (!RuleEngineV4Feature.Enabled && !p.IsBasicStrike && _host.Skills != null && p.Words != null)
             {
                 SkillResolution skill = ResolveSkillWords(p.Words);
                 _host.EnsurePresentationCatalog();

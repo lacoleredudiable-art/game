@@ -1,3 +1,4 @@
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Casting;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Tuning;
@@ -286,7 +287,8 @@ namespace Dovus.Game.Skills.Execution
 
         void SpawnWeaponAttack(Vector3 from)
         {
-            if (Context.Target == null)
+            // Dilimde eski motorun trail yolu çalışmaz (Adım 4).
+            if (RuleEngineV4Feature.Enabled || Context.Target == null)
                 return;
             string pathClass = _weaponPathClass;
             bool ranged = pathClass is "silahla:ucan" or "silahla:hat" or "silahla:belirme";
