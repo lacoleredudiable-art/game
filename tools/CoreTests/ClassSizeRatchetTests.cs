@@ -28,7 +28,7 @@ public sealed class ClassSizeRatchetTests
         ["MechanicGrammar"] = 722,
         ["TeamComboSystem"] = 721,
         ["TeamComboHost"] = 706,
-        ["ActorView"] = 666,
+        ["ActorView"] = 665,
         ["LivingEffectView"] = 671,
         ["StatusBoard"] = 632,
     };

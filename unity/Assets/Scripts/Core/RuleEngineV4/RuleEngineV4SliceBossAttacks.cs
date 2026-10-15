@@ -5,7 +5,7 @@ namespace Dovus.Core.RuleEngineV4
     /// <summary>
     /// kural-motoru-v4.json <c>slice_boss_attacks</c>: dilim boss'unun (Ağların Kraliçesi) saldırı hasarlarının tek
     /// kaynağı, oyuncu canı 1000 ölçeğinde (O-6.9). Bacak Çakması O-6.14, Ağ Tükürüğü mermi başına O-6.15, Zehir Nefesi
-    /// vuruşu ve zehri O-6.17, Sıçrayış O-6.18. Alan yoksa <c>Has*</c> false olur; okuyan taraf bunu [V4-FALLBACK] ile
+    /// vuruşu, zehri, konisi ve ön işareti O-6.17, Sıçrayış O-6.18. Alan yoksa <c>Has*</c> false olur; okuyan taraf bunu [V4-FALLBACK] ile
     /// görünür kılar. Kod varsayılanı yoktur.
     /// </summary>
     public sealed class RuleEngineV4SliceBossAttacks
@@ -20,6 +20,15 @@ namespace Dovus.Core.RuleEngineV4
         public bool HasPoisonBreathPoisonSec { get; private set; }
         public float PoisonBreathPoisonPerSec { get; private set; }
         public bool HasPoisonBreathPoisonPerSec { get; private set; }
+        /// <summary>O-6.17 koni menzili (m), boss merkezinden.</summary>
+        public float PoisonBreathConeRangeM { get; private set; }
+        public bool HasPoisonBreathConeRangeM { get; private set; }
+        /// <summary>O-6.17 koninin TAM açısı (derece); eksenden ± yarısı.</summary>
+        public float PoisonBreathConeAngleDeg { get; private set; }
+        public bool HasPoisonBreathConeAngleDeg { get; private set; }
+        /// <summary>O-6.17 ön işaret süresi (s).</summary>
+        public float PoisonBreathWindupSec { get; private set; }
+        public bool HasPoisonBreathWindupSec { get; private set; }
         public float PounceDamage { get; private set; }
         public bool HasPounceDamage { get; private set; }
 
@@ -39,6 +48,12 @@ namespace Dovus.Core.RuleEngineV4
             a.PoisonBreathPoisonSec = poisonSec;
             a.HasPoisonBreathPoisonPerSec = Read(n["poison_breath_poison_per_sec"], out float poisonPerSec);
             a.PoisonBreathPoisonPerSec = poisonPerSec;
+            a.HasPoisonBreathConeRangeM = Read(n["poison_breath_cone_range_m"], out float coneRange);
+            a.PoisonBreathConeRangeM = coneRange;
+            a.HasPoisonBreathConeAngleDeg = Read(n["poison_breath_cone_angle_deg"], out float coneAngle);
+            a.PoisonBreathConeAngleDeg = coneAngle;
+            a.HasPoisonBreathWindupSec = Read(n["poison_breath_windup_sec"], out float windup);
+            a.PoisonBreathWindupSec = windup;
             a.HasPounceDamage = Read(n["pounce_damage"], out float pounce);
             a.PounceDamage = pounce;
             return a;

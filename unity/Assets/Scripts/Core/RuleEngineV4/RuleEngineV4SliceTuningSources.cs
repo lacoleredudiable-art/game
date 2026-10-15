@@ -56,6 +56,13 @@ namespace Dovus.Core.RuleEngineV4
                 Tuned("combat.Boss.FireConeDamage", "slice_boss_attacks.poison_breath_damage",
                     boss.PoisonBreathDamage, boss.HasPoisonBreathDamage),
                 Tuned("combat.Boss.PounceDamage", "slice_boss_attacks.pounce_damage", boss.PounceDamage, boss.HasPounceDamage),
+                // O-6.17: Value ayar alanının biriminde (yarı açı, ms); JSON tam açı ve saniye tutar.
+                Tuned("combat.Boss.FireConeRadiusM", "slice_boss_attacks.poison_breath_cone_range_m",
+                    boss.PoisonBreathConeRangeM, boss.HasPoisonBreathConeRangeM),
+                Tuned("combat.Boss.FireConeArcHalfAngleDeg", "slice_boss_attacks.poison_breath_cone_angle_deg",
+                    boss.PoisonBreathConeAngleDeg * 0.5f, boss.HasPoisonBreathConeAngleDeg),
+                Tuned("combat.Boss.FireConeWindupMs", "slice_boss_attacks.poison_breath_windup_sec",
+                    (float)(boss.PoisonBreathWindupSec * Dovus.Core.Shared.Units.SecToMs), boss.HasPoisonBreathWindupSec),
                 Arena("combat.SkillMotion.ArenaHalfSizeM", arena),
                 Arena("GameTuning.Arena.ArenaHalfSizeM", arena),
             };

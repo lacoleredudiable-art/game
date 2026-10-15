@@ -111,11 +111,10 @@ public class SlamVariantTests
 
         const int telegraph = 1000;
         int gecStrike = attack.StrikeTimeMs(telegraph); // 1900
-        // YAKIN vuruş anına (1640) göre "iyi" basış: gap 100 → ama GEÇ vuruşu 260 ms sonra;
-        // i-frame 260 ms, yani basış+260 = 1800 < 1900 → erken bastın.
-        int press = telegraph + 640 - 100; // 1540
-        Assert.That(gecStrike - press, Is.EqualTo(360));
-        Assert.That(press + 260, Is.LessThan(gecStrike));
+        // GEÇ vuruştan i-frame + 100 ms önce basış: pencere vuruştan önce kapanır → erken bastın.
+        int iframe = new DodgeTuning().IframeMs;
+        int press = gecStrike - (iframe + 100);
+        Assert.That(press + iframe, Is.LessThan(gecStrike));
 
         var result = resolver.Resolve(new ExchangeInput
         {

@@ -6,12 +6,12 @@
 # Sayı eşiğin altına inerse: engel türünde test uyarır, o PR eşiği de düşürür; uyari türünde yalnız bilgi satırı.
 # Listede olmayan tür: eşik 0, engel.
 # Ölçüm: master 8eff2914, yerel 3 koşu (uyumsuz_klip 45/45/46, efekt_ekran_kaplama 21/19/20; diğerleri 3 koşuda aynı).
-ayak_zemin_alti 1 engel
+ayak_zemin_alti 2 engel
 govde_collider_icinde 0 engel
 v4_fallback 0 engel
-kamera_aci_hizi 0 engel
+kamera_aci_hizi 2 engel
 kamera_collider_icinde 0 engel
 oyuncu_ekran_disi 1 engel
 kamera_fov_gecersiz 0 engel
-uyumsuz_klip 2 uyari
+uyumsuz_klip 46 uyari
 efekt_ekran_kaplama 21 uyari

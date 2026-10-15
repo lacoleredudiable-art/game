@@ -20,13 +20,13 @@ public class CombatTuningDefaultsTests
         {
             Assert.That(t.Dodge.StartupMs, Is.EqualTo(10));
             Assert.That(t.Dodge.IframeStartMs, Is.EqualTo(0));
-            Assert.That(t.Dodge.IframeMs, Is.EqualTo(260));
+            Assert.That(t.Dodge.IframeMs, Is.EqualTo(500));
             Assert.That(t.Dodge.DistanceM, Is.EqualTo(3.8f));
             Assert.That(t.Dodge.DurationMs, Is.EqualTo(250));
             Assert.That(t.Dodge.MaxCharges, Is.EqualTo(2));
             Assert.That(t.Dodge.ChargeRechargeMs, Is.EqualTo(6000));
-            Assert.That(t.Dodge.DoubleTapWindowMs, Is.EqualTo(200));
-            Assert.That(t.Dodge.CombinedIframeMs, Is.EqualTo(520));
+            Assert.That(t.Dodge.DoubleTapWindowMs, Is.EqualTo(500));
+            Assert.That(t.Dodge.CombinedIframeMs, Is.EqualTo(1300));
             Assert.That(t.Dodge.CombinedDistanceMult, Is.EqualTo(1.6f));
             Assert.That(t.Dodge.CombinedDurationMult, Is.EqualTo(1.4f));
             Assert.That(t.Dodge.PerfectWindowMs, Is.EqualTo(150));

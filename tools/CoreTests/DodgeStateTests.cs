@@ -30,7 +30,7 @@ public class DodgeStateTests
         var dodge = new DodgeState(new DodgeTuning());
         dodge.Begin(1000);
         Assert.That(dodge.IsInvulnerable(1000), Is.True);
-        Assert.That(dodge.IsInvulnerable(1259), Is.True);
-        Assert.That(dodge.IsInvulnerable(1260), Is.False);
+        Assert.That(dodge.IsInvulnerable(1499), Is.True);
+        Assert.That(dodge.IsInvulnerable(1500), Is.False);
     }
 }
