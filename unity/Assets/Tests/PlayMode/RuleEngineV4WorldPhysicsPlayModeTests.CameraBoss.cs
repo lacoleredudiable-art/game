@@ -74,6 +74,12 @@ namespace Dovus.Tests.PlayMode
         /// <summary>Kamera oyuncuya bu orandan fazla çekilmişse (geri mesafe / istenen) omuz okunmaz.</summary>
         const float ShoulderMinScale = 0.2f;
         const string BossVisualChild = "Visual";
+        /// <summary>O-5.7 çıkış testi: dönüş turu ve dışarı yürüyüş eşikleri. Kaynakta yok, test toleransı (tasarım sayısı değil).</summary>
+        const float ExitLapMinDeg = 150f;
+        const float ExitFreeEdgeM = 6f;
+        const float ExitYawExtraTolDeg = 30f;
+        const float ExitOffscreenMaxSec = 0.3f;
+        const float ExitTailSec = 1.5f;
 
         float SliceCameraValue(string key) => JsonNumber(SliceCameraJson(), key);
 
@@ -285,6 +291,93 @@ namespace Dovus.Tests.PlayMode
                 $"kilitli tur bitmedi: {LapGuardSec * ShoulderLaps:0} sn'de {swept:0}°");
             Assert.That(flips.Count < 2 || minGap >= minGapSec, Is.True,
                 $"O-5.9 omuz {flips.Count} kez değişti, en kısa ara {minGap:0.00} sn < {minGapSec:0.0} sn");
+            Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
+        }
+
+        /// <summary>
+        /// O-5.7 (yumuşak geçiş): oyuncu 2 m'de boss çevresinde dönüp 5 m'nin ötesine yürüyünce tutulan yaw farkı tek
+        /// karede silinmez; kamera boss yönünden fazla dönmez, oyuncu kadrajdan uzun süre çıkmaz. Eşikler test toleransı.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator O_5_7_Boss2mdenCikis_YawSicramaz()
+        {
+            float edgeM = SliceCameraValue("boss_yaw_freeze_edge_m");
+            float lookM = SliceCameraValue("look_height_m");
+            FreezeBoss();
+            ParkAll();
+            (Camera cam, _, _) = GameCamera();
+            Vector3 bossC = Flat(_boss.position);
+            float lapR = BossBodyM + edgeM;
+            Vector3 toCenter = BossToCenter();
+            Vector3 tangent = Vector3.Cross(Vector3.up, toCenter).normalized;
+            MoveInputController move = BeginScenario("boss 2 m tur + çıkış", bossC + toCenter * lapR, tangent, out _, out _);
+            yield return new WaitForSecondsRealtime(LapSettleSec);
+
+            CameraTurnProbe probe = AddTurnProbe(cam, lookM);
+            float swept = 0f;
+            float lastBearing = Bearing(bossC, _player.position);
+            int exitStart = -1;
+            float guard = Time.realtimeSinceStartup + LapGuardSec;
+            float tailEnd = 0f;
+            try
+            {
+                while (Time.realtimeSinceStartup < guard && (tailEnd == 0f || Time.realtimeSinceStartup < tailEnd))
+                {
+                    Vector3 radial = Flat(_player.position) - bossC;
+                    float r = radial.magnitude;
+                    Vector3 outward = r > PosTolM ? radial / r : toCenter;
+                    if (Mathf.Abs(swept) < ExitLapMinDeg)
+                    {
+                        Vector3 along = Vector3.Cross(Vector3.up, outward).normalized;
+                        Steer(move, (along + outward * Mathf.Clamp((lapR - r) * LapRadialGain, -1f, 1f)).normalized);
+                    }
+                    else
+                    {
+                        if (exitStart < 0)
+                            exitStart = probe.Samples.Count;
+                        Steer(move, outward);
+                        if (tailEnd == 0f && r - BossBodyM > ExitFreeEdgeM)
+                            tailEnd = Time.realtimeSinceStartup + ExitTailSec;
+                    }
+                    yield return null;
+                    float bearing = Bearing(bossC, _player.position);
+                    swept += Mathf.DeltaAngle(lastBearing, bearing);
+                    lastBearing = bearing;
+                }
+            }
+            finally
+            {
+                move.SetScriptedDirection(null);
+            }
+            List<CameraTurnProbe.Sample> samples = probe.Samples;
+            Object.Destroy(probe.gameObject);
+
+            var fails = new List<string>();
+            if (Mathf.Abs(swept) < ExitLapMinDeg || exitStart < 0 || tailEnd == 0f)
+                fails.Add($"çıkış senaryosu bitmedi: tur {swept:0}°, çıkış başladı mı {exitStart >= 0}");
+            else
+            {
+                float camYawDelta = 0f;
+                float bearingDelta = 0f;
+                float offscreenSec = 0f;
+                for (int i = Mathf.Max(1, exitStart); i < samples.Count; i++)
+                {
+                    CameraTurnProbe.Sample a = samples[i - 1];
+                    CameraTurnProbe.Sample b = samples[i];
+                    camYawDelta += Mathf.DeltaAngle(a.Rot.eulerAngles.y, b.Rot.eulerAngles.y);
+                    bearingDelta += Mathf.DeltaAngle(Bearing(bossC, a.Player), Bearing(bossC, b.Player));
+                    Vector3 v = b.ChestViewport;
+                    if (v.z < 0f || v.x < 0f || v.x > 1f)
+                        offscreenSec += b.TimeSec - a.TimeSec;
+                }
+                if (Mathf.Abs(camYawDelta - bearingDelta) > ExitYawExtraTolDeg)
+                    fails.Add($"çıkışta kamera yaw'ı boss yönünden {Mathf.Abs(camYawDelta - bearingDelta):0}° fazla döndü " +
+                              $"(kamera {camYawDelta:0}°, boss yönü {bearingDelta:0}°; sınır {ExitYawExtraTolDeg:0}°)");
+                if (offscreenSec > ExitOffscreenMaxSec)
+                    fails.Add($"çıkışta oyuncu {offscreenSec:0.00} sn kadraj dışında (sınır {ExitOffscreenMaxSec:0.0} sn)");
+                Debug.Log($"[O-5.7] çıkış: kamera {camYawDelta:0}°, boss yönü {bearingDelta:0}°, kadraj dışı {offscreenSec:0.00} sn");
+            }
+            Assert.That(fails, Is.Empty, string.Join("\n", fails));
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 
