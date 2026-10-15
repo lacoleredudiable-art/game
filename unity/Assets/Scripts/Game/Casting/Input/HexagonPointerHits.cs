@@ -10,7 +10,7 @@ namespace Dovus.Game.Casting.Input
     public static class HexagonPointerHits
     {
         public static bool IsDrawHalf(Vector2 pos, GameTuning tuning) =>
-            HexagonLayoutScreen.IsRightHalf(pos, tuning.Input.MirrorForLeftHand, Screen.width);
+            !HexagonLayoutScreen.IsStickZone(pos, tuning.Input, Screen.width, Screen.height);
 
         public static bool HitDodgeButton(Vector2 pos, GameTuning tuning)
         {

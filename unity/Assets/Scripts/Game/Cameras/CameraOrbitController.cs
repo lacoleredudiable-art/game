@@ -127,10 +127,11 @@ namespace Dovus.Game.Cameras
             if (_orbitFingerId.HasValue || IsClaimedElsewhere(finger.index) || BuildSelectHud.IsOpen)
                 return;
 
-            // Sol yarı stick'e ait — orbit alma.
+            // Stick bölgesi dışında her yer kamera; altıgen/dodge/swap üstü kameraya geçmez.
             Vector2 pos = finger.screenPosition;
-            bool mirror = _tuning != null && _tuning.Input.MirrorForLeftHand;
-            if (!HexagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
+            if (_tuning != null && HexagonLayoutScreen.IsStickZone(pos, _tuning.Input, Screen.width, Screen.height))
+                return;
+            if (_hexagonInput != null && _hexagonInput.IsCombatControlAt(pos))
                 return;
             if (_elementMenu != null && (_elementMenu.IsMenuOpen || _elementMenu.HitHoldChipAt(pos)))
                 return;

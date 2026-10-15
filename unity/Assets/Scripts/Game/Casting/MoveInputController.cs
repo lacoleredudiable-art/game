@@ -122,8 +122,8 @@ namespace Dovus.Game.Casting
                 return;
 
             Vector2 pos = finger.screenPosition;
-            // Çubuk yarısı = çizim yarısının tersi (aynı IsRightHalf yardımcısı; MirrorForLeftHand).
-            if (HexagonLayoutScreen.IsRightHalf(pos, _tuning.Input.MirrorForLeftHand, Screen.width))
+            // O-4.3: çubuk yalnız sol-alt başparmak bölgesinde doğar.
+            if (!HexagonLayoutScreen.IsStickZone(pos, _tuning.Input, Screen.width, Screen.height))
                 return;
 
             _stickFingerId = finger.index;

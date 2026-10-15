@@ -155,7 +155,7 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 |---|---|---|---|---|
 | O-4.1 | Joystick yarıçapı | 72 dp (≈ 11,5 mm) | KOD `JoystickMaxRadiusDp` | E |
 | O-4.2 | Ölü bölge | 0,12 (yarıçapın %12'si) | KOD `JoystickDeadZone` | T |
-| O-4.3 | Yer | Sol başparmak; parmağın ilk değdiği yerde belirir (yüzen joystick), ekranın sol yarısının alt %60'ında | ÖNERİ | E |
+| O-4.3 | Yer | Sol başparmak; parmağın ilk değdiği yerde belirir (yüzen joystick), yalnız ekranın solundan %35 genişlik ve alttan %60 yükseklikte (`JoystickZoneWidthFrac`/`JoystickZoneHeightFrac`); bölge dışı = kamera sürükleme + hedef dokunuşu | ÖNERİ | E (başlangıç tahmini; %55–60 telefonda denenir) |
 
 ### 4.2 Dodge
 
