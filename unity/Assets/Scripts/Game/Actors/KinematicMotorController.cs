@@ -181,8 +181,8 @@ namespace Dovus.Game.Actors
                 speedMult *= _status.Tuning.SlowSpeedMult;
             float dtSec = GameClockFallback.DeltaSec(_clock, "clock.KinematicMotorController");
 
-            float stickT = Mathf.InverseLerp(_tuning.Input.JoystickDeadZone, 1f, stick);
-            float speedFrac = stick > 0.0001f ? Mathf.Lerp(_tuning.Player.MinStickSpeedFrac, 1f, stickT) : 0f;
+            // Analog yok (15 Ekim [K]): çubuk ölü bölgeyi geçtiyse tam hız (O-1.17).
+            float speedFrac = stick > 0.0001f ? 1f : 0f;
             Vector3 dirFlat = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
             Vector3 target = dirFlat * (_tuning.Player.WalkSpeedMps * speedMult * speedFrac);
 

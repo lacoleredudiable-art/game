@@ -65,7 +65,7 @@ Unity'de 1 birim = 1 m.
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-1.16 | Tam hız (joystick sonuna kadar) | 6,4 m/s | KOD `WalkSpeedMps` | T |
-| O-1.17 | En düşük hız (joystick ölü bölgeyi geçtiği an) | tam hızın 0,42'si = 2,7 m/s | KOD `MinStickSpeedFrac` | T |
+| O-1.17 | En düşük hız (joystick ölü bölgeyi geçtiği an) | KALDIRILDI (15 Ekim [K]): ölü bölge üstü tam hız, analog yok | KOD `MinStickSpeedFrac` kullanılmıyor | K |
 | O-1.18 | Hızlanma / yavaşlama | 52 m/s² (0 → tam hız 0,12 s) / 64 m/s² (tam hız → 0, 0,10 s) | KOD `MoveAccelMps2`, `MoveDecelMps2` | T |
 | O-1.19 | Dönme hızı | 720 °/s (geri dönüş 0,25 s) | KOD `TurnRateDegPerSec` | T |
 | O-1.20 | Kök hareketi (root motion) | **Kapalı.** Karakteri kod taşır; bütün klipler yerinde oynar (in-place). Klipteki kök yüksekliği kilitli | KOD (`lockRootHeightY`) | T (klipte kök XZ yer değiştirmesi ≤ 2 cm) |
@@ -154,7 +154,7 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-4.1 | Joystick yarıçapı | 72 dp (≈ 11,5 mm) | KOD `JoystickMaxRadiusDp` | E |
-| O-4.2 | Ölü bölge | 0,12 (yarıçapın %12'si) | KOD `JoystickDeadZone` | T |
+| O-4.2 | Ölü bölge | 0,12 (yarıçapın %12'si); geçilince hız tam, yalnız yön okunur | KOD `JoystickDeadZone` | T |
 | O-4.3 | Yer | Sol başparmak; parmağın ilk değdiği yerde belirir (yüzen joystick), ekranın sol yarısının alt %60'ında | ÖNERİ | E |
 
 ### 4.2 Dodge
