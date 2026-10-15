@@ -1,7 +1,7 @@
 # Kül Ejderi — kaynak modeller (v0)
 
-Tasarım: `docs/tasarim/14-kul-ejderi.md`, yerleşim: `15-krater-arenasi.md` §3, iş kartı ve poz listesi:
-`16-asset-listesi.md` §1. Bu klasör Unity dışındadır; Unity'ye alma gri kutu / uygulama görevinin işidir.
+Tasarım: `docs/tasarim/18-kul-ejderi.md`, yerleşim: `19-krater-arenasi.md` §3, iş kartı ve poz listesi:
+`20-asset-listesi.md` §1. Bu klasör Unity dışındadır; Unity'ye alma gri kutu / uygulama görevinin işidir.
 
 | Dosya | Ne | Üçgen | Durum |
 |---|---|---|---|

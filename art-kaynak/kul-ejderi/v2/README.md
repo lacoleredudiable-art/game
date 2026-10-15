@@ -21,4 +21,4 @@ govde2 → govde2_birlestir → pozlar2 (`-- ejder.blend 2.5`) → kapak (ZCUT 2
 2. Dinlenme kanatları önden biraz dik; indirilecek.
 3. Üçgen bütçesi: gövde ~57k → ~13k, kanatlar 80k (çift yüz dahil) → bütçeye. Toplam hedef 36k + LOD1.
 4. Plaka ve kalp geçici.
-5. `teslim.py` yeni nesnelere uyarlanıp FBX alınacak; 14-kul-ejderi.md kemik listesi/bütçe güncellenecek.
+5. `teslim.py` yeni nesnelere uyarlanıp FBX alınacak; 18-kul-ejderi.md kemik listesi/bütçe güncellenecek.
