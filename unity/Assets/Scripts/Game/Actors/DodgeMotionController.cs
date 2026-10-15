@@ -22,7 +22,7 @@ namespace Dovus.Game.Actors
     /// Yön: son hareket; o da yoksa bossun tersi.
     /// </summary>
     [DefaultExecutionOrder(10)]
-    public sealed class DodgeMotionController : MonoBehaviour
+    public sealed partial class DodgeMotionController : MonoBehaviour
     {
         GameClockHost _clock;
         DodgeState _dodge;
@@ -39,8 +39,22 @@ namespace Dovus.Game.Actors
         Vector3 _dir;
         Vector3 _glideExtra;
         int _pressMs = int.MinValue;
+        int _promotedMs = int.MinValue;
+        float _rollRatioBase;
         float _lastEmitRatio = -1f;
         ActorView _visual;
+
+        // O-4.9 kayma durumu. Kayma başlayınca dodge bitene dek serbest yola dönülmez.
+        readonly DodgeSlide _slide = new DodgeSlide();
+        bool _slideMode;
+        int _simMs;
+        float _pathM;
+        BossTelegraphView _telegraphCache;
+        Transform _telegraphOwner;
+
+        public bool IsSliding => _slideMode && _slide.Active;
+        public int SlideSide => _slide.Side;
+        public float SlideBudgetM => _slide.BudgetM;
 
         public bool IsDisplacing { get; private set; }
         public float LastAppliedRatio { get; private set; }
@@ -88,6 +102,10 @@ namespace Dovus.Game.Actors
                 _pressMs = press.Value;
                 BeginSlide();
             }
+            else if (_dodge.PromotedAtMs is int promoted && promoted != _promotedMs)
+            {
+                BeginRoll(promoted);
+            }
 
             if (!_dodge.IsActive(worldMs))
             {
@@ -95,10 +113,10 @@ namespace Dovus.Game.Actors
                 // başlamış kaymayı sonuna taşı. Glide kuyruğu KORUNUR: eskiden burada
                 // atılıyordu ve her dodge'un son karesinde oyuncu ~1 m geriye zıplıyordu,
                 // yani §6'nın "yağ gibi kayma"sı görünmüyordu (T8.1).
-                if (IsDisplacing && _tuning != null)
+                if (IsDisplacing && _tuning != null && !_slideMode)
                 {
                     float dist = _tuning.DistanceM * (_dodge != null ? _dodge.DistanceMultiplier : 1f);
-                    transform.position = Place(_startPos + _dir * dist + _glideExtra);
+                    transform.position = Place(_startPos + _dir * dist * (1f - _rollRatioBase) + _glideExtra);
                     LastAppliedRatio = 1f;
                 }
 
@@ -108,7 +126,16 @@ namespace Dovus.Game.Actors
 
             float ratio = _dodge.GetDisplacementRatio(worldMs);
             float distanceM = _tuning.DistanceM * _dodge.DistanceMultiplier;
-            Vector3 target = _startPos + _dir * distanceM * ratio;
+            Vector3 target = _startPos + _dir * distanceM * (ratio - _rollRatioBase);
+
+            if (_slideMode)
+            {
+                StepSlide(worldMs, distanceM);
+                LastAppliedRatio = ratio;
+                IsDisplacing = true;
+                MaybeEmitAfterimage(ratio);
+                return;
+            }
 
             float glide = _dodge.GetGlideVelocityRatio(worldMs);
             if (glide > 0f)
@@ -117,7 +144,10 @@ namespace Dovus.Game.Actors
                 _glideExtra += _dir * GlideSpeedMps() * glide * dtSec;
             }
 
-            transform.position = Place(target + _glideExtra);
+            Vector3 placed = Place(target + _glideExtra, out Vector3 hitNormal, out bool hit);
+            transform.position = placed;
+            if (hit)
+                BeginSlideOnHit(worldMs, distanceM, ratio, placed, hitNormal);
             LastAppliedRatio = ratio;
             if (_dir.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(_dir, Vector3.up);
@@ -133,7 +163,10 @@ namespace Dovus.Game.Actors
             LastAppliedRatio = 0f;
             _glideExtra = Vector3.zero;
             _lastEmitRatio = -1f;
-            _dir = ResolveDirection();
+            _rollRatioBase = 0f;
+            _promotedMs = int.MinValue;
+            ResetSlide();
+            _dir = ResolveDirection(transform.forward);
             _afterimage?.Clear();
             IsDisplacing = true;
             if (_visual == null)
@@ -145,7 +178,31 @@ namespace Dovus.Game.Actors
             SlideStarted?.Invoke(_startPos, _dir);
         }
 
-        Vector3 ResolveDirection()
+        /// <summary>
+        /// Takla (O-4.5, 15-dodge-tasarimi §3.2): eski yol kesilir, yeni yol bulunduğu yerden başlar;
+        /// yön ikinci basıştaki çubuk yönü (boşsa birinci dodge'un yönü). Toplam mesafe ×CombinedDistanceMult
+        /// korunur (oran sürekli). Konumu yine bu denetleyici yazar: ikinci bir konum sahibi yok.
+        /// </summary>
+        void BeginRoll(int promotedMs)
+        {
+            _promotedMs = promotedMs;
+            _startPos = transform.position;
+            _glideExtra = Vector3.zero;
+            _rollRatioBase = _dodge.RatioAtPromote;
+            _lastEmitRatio = -1f;
+            ResetSlide();
+            _dir = ResolveDirection(_dir);
+            _afterimage?.Clear();
+            if (_visual == null)
+                _visual = GetComponent<ActorView>();
+            _visual?.Trigger(ActorView.TriggerDodge);
+            int nowMs = (int)_clock.Director.WorldTimeMs;
+            float rollSec = Mathf.Max(0, _pressMs + _dodge.SlideEndOffsetMs - nowMs) / (float)Units.SecToMs;
+            DodgeClipPlayback.ApplyDodge(_visual?.Animator, rollSec, _dodge.RecoveryMs / (float)Units.SecToMs);
+            SlideStarted?.Invoke(_startPos, _dir);
+        }
+
+        Vector3 ResolveDirection(Vector3 face)
         {
             Vector3 stick = Vector3.zero;
             if (_input != null)
@@ -159,28 +216,81 @@ namespace Dovus.Game.Actors
                 }
             }
 
-            Vector3 face = transform.forward;
             DodgeDirection.Resolve(stick.x, stick.z, face.x, face.z, out float x, out float z);
             return new Vector3(x, 0f, z);
         }
 
-        Vector3 Place(Vector3 pos)
+        void ResetSlide()
+        {
+            _slide.Reset();
+            _slideMode = false;
+        }
+
+        Vector3 Place(Vector3 pos) => Place(pos, out _, out _);
+
+        Vector3 Place(Vector3 pos, out Vector3 normal, out bool clipped)
         {
             // Kayma yataydır. Y'yi burada ezmek havadaki iptali eski yüksekliğe geri yazıyordu.
             float y = transform.position.y;
-            pos = KeepBossEdge(ClampArena(pos));
-            pos.y = y;
-            // Kayma ve toparlanma konumu doğrudan yazılmaz: motorun süpürmesi engelde (sütun, duvar,
-            // koza, boss gövdesi) durdurur.
+            normal = Vector3.zero;
+            clipped = false;
+            Vector3 arena = ClampArena(pos);
+            Vector3 boss = KeepBossEdge(arena, _startPos);
+            Vector3 result = boss;
+            // Konum doğrudan yazılmaz: motorun süpürmesi engelde (sütun, duvar, koza, boss gövdesi)
+            // keser; kesildiği yerde O-4.9 kaymayı başlatır.
             if (_motor != null)
-                pos = _motor.SweepStop(transform.position, pos);
-            return pos;
+            {
+                result = _motor.SweepStop(transform.position, boss, out Vector3 motorNormal, out bool motorClipped);
+                if (motorClipped)
+                {
+                    normal = motorNormal;
+                    clipped = true;
+                }
+            }
+
+            if (!clipped && PlanarDist2(boss, arena) > 1e-8f)
+            {
+                normal = BossNormal(boss);
+                clipped = normal.sqrMagnitude > 0.0001f;
+            }
+
+            if (!clipped && PlanarDist2(arena, pos) > 1e-8f)
+            {
+                normal = ArenaNormal(arena);
+                clipped = normal.sqrMagnitude > 0.0001f;
+            }
+
+            result.y = y;
+            return result;
+        }
+
+        static float PlanarDist2(Vector3 a, Vector3 b)
+        {
+            float dx = a.x - b.x;
+            float dz = a.z - b.z;
+            return dx * dx + dz * dz;
+        }
+
+        Vector3 BossNormal(Vector3 at)
+        {
+            if (_boss == null)
+                return Vector3.zero;
+            Vector3 n = at - _boss.position;
+            n.y = 0f;
+            return n.sqrMagnitude < 0.0001f ? Vector3.zero : n.normalized;
+        }
+
+        static Vector3 ArenaNormal(Vector3 at)
+        {
+            Vector3 n = new Vector3(-at.x, 0f, -at.z);
+            return n.sqrMagnitude < 0.0001f ? Vector3.zero : n.normalized;
         }
 
         Transform _reactorOwner;
         BossReactorController _reactorCache;
 
-        Vector3 KeepBossEdge(Vector3 pos)
+        Vector3 KeepBossEdge(Vector3 pos, Vector3 fromPos)
         {
             if (_boss == null)
                 return pos;
@@ -200,7 +310,7 @@ namespace Dovus.Game.Actors
             float z = pos.z;
             DodgeEdge.StopBeforeCrossing(
                 ref x, ref z,
-                _startPos.x, _startPos.z,
+                fromPos.x, fromPos.z,
                 _boss.position.x, _boss.position.z,
                 body + bossR + gap);
             pos.x = x;

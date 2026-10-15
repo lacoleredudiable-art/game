@@ -65,9 +65,30 @@ namespace Dovus.Core.Dodge
 
         float CombinedDistanceScale => Math.Max(0.001f, _tuning.CombinedDistanceMult);
 
+        /// <summary>Takla anı (dünya ms); takla yoksa null. Hareket denetleyicisi yön değişimini bundan yakalar.</summary>
+        public int? PromotedAtMs => _combined && _promotedAtMs >= 0 ? _promotedAtMs : null;
+
+        /// <summary>Takla başladığı anda tamamlanmış yol oranı (birleşik mesafeye göre, 0..1).</summary>
+        public float RatioAtPromote => _combined ? _ratioAtPromote : 0f;
+
+        // Takla anı: hareketin başından itibaren ms (süzülmede basılırsa patlama süresinden büyük olabilir).
+        int PromoteElapsedMs => Math.Max(0, _promotedAtMs - _pressTimeMs - _tuning.StartupMs);
+
+        // Taklanın kalan yol süresi. Süzülmede basılırsa (O-4.4a pencere > patlama) kalan süre
+        // negatife düşmesin: en az (çarpan-1) × patlama süresi kalır; yol sıçramaz.
+        int CombinedRemainMs
+        {
+            get
+            {
+                int total = (int)Math.Round(_tuning.DurationMs * _tuning.CombinedDurationMult);
+                int floor = (int)Math.Round(_tuning.DurationMs * (_tuning.CombinedDurationMult - 1f));
+                return Math.Max(1, Math.Max(total - PromoteElapsedMs, floor));
+            }
+        }
+
         public int MoveDurationMs =>
             _combined
-                ? Math.Max(1, (int)Math.Round(_tuning.DurationMs * _tuning.CombinedDurationMult))
+                ? PromoteElapsedMs + CombinedRemainMs
                 : _tuning.DurationMs;
 
         /// <summary>Basmadan kaymanın bitişine kadar (startup + hareket) ms.</summary>
@@ -133,9 +154,7 @@ namespace Dovus.Core.Dodge
 
             if (_combined && _promotedAtMs >= 0)
             {
-                int promoteElapsed = _promotedAtMs - _pressTimeMs - _tuning.StartupMs;
-                if (promoteElapsed < 0)
-                    promoteElapsed = 0;
+                int promoteElapsed = PromoteElapsedMs;
 
                 if (moveElapsed <= promoteElapsed)
                 {
@@ -146,9 +165,7 @@ namespace Dovus.Core.Dodge
                     return EvaluateCurve(uPre) / CombinedDistanceScale;
                 }
 
-                int remainDur = durationMs - promoteElapsed;
-                if (remainDur <= 0)
-                    return 1f;
+                int remainDur = CombinedRemainMs;
 
                 int afterPromote = moveElapsed - promoteElapsed;
                 float u = afterPromote / (float)remainDur;

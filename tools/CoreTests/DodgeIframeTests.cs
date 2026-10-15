@@ -172,6 +172,27 @@ public class DodgeIframeTests
     }
 
     [Test]
+    public void Edge_StartingExactlyOnTheEdge_InwardPathStaysPut_OutwardAndTangentPass()
+    {
+        // O-4.5, O-4.9: takla kenarın tam üstünden (c = 0) başlar; içeri giden yol gövdeden geçemez.
+        // Boss (0,0), kenar payı dahil minSeparation 1,8; oyuncu (0, 1,8) = tam kenarda.
+        float x = 0f;
+        float z = -4f;
+        DodgeEdge.StopBeforeCrossing(ref x, ref z, 0f, 1.8f, 0f, 0f, 1.8f);
+        Assert.That(z, Is.EqualTo(1.8f).Within(0.001f));
+
+        float outX = 0f;
+        float outZ = 6f;
+        DodgeEdge.StopBeforeCrossing(ref outX, ref outZ, 0f, 1.8f, 0f, 0f, 1.8f);
+        Assert.That(outZ, Is.EqualTo(6f).Within(0.001f));
+
+        float tanX = 4f;
+        float tanZ = 1.8f;
+        DodgeEdge.StopBeforeCrossing(ref tanX, ref tanZ, 0f, 1.8f, 0f, 0f, 1.8f);
+        Assert.That(tanX, Is.EqualTo(4f).Within(0.001f));
+    }
+
+    [Test]
     public void Direction_UsesStick_OrBackpedal()
     {
         DodgeDirection.Resolve(0f, 1f, 1f, 0f, out float x, out float z);

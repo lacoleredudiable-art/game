@@ -221,6 +221,6 @@ public class CombatExchangeTests
 
         Assert.That(_dodge.GetGlideVelocityRatio(moveEnd), Is.EqualTo(0f).Within(1e-6f));
         Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + 1), Is.GreaterThan(0f));
-        Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + 120), Is.EqualTo(0f).Within(1e-6f));
+        Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + tuning.GlideTailMs), Is.EqualTo(0f).Within(1e-6f));
     }
 }
