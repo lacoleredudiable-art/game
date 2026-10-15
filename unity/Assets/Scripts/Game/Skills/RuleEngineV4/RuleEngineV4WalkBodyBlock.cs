@@ -18,6 +18,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         readonly Collider[] _near = new Collider[32];
 
+        /// <summary>Son dodge çözümünde yol bir gövdede kesildiyse gövdeden dışa yatay normal; kesilmediyse sıfır (O-4.9 kayma).</summary>
+        public Vector3 LastStopNormal { get; private set; }
+
         /// <param name="bottom">Yürüyenin gövde kapsülünün alt uç küresi, varılacak yerde.</param>
         /// <param name="top">Üst uç küresi, varılacak yerde.</param>
         /// <param name="dodgeStop">
@@ -27,6 +30,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         public Vector3 Resolve(Vector3 from, Vector3 to, Vector3 bottom, Vector3 top, float radiusM, Transform self,
             bool dodgeStop = false)
         {
+            LastStopNormal = Vector3.zero;
             float bossR = RuleEngineV4BossBody.RadiusM(Where);
             float allyR = RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusPlayerM;
             float creatureR = RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusCreatureM;
@@ -60,7 +64,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     continue;
                 if (dodgeStop)
                 {
-                    to = StopBefore(from, to, body.transform.position, radiusM + bodyR);
+                    Vector3 stopped = StopBefore(from, to, body.transform.position, radiusM + bodyR);
+                    if (Flat(stopped - to).sqrMagnitude > PositionOwnershipDefaults.MinDistM * PositionOwnershipDefaults.MinDistM)
+                        LastStopNormal = Flat(stopped - body.transform.position).normalized;
+                    to = stopped;
                     continue;
                 }
                 to = KeepOut(from, to, body.transform.position, radiusM + bodyR);

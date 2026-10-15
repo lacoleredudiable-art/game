@@ -32,8 +32,6 @@ namespace Dovus.Tests.PlayMode
         const float BehindColumnM = 1.8f;
         const float MarkCasterM = 15f;
         const float MarkTargetM = 19f;
-        /// <summary>Dodge yer değiştirmesi ile istenen yön arasında en çok 30°.</summary>
-        const float DodgeDirMinCos = 0.866f;
 
         static readonly Vector3 Outward = Vector3.right;
 
@@ -163,7 +161,8 @@ namespace Dovus.Tests.PlayMode
                 move.SetScriptedDirection(null);
             }
             Vector3 moved = Flat(_player.position - start);
-            if (moved.magnitude > PosTolM && Vector3.Dot(moved.normalized, dir) < DodgeDirMinCos)
+            // O-4.9: engele dik çarpan dodge yüzey boyunca kayar, yer değiştirme yönden sapar; senaryo yine de engele doğru ilerlemiş olmalı.
+            if (moved.magnitude > PosTolM && Vector3.Dot(moved, dir) < PosTolM)
                 fails.Add($"{_label}: senaryo kurulmadı, dodge istenen yöne gitmedi (yer değiştirme {moved})");
             Judge(watch, start, fails);
         }

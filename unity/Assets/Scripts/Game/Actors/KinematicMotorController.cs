@@ -232,8 +232,16 @@ namespace Dovus.Game.Actors
         /// Dodge yolu (kayma + toparlanma): yürüyüşle aynı kapsül süpürmesi, ama ilk engelde durur, kaymaz.
         /// Engel = katı collider, sabit (Anchored) gövdeli tetik (koza) ya da canlı gövde (minyon, dost). Y korunur.
         /// </summary>
-        public Vector3 SweepStop(Vector3 from, Vector3 to)
+        public Vector3 SweepStop(Vector3 from, Vector3 to) => SweepStop(from, to, out _, out _);
+
+        /// <summary>
+        /// O-4.9 için SweepStop: kesildiyse (clipped) engelin dışa bakan yatay normalini de verir.
+        /// Arena sınırı da engeldir: normal içeri bakar.
+        /// </summary>
+        public Vector3 SweepStop(Vector3 from, Vector3 to, out Vector3 normal, out bool clipped)
         {
+            normal = Vector3.zero;
+            clipped = false;
             Vector3 delta = to - from;
             delta.y = 0f;
             float dist = delta.magnitude;
@@ -241,20 +249,106 @@ namespace Dovus.Game.Actors
             if (dist >= 0.0001f)
             {
                 Vector3 dir = delta / dist;
-                next = from + dir * FirstBlockDistance(from, dir, dist);
+                float go = FirstBlockDistance(from, dir, dist, out Vector3 hitNormal);
+                next = from + dir * go;
+                if (go < dist)
+                {
+                    clipped = true;
+                    normal = hitNormal;
+                }
                 // Canlı gövde (minyon, dost) yürümeyle aynı silindir kuralı; tetik olduğu için kapsül süpürmesi görmez (O-4.9).
                 BodyCapsule(next, out Vector3 bottom, out Vector3 top, out float radius);
                 next = _bodyBlock.Resolve(from, next, bottom, top, radius, transform, dodgeStop: true);
+                if (_bodyBlock.LastStopNormal.sqrMagnitude > 0.0001f)
+                {
+                    clipped = true;
+                    normal = _bodyBlock.LastStopNormal;
+                }
             }
 
-            next = PushOutOfObstacles(next, anchoredTriggersBlock: true);
-            next = ArenaClamp.XZ(next, ArenaBoundary.RadiusM(Tuning), _bodyRadiusM);
+            Vector3 pushed = PushOutOfObstacles(next, anchoredTriggersBlock: true);
+            if ((pushed - next).sqrMagnitude > 1e-8f && normal.sqrMagnitude < 0.0001f)
+            {
+                normal = pushed - next;
+                normal.y = 0f;
+                clipped = true;
+            }
+
+            next = pushed;
+            Vector3 arena = ArenaClamp.XZ(next, ArenaBoundary.RadiusM(Tuning), _bodyRadiusM);
+            if ((arena.x - next.x) * (arena.x - next.x) + (arena.z - next.z) * (arena.z - next.z) > 1e-8f)
+            {
+                clipped = true;
+                normal = new Vector3(arena.x - next.x, 0f, arena.z - next.z);
+                if (normal.sqrMagnitude < 1e-8f)
+                    normal = -new Vector3(arena.x, 0f, arena.z);
+            }
+
+            next = arena;
             next.y = from.y;
+            if (normal.sqrMagnitude > 0.0001f)
+            {
+                normal.y = 0f;
+                normal.Normalize();
+            }
+
             return next;
         }
 
-        float FirstBlockDistance(Vector3 from, Vector3 dir, float dist)
+        /// <summary>
+        /// O-4.9: konumun yakınındaki engel yüzeyi (reachM içinde). Normal engelden dışa bakar;
+        /// corrected = gövde kenarı engelden gapM uzakta olacak konum (kayma boyunca EdgeGapM korunur).
+        /// </summary>
+        public bool ProbeContact(Vector3 pos, float gapM, float reachM, out Vector3 normal, out Vector3 corrected)
         {
+            normal = Vector3.zero;
+            corrected = pos;
+            Vector3 probe = BodyMid(pos);
+            BodyCapsule(pos, out Vector3 p1, out Vector3 p2, out float radius);
+            float reach = radius + gapM + reachM;
+            int count = Physics.OverlapCapsuleNonAlloc(
+                p1, p2, reach, ObstacleBuffer, ~0, QueryTriggerInteraction.Collide);
+            float best = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                Collider col = ObstacleBuffer[i];
+                if (col == null || !BlocksDodge(col))
+                    continue;
+                Vector3 closest = col.ClosestPoint(probe);
+                Vector3 away = probe - closest;
+                away.y = 0f;
+                float d = away.magnitude;
+                if (d < 0.0001f || d >= best)
+                    continue;
+                best = d;
+                normal = away / d;
+                corrected = pos + normal * (radius + gapM - d);
+            }
+
+            if (best == float.MaxValue)
+                return false;
+            corrected.y = pos.y;
+            return true;
+        }
+
+        /// <summary>O-4.9: gövde bu noktada bir dodge engeline değer mi (taraf seçiminde "dolu" sayılır).</summary>
+        public bool PointBlocked(Vector3 pos)
+        {
+            BodyCapsule(pos, out Vector3 p1, out Vector3 p2, out float radius);
+            int count = Physics.OverlapCapsuleNonAlloc(
+                p1, p2, radius, ObstacleBuffer, ~0, QueryTriggerInteraction.Collide);
+            for (int i = 0; i < count; i++)
+            {
+                if (BlocksDodge(ObstacleBuffer[i]))
+                    return true;
+            }
+
+            return false;
+        }
+
+        float FirstBlockDistance(Vector3 from, Vector3 dir, float dist, out Vector3 normal)
+        {
+            normal = Vector3.zero;
             BodyCapsule(from, out Vector3 p1, out Vector3 p2, out float radius);
             int hits = Physics.CapsuleCastNonAlloc(
                 p1, p2, radius, dir, CastHits, dist, ~0, QueryTriggerInteraction.Collide);
@@ -273,7 +367,13 @@ namespace Dovus.Game.Actors
                     toward.y = 0f;
                     if (Vector3.Dot(toward, dir) <= 0f)
                         continue;
+                    normal = -toward.normalized;
                 }
+                else
+                {
+                    normal = h.normal;
+                }
+
                 if (h.distance < best)
                 {
                     best = h.distance;
@@ -281,6 +381,9 @@ namespace Dovus.Game.Actors
                 }
             }
 
+            normal.y = 0f;
+            if (normal.sqrMagnitude > 0.0001f)
+                normal.Normalize();
             return blocked ? Mathf.Max(0f, best - KinematicMotorControllerDefaults.MoveStopInsetM) : dist;
         }
 
