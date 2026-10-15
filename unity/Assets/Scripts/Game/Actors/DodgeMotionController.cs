@@ -34,6 +34,7 @@ namespace Dovus.Game.Actors
         KinematicMotorController _motor;
         PlayerVitalsHost _vitals;
         FollowCameraController _follow;
+        HexagonInputController _inputCtl;
 
         Vector3 _startPos;
         Vector3 _dir;
@@ -75,6 +76,7 @@ namespace Dovus.Game.Actors
             FollowCameraController follow = null)
         {
             _clock = clock;
+            _inputCtl = input;
             _dodge = input.Dodge;
             _tuning = input.Combat.Dodge;
             _colors = input.Tuning;
@@ -132,7 +134,9 @@ namespace Dovus.Game.Actors
             {
                 StepSlide(worldMs, distanceM);
                 LastAppliedRatio = ratio;
-                IsDisplacing = true;
+                // Kayma bütçesi bitip karakter durduysa konum sahipliği bırakılır: yürüme hemen açılır
+                // (i-frame pencere sonuna dek sürer). Eskiden 0,66 s boyunca donuyordu.
+                IsDisplacing = _slide.Active;
                 MaybeEmitAfterimage(ratio);
                 return;
             }
@@ -152,7 +156,7 @@ namespace Dovus.Game.Actors
             if (_dir.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(_dir, Vector3.up);
 
-            IsDisplacing = true;
+            IsDisplacing = !_slideMode || _slide.Active;
             MaybeEmitAfterimage(ratio);
         }
 

@@ -16,9 +16,16 @@ namespace Dovus.Game.Actors
             Vector3 moved = at - _startPos;
             float traveled = moved.x * _dir.x + moved.z * _dir.z;
             float remaining = Mathf.Max(0f, distanceM * (1f - _rollRatioBase) - traveled);
+            if (traveled < DodgeMotionControllerDefaults.NoTravelRefundM)
+            {
+                // Hiç yol alamadan çarptı: hak geri verilir (i-frame sürer).
+                _inputCtl?.Charges?.Refund(1f);
+                Debug.Log($"[DODGE] engelde-hak-iade yol={traveled:F3}m");
+            }
+
             bool started = _slide.Begin(
                 _dir.x, _dir.z, normal.x, normal.z, at.x, at.z, remaining, _tuning, PointFull);
-            // Başlamasa da serbest yola dönülmez: yol engelde bitti (hak yine yanar, i-frame sürer).
+            // Başlamasa da serbest yola dönülmez: yol engelde bitti (yol alındıysa hak yanar, i-frame sürer).
             _slideMode = true;
             _simMs = worldMs;
             _pathM = distanceM * (ratio - _rollRatioBase);
