@@ -69,12 +69,17 @@ namespace Dovus.Game.Hud
             bool hasWeapons = _manifestation != null
                 && _manifestation.AvailableWeapons.Count > 0
                 && WeaponsCarried >= 2;
+            bool hasElements = _skills != null && _skills.ElementPaints.Count > 0;
+            float elementBase = hasWeapons ? 0.19f : 0.02f;
+            float gridBottom = hasElements ? elementBase + ElementRowHeight : elementBase;
             RectTransform grid = CreateRect("RuneGrid", content, Vector2.zero, Vector2.one);
-            Place(grid, 0.015f, hasWeapons ? 0.19f : 0.02f, 0.645f, 0.82f);
+            Place(grid, 0.015f, gridBottom, 0.645f, 0.82f);
             for (int id = 1; id <= 12; id++)
                 BuildCard(grid, id);
             if (hasWeapons)
                 BuildWeaponRow(content);
+            if (hasElements)
+                BuildElementRow(content, elementBase);
 
             BuildSidePanel(content);
             ApplySafeArea(HexagonLayoutScreen.SafeRectPx());
@@ -192,6 +197,44 @@ namespace Dovus.Game.Hud
                 badge.fontStyle = FontStyle.Bold;
                 Place(badge.rectTransform, 0.02f, 0.01f, 0.98f, 0.19f);
                 _weaponChipBadges[weapon.Id] = badge;
+            }
+        }
+
+        // Element seçimi (savaştan buraya taşındı): 6 çip, yalnız build ekranında değişir.
+        const float ElementRowHeight = 0.115f;
+
+        void BuildElementRow(RectTransform content, float bottom)
+        {
+            IReadOnlyList<ElementPaintNode> paints = _skills.ElementPaints;
+            Text header = CreateText(content, "ELEMENT — 1 seç", 16, MutedText, TextAnchor.MiddleLeft);
+            header.fontStyle = FontStyle.Bold;
+            Place(header.rectTransform, 0.02f, bottom + 0.075f, 0.645f, bottom + ElementRowHeight);
+
+            RectTransform row = CreateRect("ElementRow", content, Vector2.zero, Vector2.one);
+            Place(row, 0.015f, bottom, 0.645f, bottom + 0.075f);
+            int count = paints.Count;
+            for (int i = 0; i < count; i++)
+            {
+                ElementPaintNode paint = paints[i];
+                Button chip = CreateButton(row, paint.Name, 16, CardColor);
+                chip.gameObject.name = "ElementChip" + paint.Id;
+                var rect = (RectTransform)chip.transform;
+                rect.anchorMin = new Vector2((float)i / count, 0f);
+                rect.anchorMax = new Vector2((float)(i + 1) / count, 1f);
+                rect.offsetMin = new Vector2(3f, 3f);
+                rect.offsetMax = new Vector2(-3f, -3f);
+                int captured = paint.Id;
+                chip.onClick.AddListener(() => SelectElement(captured));
+                _elementChipImages[paint.Id] = (Image)chip.targetGraphic;
+                var swatch = new GameObject("Swatch");
+                swatch.transform.SetParent(rect, false);
+                var swatchRect = swatch.AddComponent<RectTransform>();
+                swatchRect.anchorMin = new Vector2(0.05f, 0f);
+                swatchRect.anchorMax = new Vector2(0.95f, 0.12f);
+                swatchRect.offsetMin = swatchRect.offsetMax = Vector2.zero;
+                var swatchImage = swatch.AddComponent<Image>();
+                swatchImage.raycastTarget = false;
+                swatchImage.color = ColorUtility.TryParseHtmlString(paint.ColorHex, out Color tint) ? tint : AccentColor;
             }
         }
 

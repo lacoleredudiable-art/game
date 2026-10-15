@@ -275,19 +275,6 @@ namespace Dovus.Game.Composition.Builders
 
             var buildSelect = root.AddComponent<BuildSelectHud>();
             buildSelect.Configure(skills, runeManager, input, view, ctx.Clock, director, !tuning.Hud.SkipBuildSelectOnStart);
-
-            int elementTransitionMs = SkillSystemBuilderDefaults.ElementTransitionMs;
-            if (design != null
-                && ElementSystemHeader.TryParse(design.Document, elementTransitionMs, out ElementSystemHeader elementHdr))
-                elementTransitionMs = elementHdr.SelectionTransitionMs;
-            var elementMenu = root.AddComponent<ElementRadialMenuHud>();
-            elementMenu.BindTheme(ctx.Assets.HudTheme);
-            elementMenu.Configure(
-                director, skills, playerStatus, tuning, view.CanvasRoot, elementTransitionMs);
-            ctx.ElementMenu = elementMenu;
-            ctx.Player.GetComponent<MoveInputController>()?.BindElementMenu(elementMenu);
-            ctx.CameraOrbitController?.BindElementMenu(elementMenu);
-            ctx.PlayerTargetingController?.BindElementMenu(elementMenu);
         }
 
         static void LogDesignWarning(string message) => Debug.LogWarning(message);

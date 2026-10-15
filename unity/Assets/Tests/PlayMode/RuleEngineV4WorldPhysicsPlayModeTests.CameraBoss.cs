@@ -230,10 +230,8 @@ namespace Dovus.Tests.PlayMode
             Vector3 toCenter = BossToCenter();
             Vector3 tangent = Vector3.Cross(Vector3.up, toCenter).normalized;
             MoveInputController move = BeginScenario("kilitli tur", bossC + toCenter * lapR, tangent, out _, out _);
-            var view = Object.FindAnyObjectByType<HexagonView>();
-            Assert.That(view != null && view.LockOnButton != null, "kilit düğmesi yok");
-            view.LockOnButton.onClick.Invoke();
-            Assert.That(follow.LockOnActive, Is.True, "kilit düğmesi kilidi açmadı");
+            // LOCK düğmesi kalktı (arayüz sadeleştirme): kilit modu mantığı doğrudan açılır.
+            follow.LockOnActive = true;
             yield return new WaitForSecondsRealtime(LapSettleSec);
 
             float baseX = follow.Tuning.Camera.CameraShoulderOffset.x;

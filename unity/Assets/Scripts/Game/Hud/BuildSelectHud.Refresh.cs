@@ -64,6 +64,9 @@ namespace Dovus.Game.Hud
                 };
             }
 
+            foreach (var pair in _elementChipImages)
+                pair.Value.color = pair.Key == _elementId ? CardSelectedColor : CardColor;
+
             bool ready = _selected.Count == RuneLoadout.SlotCount && WeaponsReady;
             _startButton.interactable = ready;
             _startImage.color = ready ? AccentColor : ButtonColor;

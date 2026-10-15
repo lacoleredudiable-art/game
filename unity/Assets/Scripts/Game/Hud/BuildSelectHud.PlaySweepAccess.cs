@@ -12,6 +12,10 @@ namespace Dovus.Game.Hud
 
         public List<EquipmentItem> SweepWeapons => _weapons;
 
+        public int SweepElementId => _elementId;
+
+        public void SweepSelectElement(int elementId) => SelectElement(elementId);
+
         public void SweepApplyAndStart() => ApplyAndStart();
 
         public void SweepClose() => Close();
