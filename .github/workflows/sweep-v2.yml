@@ -41,6 +41,13 @@ jobs:
       - name: GameCompile (Game katmanı derlemesi)
         run: python tools/GameCompile/check.py
 
+      - name: Bağımlılık haritası (C4, engellemez)
+        continue-on-error: true
+        run: |
+          python -m unittest discover -s tools/DepMap -p 'test_*.py'
+          python tools/DepMap/depmap.py --out depmap.txt
+          { echo '### Bağımlılık haritası (C4)'; head -4 depmap.txt; } >> "$GITHUB_STEP_SUMMARY"
+
   # Eski motoru korur; her PR'da koşmaz, engellemez (taşıma bitince kaldırılacak).
   eski-motor:
     name: Eski motor (haftalık, engellemez)
