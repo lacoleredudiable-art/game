@@ -64,6 +64,8 @@ namespace Dovus.Game.Hud
                 };
             }
 
+            _elements?.Refresh();
+
             bool ready = _selected.Count == RuneLoadout.SlotCount && WeaponsReady;
             _startButton.interactable = ready;
             _startImage.color = ready ? AccentColor : ButtonColor;

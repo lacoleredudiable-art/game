@@ -182,10 +182,8 @@ namespace Dovus.Tests.PlayMode
             Place(_player, bossC + LockOnStandDir * LockOnStandFromCenterM);
             _player.rotation = Quaternion.LookRotation(-LockOnStandDir);
             Physics.SyncTransforms();
-            var view = Object.FindAnyObjectByType<HexagonView>();
-            Assert.That(view != null && view.LockOnButton != null, "kilit düğmesi yok");
-            view.LockOnButton.onClick.Invoke();
-            Assert.That(follow.LockOnActive, Is.True, "kilit düğmesi kilidi açmadı");
+            // LOCK düğmesi kalktı (arayüz sadeleştirme): kilit modu mantığı doğrudan açılır.
+            follow.LockOnActive = true;
             CameraRenderedProbe probe = AddCameraProbe(cam, 0f);
             yield return new WaitForSecondsRealtime(LockOnSettleSec);
             CameraRenderedProbe.Sample s = probe.Last;

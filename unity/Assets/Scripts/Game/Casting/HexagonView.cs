@@ -46,9 +46,6 @@ namespace Dovus.Game.Casting
         Image _centerFace;
         Text _centerLabel;
         Text _dodgeLabel;
-        RectTransform _tray;
-        RectTransform _trayEdge;
-        Text _trayTitle;
         RectTransform[] _trayLinks;
         Canvas _canvas;
 
@@ -149,7 +146,6 @@ namespace Dovus.Game.Casting
             _dodge.SetAsLastSibling();
 
             BuildWeaponSwapButton(fallback, canvasGo.transform);
-            BuildLockOnButton(fallback, canvasGo.transform);
 
             for (int dot = 1; dot <= n; dot++)
                 CreateCooldownLabel(dot, canvasGo.transform);

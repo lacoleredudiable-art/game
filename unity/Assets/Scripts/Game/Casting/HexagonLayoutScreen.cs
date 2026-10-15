@@ -119,55 +119,6 @@ namespace Dovus.Game.Casting
         public static float DodgeButtonRadiusPx(GameTuning tuning) =>
             DpToPixels(tuning.Input.DodgeButtonRadiusDp);
 
-        /// <summary>Lock-on: dodge'un üstünde, aynı sağ-alt küme içinde.</summary>
-        public static Vector2 LockOnButtonPx(GameTuning tuning, int screenWidth, int screenHeight)
-        {
-            Vector2 dodge = DodgeButtonPx(tuning, screenWidth, screenHeight);
-            float lockR = LockOnButtonRadiusPx(tuning);
-            float dodgeR = DodgeButtonRadiusPx(tuning);
-            float gap = DpToPixels(HexagonLayoutScreenDefaults.LockOnGapDp);
-            Vector2 p = dodge + new Vector2(
-                DpToPixels(tuning.Input.LockOnButtonOffsetXDp),
-                dodgeR + lockR + gap + DpToPixels(tuning.Input.LockOnButtonOffsetYDp));
-
-            ResolveHudButtonAwayFromHexPanel(
-                ref p,
-                lockR,
-                gap,
-                dodge,
-                dodgeR,
-                tuning,
-                screenWidth,
-                screenHeight);
-
-            Rect safe = SafeRectPx();
-            float edge = lockR + DpToPixels(tuning.Input.DodgeButtonScreenMarginDp);
-            ClampHudButtonToSafe(ref p, safe, edge);
-            ResolveHudButtonAwayFromHexPanel(
-                ref p,
-                lockR,
-                gap,
-                dodge,
-                dodgeR,
-                tuning,
-                screenWidth,
-                screenHeight);
-            ClampHudButtonToSafe(ref p, safe, edge);
-            EnforceHudButtonClearance(
-                ref p,
-                lockR,
-                gap,
-                dodge,
-                dodgeR,
-                tuning,
-                screenWidth,
-                screenHeight);
-            return p;
-        }
-
-        public static float LockOnButtonRadiusPx(GameTuning tuning) =>
-            DpToPixels(tuning.Input.LockOnButtonRadiusDp);
-
         /// <summary>
         /// Silah swap: dodge'un altıgene göre simetriği (sol-alt), çizim yarısında kalır.
         /// </summary>

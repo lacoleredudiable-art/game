@@ -19,7 +19,7 @@ public class HexagonLayoutButtonPlacementTests
     };
 
     [Test]
-    public void LockOnAndSwap_DoNotOverlapHexPanel_OnTypicalScreens()
+    public void Swap_DoesNotOverlapHexPanel_OnTypicalScreens()
     {
         var tuning = new GameTuning();
         tuning.EnsureRuntimeDefaults();
@@ -55,25 +55,11 @@ public class HexagonLayoutButtonPlacementTests
         forbidden[7] = new Circle2(dodge.x, dodge.y, dodgeR);
 
         AssertButtonClear(
-            HexagonLayoutScreen.LockOnButtonPx(tuning, w, h),
-            HexagonLayoutScreen.LockOnButtonRadiusPx(tuning),
-            forbidden,
-            gap,
-            $"lock-on {w}x{h} mirror={mirror}");
-
-        AssertButtonClear(
             HexagonLayoutScreen.WeaponSwapButtonPx(tuning, w, h),
             HexagonLayoutScreen.WeaponSwapButtonRadiusPx(tuning),
             forbidden,
             gap,
             $"swap {w}x{h} mirror={mirror}");
-
-        Vector2 lockC = HexagonLayoutScreen.LockOnButtonPx(tuning, w, h);
-        Vector2 swapC = HexagonLayoutScreen.WeaponSwapButtonPx(tuning, w, h);
-        float lockSwapEdge = HudButtonPlacement.EdgeGap(
-            new Circle2(lockC.x, lockC.y, HexagonLayoutScreen.LockOnButtonRadiusPx(tuning)),
-            new Circle2(swapC.x, swapC.y, HexagonLayoutScreen.WeaponSwapButtonRadiusPx(tuning)));
-        Assert.That(lockSwapEdge, Is.GreaterThanOrEqualTo(0f), $"lock-on/swap overlap {w}x{h} mirror={mirror} edge={lockSwapEdge:0.##}");
     }
 
     static void AssertButtonClear(Vector2 center, float radius, Circle2[] forbidden, float gap, string label)
@@ -86,6 +72,37 @@ public class HexagonLayoutButtonPlacementTests
                 edge,
                 Is.GreaterThanOrEqualTo(gap - 0.5f),
                 $"{label}: forbidden[{i}] edge={edge:0.##} gap={gap:0.##}");
+        }
+    }
+
+    // Arayüz sadeleştirme: altıgen + dodge birlikte biraz sağa (0,78 → 0,81); yarıçap küçülmemeli.
+    [Test]
+    public void HexagonShiftedRight_RadiusKept_DodgeInsideSafe()
+    {
+        var shifted = new GameTuning();
+        shifted.EnsureRuntimeDefaults();
+        var old = new GameTuning();
+        old.EnsureRuntimeDefaults();
+        old.Input.HexagonCenterXNorm = 0.78f;
+        HexagonLayoutScreen.DebugDpiOverride = 400f;
+        HexagonLayoutScreen.FitShortSideDp = 0f;
+
+        Assert.That(shifted.Input.HexagonCenterXNorm, Is.GreaterThan(0.78f), "altıgen sağa kaymadı");
+        foreach (var (w, h) in Screens)
+        {
+            Screen.SetResolution(w, h, true);
+            Assert.That(
+                HexagonLayoutScreen.CenterPx(shifted, w, h).x,
+                Is.GreaterThan(HexagonLayoutScreen.CenterPx(old, w, h).x),
+                $"merkez sağa kaymadı {w}x{h}");
+            Assert.That(
+                HexagonLayoutScreen.FittedRadiusPx(shifted, w, h),
+                Is.EqualTo(HexagonLayoutScreen.FittedRadiusPx(old, w, h)).Within(0.5f),
+                $"yarıçap küçüldü {w}x{h}");
+            Vector2 dodge = HexagonLayoutScreen.DodgeButtonPx(shifted, w, h);
+            float dodgeR = HexagonLayoutScreen.DodgeButtonRadiusPx(shifted);
+            Assert.That(dodge.x + dodgeR, Is.LessThanOrEqualTo(HexagonLayoutScreen.SafeRectPx().xMax + 0.5f),
+                $"dodge safe dışına taştı {w}x{h}");
         }
     }
 }

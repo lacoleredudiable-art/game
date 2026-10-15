@@ -23,7 +23,7 @@ namespace Dovus.Game.Config.Sections
                 /// </summary>
                 public float HudFitShortSideDp = 600f;
                 // Sağ-alt köşeye yaslı: boss ekran ortasında görünür kalsın.
-                public float HexagonCenterXNorm = 0.78f;
+                public float HexagonCenterXNorm = 0.81f;
                 // Sağ-alt; FittedRadiusPx alt rünleri safe içinde tutar.
                 public float HexagonCenterYNorm = 0.30f;
                 // Komşu rün kenar boşluğu ≈ radius − 2·dotR (≥40dp çizim koridoru).

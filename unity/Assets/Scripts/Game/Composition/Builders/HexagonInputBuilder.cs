@@ -76,8 +76,6 @@ namespace Dovus.Game.Composition.Builders
             view.BindUiJuice(ctx.Runtime.UiJuice);
             view.Build(_tuning, overlay.Cam, skills, loadout);
             ctx.HexagonView = view;
-            if (follow != null)
-                view.BindLockOn(follow);
 
             var moveInput = player.GetComponent<MoveInputController>();
             if (moveInput != null)

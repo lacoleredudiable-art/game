@@ -57,7 +57,7 @@
 | Hedefleme | `Core/Boss/TargetPicker.cs`, `Core/Casting/TargetingRules.cs`, `Game/Actors/PlayerTargetingController.cs` | `PlayerTargetingController.Update` |
 | Boss mermileri | `Core/Boss/HostileProjectiles.cs`, `Game/Boss/HostileProjectileHost.cs` | `HostileProjectileHost.Update` |
 | Animasyon köprüsü | `Core/Presentation/AnimationDatabase.cs`, `Game/Actors/AnimationBridge.cs` | `AnimationDatabase.FromJson` |
-| Hexagon UI | `Game/Casting/HexagonView.cs` (partial'lar), `Game/Casting/HexagonLayoutScreen.cs`, `Game/Casting/ElementRadialMenuHud.cs` | `HexagonView` partial'ları |
+| Hexagon UI | `Game/Casting/HexagonView.cs` (partial'lar), `Game/Casting/HexagonLayoutScreen.cs` | `HexagonView` partial'ları |
 | Build seçim ekranı | `Game/Hud/BuildSelectHud.cs` | `BuildSelectHud` |
 | Doğrulama tek komut | `tools/verify.ps1` | `powershell -File tools/verify.ps1` |
 
