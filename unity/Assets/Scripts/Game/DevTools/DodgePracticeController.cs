@@ -2,6 +2,7 @@ using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
+using Dovus.Game.Diagnostics;
 using Dovus.Game.Platform;
 using UnityEngine;
 
@@ -156,7 +157,7 @@ namespace Dovus.Game.DevTools
                 taken = -1f;
             }
             _result = label + ": " + (taken == 0f ? "KURTULDU" : "VURULDU");
-            Debug.Log("[DODGE-DENEME] " + _result);
+            DebugConfig.DevLog("[DODGE-DENEME] " + _result);
 
             // Test sürsün: can bitmesin.
             if (vitals != null && !vitals.IsDown && vitals.Hp < vitals.MaxHp)
