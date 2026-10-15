@@ -11,6 +11,7 @@ using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
@@ -80,13 +81,26 @@ namespace Dovus.Game.Skills.Mechanics
             Vector3 center = ResolveMechanicCenter(plan, aimDir, landedAt);
             double lifeMs = Math.Max(100, plan.Body.LifeSec * Dovus.Core.Shared.Units.SecToMs);
 
+            // v4 açıkken alan ve duvarı yalnız v4 yürütücüsü kurar (envanter C2). Gramer planı v4'te de kurulur ve
+            // buraya her cast'te gelir; bu bir geri dönüş değil, eski motorun kapalı olduğu normal akıştır.
+            bool v4OwnsWorld = RuleEngineV4Feature.Enabled;
             if (profile.BlocksMovement)
-                SpawnMechanicWall(plan, center, aimDir, worldMs + lifeMs);
+            {
+                if (v4OwnsWorld)
+                    DebugConfig.DevLog($"[MechanicWorld] v4: eski duvar kurulmadı {plan.SkillId}/{plan.WeaponName}");
+                else
+                    SpawnMechanicWall(plan, center, aimDir, worldMs + lifeMs);
+            }
             if (profile.Decoy)
                 SpawnMechanicDecoy(plan, worldMs);
             if (profile.TempoField || profile.Cloud || profile.Vortex || profile.CleanseField
                 || profile.Reflector || profile.ProjectileBarrier || profile.Continuous || profile.Payload)
-                SpawnMechanicVolume(plan, profile, center, worldMs);
+            {
+                if (v4OwnsWorld)
+                    DebugConfig.DevLog($"[MechanicWorld] v4: eski alan kurulmadı {plan.SkillId}/{plan.WeaponName}");
+                else
+                    SpawnMechanicVolume(plan, profile, center, worldMs);
+            }
             if (profile.Link)
                 SpawnMechanicLink(plan, worldMs);
             if (profile.ProjectileBarrier)
