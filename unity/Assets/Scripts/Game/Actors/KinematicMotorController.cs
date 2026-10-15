@@ -230,7 +230,7 @@ namespace Dovus.Game.Actors
 
         /// <summary>
         /// Dodge yolu (kayma + toparlanma): yürüyüşle aynı kapsül süpürmesi, ama ilk engelde durur, kaymaz.
-        /// Engel = katı collider ya da sabit (Anchored) gövdeli tetik (koza). Y korunur.
+        /// Engel = katı collider, sabit (Anchored) gövdeli tetik (koza) ya da canlı gövde (minyon, dost). Y korunur.
         /// </summary>
         public Vector3 SweepStop(Vector3 from, Vector3 to)
         {
@@ -242,6 +242,9 @@ namespace Dovus.Game.Actors
             {
                 Vector3 dir = delta / dist;
                 next = from + dir * FirstBlockDistance(from, dir, dist);
+                // Canlı gövde (minyon, dost) yürümeyle aynı silindir kuralı; tetik olduğu için kapsül süpürmesi görmez (O-4.9).
+                BodyCapsule(next, out Vector3 bottom, out Vector3 top, out float radius);
+                next = _bodyBlock.Resolve(from, next, bottom, top, radius, transform, dodgeStop: true);
             }
 
             next = PushOutOfObstacles(next, anchoredTriggersBlock: true);

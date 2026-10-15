@@ -20,7 +20,12 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         /// <param name="bottom">Yürüyenin gövde kapsülünün alt uç küresi, varılacak yerde.</param>
         /// <param name="top">Üst uç küresi, varılacak yerde.</param>
-        public Vector3 Resolve(Vector3 from, Vector3 to, Vector3 bottom, Vector3 top, float radiusM, Transform self)
+        /// <param name="dodgeStop">
+        /// Dodge yolu (O-4.9): yalnız canlı gövdeler (dost, minyon) sayılır; boss kenarı ve koza dodge'un kendi yolundadır.
+        /// Yol gövdeye girdiği yerde durur, kaymaz, son konum dışarı itilmez (içeriden başlayan dodge dışarı doğru serbest).
+        /// </param>
+        public Vector3 Resolve(Vector3 from, Vector3 to, Vector3 bottom, Vector3 top, float radiusM, Transform self,
+            bool dodgeStop = false)
         {
             float bossR = RuleEngineV4BossBody.RadiusM(Where);
             float allyR = RuleEngineV4WorldPhysicsRuntime.Active.BodyRadiusPlayerM;
@@ -40,18 +45,42 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     continue;
                 float bodyR;
                 if (body.WeightTier == RuleEngineV4WeightTier.Boss)
+                {
+                    if (dodgeStop)
+                        continue;
                     bodyR = bossR;
+                }
                 else if (body.TryGetComponent(out AllyDummyController _))
                     bodyR = allyR;
                 else if (body.TryGetComponent(out SliceLightMinionHost _))
                     bodyR = creatureR;
-                else if (body.TryGetComponent(out SliceArenaCocoonHost _))
+                else if (!dodgeStop && body.TryGetComponent(out SliceArenaCocoonHost _))
                     bodyR = body.BodyRadiusM;
                 else
                     continue;
+                if (dodgeStop)
+                {
+                    to = StopBefore(from, to, body.transform.position, radiusM + bodyR);
+                    continue;
+                }
                 to = KeepOut(from, to, body.transform.position, radiusM + bodyR);
             }
             return to;
+        }
+
+        static Vector3 StopBefore(Vector3 from, Vector3 to, Vector3 center, float separation)
+        {
+            float floor = Mathf.Min(separation, Flat(from - center).magnitude);
+            Vector3 delta = Flat(to - from);
+            float len = delta.magnitude;
+            if (len < PositionOwnershipDefaults.MinDistM)
+                return to;
+            Vector3 dir = delta / len;
+            float t = RuleEngineV4MotionSweep.CircleEntry(from, dir, len, center, floor);
+            if (t >= len)
+                return to;
+            Vector3 hit = from + dir * Mathf.Max(0f, t);
+            return new Vector3(hit.x, to.y, hit.z);
         }
 
         /// <summary>Düz yol gövdeye girdiği yerde durur, kalan yol teğete izdüşer; son konum gövde dışına itilmez, yalnız kenarda tutulur.</summary>

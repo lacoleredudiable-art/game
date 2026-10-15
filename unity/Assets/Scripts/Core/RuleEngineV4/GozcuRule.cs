@@ -13,6 +13,10 @@ namespace Dovus.Core.RuleEngineV4
         public const string CameraInBossBody = "kamera_boss_govdesinde";
         public const string PlayerOffScreen = "oyuncu_ekran_disi";
         public const string EffectScreenCover = "efekt_ekran_kaplama";
+        /// <summary>O-4.9: oyuncu konumu, dodge / kalıp / yürüme sahibi olmadan tek karede yürüme hızının katından fazla atladı.</summary>
+        public const string PlayerTeleport = "oyuncu_isinlanma";
+        /// <summary>O-4.9 G: oyuncu merkezi minyon, dost ya da boss silindirinin içinde.</summary>
+        public const string PlayerInBody = "oyuncu_govde_icinde";
         public const string CameraFovInvalid = "kamera_fov_gecersiz";
     }
 }
