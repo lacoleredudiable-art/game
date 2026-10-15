@@ -14,6 +14,7 @@ namespace Dovus.Game.Cameras
         readonly CameraBossFade _fade;
         float _heldOffsetDeg;
         float _lastOffsetDeg;
+        float _lastHold;
         bool _hasOffset;
         float _lastShoulderSwitchSec = float.NegativeInfinity;
 
@@ -38,10 +39,17 @@ namespace Dovus.Game.Cameras
         {
             float live = Mathf.DeltaAngle(orbitYawDeg, desiredYawDeg);
             float hold = BossYawHold01(bossTarget, player);
-            if (hold <= 0f || !_hasOffset)
+            if (!_hasOffset || (hold <= 0f && _lastHold <= 0f))
                 _heldOffsetDeg = live;
             else
+            {
                 _heldOffsetDeg = Mathf.DeltaAngle(0f, _heldOffsetDeg + (1f - hold) * Mathf.DeltaAngle(_lastOffsetDeg, live));
+                // Tutulan açının canlıdan farkı, ağırlık düştükçe onunla orantılı erir: 5 m'de ağırlık 0'a inince fark
+                // tek karede silinip hedef yaw sıçramaz (O-5.7 yumuşak geçiş).
+                if (hold < _lastHold)
+                    _heldOffsetDeg = live + Mathf.DeltaAngle(live, _heldOffsetDeg) * (hold / _lastHold);
+            }
+            _lastHold = hold;
             _lastOffsetDeg = live;
             _hasOffset = true;
             return orbitYawDeg + _heldOffsetDeg;
