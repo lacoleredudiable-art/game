@@ -304,10 +304,10 @@ Aşağıdaki değerler orada aynen geçer.
 | O-8.2 | Ortam paleti | Soğuk ve soluk: taş gri-mavi (#3A4048), kül (#5B5A57), gölge (#1C1F24), uzak sis (#4A5260) | ÖNERİ | K |
 | O-8.3 | Vurgu rengi | Kor turuncu (#FF7A1A): rünler, ejderha motifleri, kalpteki kor. Ortamda yalnız ateş kaynaklarında | ÖNERİ | K |
 | O-8.4 | Fiil ve element renkleri | `07` efekt motorundaki renkler geçerli; ortam paletiyle karışmaması için doygunlukları ortamdan yüksek tutulur | BELGE | K |
-| O-8.5 | Ana ışık (güneş) | Alacakaranlık: yükseklik 20°, yön kuzeybatıdan; renk sıcak soluk (#F2C79A); şiddet 0,85; gölge şiddeti 0,4 | KOD `KeyLightIntensity` 0,85 + ÖNERİ (açı, renk) | K |
-| O-8.6 | Ortam ışığı | Gökyüzü rengi #2E3846, zemin rengi #1A1C20; düşük (karanlık bölgeler tamamen siyah olmaz) | ÖNERİ | K |
+| O-8.5 | Ana ışık (güneş) | LED gibi beyaz, canlı: renk (1/1/1); fiili şiddet 1,6 (Gamma, tahmin); gölge şiddeti 0,75 (gölge siyah olmaz); açı euler (52, −30, 0). Eski "alacakaranlık / sıcak soluk" tanımı kaldırıldı ([K] Mustafa, 2026-10-15) | KOD `KeyLightIntensity` + `LookPresetsDefaults` (ölçüm: telefonda ayarlanır) | K |
+| O-8.6 | Ortam ışığı | Gökyüzü (0,75/0,78/0,82), ufuk (0,62/0,64/0,67), zemin (0,42/0,43/0,45) (tahmin); ön ayar B ambiyanı koyulaştırmaz | KOD `ArenaSettings.Ambient*` | K |
 | O-8.7 | Sis | Üstel sis, yoğunluk 0,012; renk #4A5260. Bugünkü 0,0032 neredeyse görünmüyor ("hava kasvetli değil" notu) | KOD→ÖNERİ | K |
-| O-8.8 | Renk işleme | Doygunluk −35, kontrast −14, pozlama +0,15, vinyet 0,12, bloom eşiği 0,95 şiddet 0,65 | KOD (`ArenaSettings`) | K |
+| O-8.8 | Renk işleme | Gerçek kaynak `Look_B_Keskin.asset`: renk filtresi (1/1/1), kontrast +10, doygunluk −5, pozlama +0,3, beyaz dengesi 0, vinyet 0,18, bloom eşik 0,95 şiddet 0,55 (hepsi tahmin, telefonda ayarlanır). Rim yön ışığı (mavi) kaldırıldı (`RimLightIntensity` 0) | KOD (`Look_B_Keskin.asset` + `ArenaSettings`) | K |
 | O-8.9 | Renk uzayı | Linear (bugün Gamma). Linear ışık ve sisi daha doğru gösterir; geçişte bütün renkler yeniden kontrol edilir, ayrı bir PR'dır | KOD→ÖNERİ | K |
 | O-8.10 | Okunurluk sırası | 1) boss ön işareti, 2) dost skilleri ve dostun konumu, 3) kendi skillin, 4) boss gövdesi, 5) ortam. Bir üst sıradakini alttaki kapatamaz | ÖNERİ | K |
 

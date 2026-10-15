@@ -340,9 +340,8 @@ namespace Dovus.Game.Arena
             _sun.shadows = preset == 'B' ? LightShadows.Hard : LightShadows.Soft;
             _sun.shadowStrength = preset == 'B' ? LookPresetsDefaults.ShadowStrength : (_sunCached ? _savedSunStrength : _sun.shadowStrength);
             _sun.intensity = (_sunCached ? _savedSunIntensity : _sun.intensity) * (preset == 'B' ? LookPresetsDefaults.SunIntensityPresetBMult : LookPresetsDefaults.SunIntensityPresetDefaultMult);
-            _sun.color = preset == 'B'
-                ? new Color(0.92f, 0.95f, 1f)
-                : (_sunCached ? _savedSunColor : _sun.color);
+            // B'de renk ArenaSettings.KeyLightColor'dan gelir (LED beyazı); eskiden mavi sabit yazılıydı.
+            _sun.color = _sunCached ? _savedSunColor : _sun.color;
             QualitySettings.shadowDistance = preset == 'B' ? LookPresetsDefaults.PresetBShadowDistanceM : LookPresetsDefaults.ShadowDistanceDefaultM;
             QualitySettings.shadowCascades = 2;
             // B "Keskin": sert, kontak gölgeler için sıkı cascade + düşük bias (acne'siz alt sınır,
