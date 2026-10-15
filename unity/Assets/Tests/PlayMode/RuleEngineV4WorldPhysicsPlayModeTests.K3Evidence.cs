@@ -36,7 +36,6 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator K3_RealDraw_SwordDashAndBowStrike_ShowTrailAndRuneFlash()
         {
             FreezeBoss();
@@ -91,10 +90,8 @@ namespace Dovus.Tests.PlayMode
             Canvas hex = dir != null ? Object.FindAnyObjectByType<HexagonView>()?.Canvas : null;
             if (hex != null)
                 hex.enabled = false;
-            float end = Time.realtimeSinceStartup + EvidenceWatchSec;
-            while (Time.realtimeSinceStartup < end)
+            yield return EachLateFrame(EvidenceWatchSec, () =>
             {
-                yield return new WaitForEndOfFrame();
                 bool trail = EmberTrailVisible();
                 bool flash = runes.VerbVisible || runes.AdjectiveVisible;
                 log.Frames++;
@@ -103,7 +100,8 @@ namespace Dovus.Tests.PlayMode
                 log.BothFrames += trail && flash ? 1 : 0;
                 if (dir != null && (trail || flash))
                     SaveScreen(dir, $"{label}_{log.Frames:000}{(trail ? "_iz" : "")}{(flash ? "_flas" : "")}.png");
-            }
+                return true;
+            });
             if (hex != null)
                 hex.enabled = true;
         }
@@ -163,12 +161,11 @@ namespace Dovus.Tests.PlayMode
             return null;
         }
 
+        /// <summary>Kare ortasından (LateUpdate) çağrılır; dosya Unity tarafından kare sonunda yazılır.</summary>
         static void SaveScreen(string dir, string fileName)
         {
-            Texture2D tex = ScreenCapture.CaptureScreenshotAsTexture();
             Directory.CreateDirectory(dir);
-            File.WriteAllBytes(Path.Combine(dir, fileName), tex.EncodeToPNG());
-            Object.Destroy(tex);
+            ScreenCapture.CaptureScreenshot(Path.Combine(dir, fileName));
         }
     }
 }

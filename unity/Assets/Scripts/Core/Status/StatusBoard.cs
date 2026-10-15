@@ -170,7 +170,6 @@ namespace Dovus.Core.Status
                 return 0f;
 
             float tickPayload = 0f;
-            float dtSec = (float)(worldDtMs / Dovus.Core.Shared.Units.SecToMs);
             float burnTickThisFrame = 0f;
 
             var expired = new List<StatusKind>();
@@ -180,16 +179,17 @@ namespace Dovus.Core.Status
                 if (kv.Key == StatusKind.Root || kv.Key == StatusKind.Slow || kv.Key == StatusKind.Haste)
                     continue;
                 StatusEntry e = kv.Value;
+                float activeSec = StatusMath.ActiveTickSec(worldDtMs, e.RemainingMs);
                 e.RemainingMs -= worldDtMs;
                 if (kv.Key == StatusKind.Burn)
                 {
-                    burnTickThisFrame = e.Magnitude * dtSec;
+                    burnTickThisFrame = e.Magnitude * activeSec;
                     tickPayload += burnTickThisFrame;
                 }
                 else if (kv.Key == StatusKind.Poison)
-                    tickPayload += e.Magnitude * dtSec;
+                    tickPayload += e.Magnitude * activeSec;
                 else if (kv.Key == StatusKind.Regen)
-                    tickPayload -= e.Magnitude * dtSec;
+                    tickPayload -= e.Magnitude * activeSec;
 
                 if (e.RemainingMs <= 0)
                     expired.Add(kv.Key);
@@ -199,7 +199,7 @@ namespace Dovus.Core.Status
 
             // "Zehirli Ateş": burn + poison aynı anda → ekstra tick (docs/element-sistemi.json).
             if (burnTickThisFrame > 0f && _active.ContainsKey(StatusKind.Poison))
-                tickPayload += tuning.BurnPoisonComboBonusPerSec * dtSec;
+                tickPayload += tuning.BurnPoisonComboBonusPerSec * (float)(worldDtMs / Dovus.Core.Shared.Units.SecToMs);
 
             for (int i = 0; i < refreshed.Count; i++)
                 _active[refreshed[i].Key] = refreshed[i].Value;

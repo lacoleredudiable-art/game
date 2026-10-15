@@ -2,6 +2,8 @@
 
 Sürüm 1.0 · 12 Ekim 2026 · Kullanıcı: Mustafa
 
+> **Arşiv (14 Ekim 2026):** bu planın yerine `14-kodlama-plani.md` geçti. Kalan adımlar oradaki aşamalara dağıtıldı.
+
 Bu plan tek tek hata kovalamak yerine hataları üreten dört kronik sebebi kapatır. Adımlar **sırayla**
 yapılır; bir adım bitmeden (merge + ölçüt sağlandı) sonrakine geçilmez. Her adım bir ya da birkaç küçük PR'dır;
 her PR tek iş yapar.

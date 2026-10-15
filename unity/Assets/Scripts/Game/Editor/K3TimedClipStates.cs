@@ -36,17 +36,6 @@ namespace Dovus.Game.Editor
                     K3AssetSetup.AddAction(sm, clip.name, clip, loco);
             }
 
-            // Silah başına yürüme/bekleme klipleri: hiçbir geçişi olmayan kaynak state'ler. Amaç controller'ın
-            // klip listesinde durmaları; ActorView silah değişince Locomotion ağacındaki klibi bunlarla değiştirir (B2).
-            foreach (AnimationClip clip in clips.Values.Where(c => c.name.StartsWith(loopPrefix, StringComparison.Ordinal)))
-            {
-                if (Find(sm, clip.name) != null)
-                    continue;
-                AnimatorState holder = sm.AddState(clip.name);
-                holder.motion = clip;
-                holder.writeDefaultValues = true;
-            }
-
             foreach (string p in new[] { DodgeClipPlayback.RollSpeedParam, DodgeClipPlayback.RiseSpeedParam })
             {
                 if (!ctrl.parameters.Any(x => x.name == p))

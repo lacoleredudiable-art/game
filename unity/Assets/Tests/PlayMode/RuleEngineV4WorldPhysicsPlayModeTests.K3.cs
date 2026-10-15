@@ -12,6 +12,25 @@ using Object = UnityEngine.Object;
 
 namespace Dovus.Tests.PlayMode
 {
+    /// <summary>
+    /// Karenin en son LateUpdate'i: animasyon, kemikler ve VFX LateUpdate'leri (kor izi örneği) bitmiştir.
+    /// Batchmode'da render olmadığı için WaitForEndOfFrame dönmez; kare sonu ölçümü buradan alınır.
+    /// </summary>
+    [DefaultExecutionOrder(int.MaxValue)]
+    public sealed class LateFrameProbe : MonoBehaviour
+    {
+        public Func<bool> Sample;
+        public bool Running = true;
+
+        void LateUpdate()
+        {
+            if (!Running || Sample == null)
+                return;
+            Running = false;
+            Running = Sample();
+        }
+    }
+
     /// <summary>k3 dilim oyuncusu: görsel bağlama, controller ve klip olaylarının alıcısı.</summary>
     public sealed partial class RuleEngineV4WorldPhysicsPlayModeTests
     {
@@ -86,8 +105,27 @@ namespace Dovus.Tests.PlayMode
             return float.Parse(row[col], System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// <paramref name="sample"/> her karenin sonunda (<see cref="LateFrameProbe"/>) çalışır; false dönünce ya da
+        /// <paramref name="timeoutSec"/> (gerçek zaman) dolunca biter. Bekleme yield return null'dur.
+        /// </summary>
+        static IEnumerator EachLateFrame(float timeoutSec, Func<bool> sample)
+        {
+            var probe = new GameObject("LateFrameProbe").AddComponent<LateFrameProbe>();
+            probe.Sample = sample;
+            float end = Time.realtimeSinceStartup + timeoutSec;
+            try
+            {
+                while (probe.Running && Time.realtimeSinceStartup < end)
+                    yield return null;
+            }
+            finally
+            {
+                Object.Destroy(probe.gameObject);
+            }
+        }
+
         [UnityTest]
-        [Ignore("Eski hata: WaitForEndOfFrame batchmode'da gelmiyor, 12 Ekim")]
         public IEnumerator K3_SwordDash_HipsStayOnPlayer()
         {
             FreezeBoss();
@@ -104,16 +142,10 @@ namespace Dovus.Tests.PlayMode
             float maxM = 0f;
             float maxAtN = 0f;
             int frames = 0;
-            float end = Time.realtimeSinceStartup + CastTimeoutSec;
-            while (Time.realtimeSinceStartup < end)
+            yield return EachLateFrame(CastTimeoutSec, () =>
             {
-                yield return new WaitForEndOfFrame();
                 if (!anim.GetCurrentAnimatorClipInfo(0).Any(c => c.clip == clip && c.weight > ClipActiveWeight))
-                {
-                    if (frames > 0)
-                        break;
-                    continue;
-                }
+                    return frames == 0;
                 frames++;
                 Vector3 d = hips.position - _player.position;
                 d.y = 0f;
@@ -122,7 +154,8 @@ namespace Dovus.Tests.PlayMode
                     maxM = d.magnitude;
                     maxAtN = anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
                 }
-            }
+                return true;
+            });
             Debug.Log($"[k3kanit] ATIL kalça-oyuncu en büyük yatay uzaklık={maxM:0.000} m (klip n={maxAtN:0.00}) kare={frames}");
             Assert.That(frames, Is.GreaterThan(0), $"{SwordDashClip} oynamadı");
             float hipMaxM = ClipCsvFloat(SwordDashClip, HipMaxOffsetColumn);

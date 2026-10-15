@@ -6,8 +6,8 @@ namespace Dovus.Core.Tuning
     {
         public int StartupMs = 10;
         public int IframeStartMs = 0;
-        /// <summary>element-sistemi.json player_stats.i_frame_on_dodge_ms (karadul.json maps_to aynı).</summary>
-        public int IframeMs = 260;
+        /// <summary>T_tek: tek dodge hasarsızlık penceresi. 15-dodge-tasarimi §3.4: TEST DEĞERİ 0,5 s, kesin değer dengelemede (Aşama 8).</summary>
+        public int IframeMs = 500;
         /// <summary>S2: element-sistemi.json player_stats.dodge_distance_m (test eşitliği korur).</summary>
         public float DistanceM = 3.8f;
         public int DurationMs = 250;
@@ -20,10 +20,10 @@ namespace Dovus.Core.Tuning
         // element-sistemi.json'da dodge hak alanı yok (durum.md).
         public int MaxCharges = 2;
         public int ChargeRechargeMs = 6000;
-        /// <summary>İlk basıştan sonra bu süre içinde ikinci basış birleşik dodge (his varsayılanı; spec'te yok).</summary>
-        public int DoubleTapWindowMs = 200;
-        /// <summary>Birleşik dodge i-frame süresi, ilk dodge başlangıcından (his varsayılanı; spec'te yok → 2×IframeMs).</summary>
-        public int CombinedIframeMs = 520;
+        /// <summary>Birleşme penceresi = T_tek (15-dodge-tasarimi §3.4, D-4). İlk basıştan sonra bu süre dolmadan ikinci basış zincirdir. Ayrı ayarlanabilir.</summary>
+        public int DoubleTapWindowMs = 500;
+        /// <summary>T_zincir: birleşik dodge hasarsızlık süresi, İLK basıştan itibaren sabit (Model A). TEST DEĞERİ 1,3 s, kesin değer dengelemede.</summary>
+        public int CombinedIframeMs = 1300;
         /// <summary>Birleşik kaçış mesafe çarpanı (his varsayılanı; spec'te yok).</summary>
         public float CombinedDistanceMult = 1.6f;
         /// <summary>Birleşik kaçış süre çarpanı (his varsayılanı; spec'te yok).</summary>

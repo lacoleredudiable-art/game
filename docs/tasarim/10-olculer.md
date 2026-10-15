@@ -168,7 +168,7 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 | O-4.6a | Hasarsızlık görünür | I-frame penceresi boyunca karakterin kenarında kor turuncusu parlama (0,05 s'de açılır, pencere bitince 0,05 s'de söner); Hareket skillerinin yolculuğunda da aynı parlama. Referans: Dragon Nest dodge, 1. fazda altın parlama | ÖNERİ (onaylı K 12 Ekim) | K |
 | O-4.7 | Hak ve dolum | 2 hak; her biri 6 s'de dolar | KOD `MaxCharges`, `ChargeRechargeMs` | T |
 | O-4.8 | Kusursuz dodge | Boss vuruşuna 0,15 s kala yapılan dodge: hak iade edilir, sonraki 2 s içindeki ilk vuruş ×1,3; 0,2 s ağır çekim hissi | KOD `PerfectWindowMs` vb. | T, E |
-| O-4.9 | Engeller | Dodge duvardan, sütundan, kozadan ve boss gövdesinden geçemez: yol boyunca kapsül süpürülür (sweep), değdiği yerde kenardan 0,15 m önce durur | KOD `EdgeGapM` + ÖNERİ | G (her kare: oyuncu kapsülü bir engelin içinde ise kırmızı) |
+| O-4.9 | Engeller | Dodge duvardan, sütundan, kozadan ve boss gövdesinden geçemez; çarpınca durmaz, yüzey boyunca kayar. Kayma bütçesi (yol uzunluğu) = R × max(t, `SlideMinRatio`); R = çarpma anında kalan yol, t = çubuk yönünün yüzeye teğet bileşeni (0-1). Taraf: t ≥ `EngineChoiceT` ise çubuğun teğet işaretinden (oyuncu seçer, tehlike alanı hesaba katılmaz); değilse motor `SlideScanPadM` kadar ileri tarayıp daha boş tarafı seçer; aktif alan telegraph'ları (slam, koni, atılış, zehir ağı alanı; mermi ve volley hariç; pencere her saldırının kendi windup'ı başlayınca) dolu sayılır; iki taraf da eşitse saat yönü. Kayma `SlideStepMs` sabit adımlarla yüzeyi takip eder (adım başına en çok `SlideMaxIter` iterasyon), kayma boyunca `EdgeGapM` korunur, taraf dodge boyunca kilitlidir. Bir adımda gerçek ilerleme beklenenin `SlideStallRatio` oranından azsa (köşe) kayma durur. i-frame `IframeMs` kadar sürer, hareketten bağımsızdır; hak her durumda yanar. "Tam 90°" ayrı kural değil, `EngineChoiceT` bandının içinde kalır | KOD `EdgeGapM` + K (tasarımcı kararı); `SlideMinRatio` 0,5, `EngineChoiceT` 0,17, `SlideScanPadM` 0,5 m, `SlideMaxIter` 4, `SlideStallRatio` 0,1 = (ölçüm) test başlangıç değeri, tahmin; `SlideStepMs` değeri yok (ölçüm); yeri `*Defaults` | G (her kare: oyuncu kapsülü bir engelin içinde ise kırmızı); T (fps'ten bağımsız: sabit adımla aynı sonuç) |
 | O-4.10 | After-image (iz görüntüsü) | Yalnız süzülme fazında, gerçek yol üzerinde, oyuncunun arkasında; 4 kopya, 0,15 s ömür, %55 opaklık. İz oyuncunun önüne düşmez | KOD `AfterimageAlpha` + ÖNERİ | K |
 | O-4.11 | Arena sınırı | Dodge, takla, Hareket skilleri ve itilme arena duvarının (§7) içinde kalır; sınır daire şeklindedir, kare değil | ÖNERİ | G |
 
@@ -206,6 +206,7 @@ boss saldırısının ekranı kaplaması. Aşağıdaki değerler bunları kapat�
 | O-5.14 | Boss saldırı hazırlığında | Kamera 0,28 s'de ×1,42 geri çekilir (saldırı alanı kadraja girer), saldırı bitince döner | KOD `CameraWindup*` | E |
 | O-5.15 | Yasaklar | Kamera zeminin altına inemez (Y ≥ 0,3 m), boss gövdesinin içine giremez, arena duvarının dışına çıkamaz | ÖNERİ | G (her kare kırmızı) |
 | O-5.16 | Uzak kırpma | 320 m (uzak manzara görünsün) | KOD `CameraFarClipM` | — |
+| O-5.18 | Yüksek baş | Boss'un başı 10 m'den yüksekteyse kilit bakış noktası baş yerine göğsün ortasıdır (Kül Ejderi faz 2, KE-6.3) | ÖNERİ | K |
 | O-5.17 | Ölüm kamerası | Oyuncu ölünce kamera 1,5 s'de yükselir (eğim 50°, uzaklık 9 m), ölen oyuncuya bakar; diriltilince geri döner | ÖNERİ | E |
 
 ---
@@ -237,16 +238,22 @@ Her yeni boss bu alanların hepsini doldurmadan koda girmez.
 | O-6.2 | Ön işaret görünümü | Yer işareti: kenar çizgisi baştan tam boy, içi saldırı anına doğru dolar. Renk: koyu kırmızı (#C21E2B) kenar, %35 opak dolgu; hiçbir oyuncu efekti bu rengi kullanamaz | ÖNERİ | K |
 | O-6.3 | Ön işaret katmanı | Boss yer işareti bütün oyuncu efektlerinin üstünde çizilir (her zaman görünür) | ÖNERİ | K |
 | O-6.4 | Saldırı sonrası açık kalma | Her saldırıdan sonra 0,8–1,5 s boss saldırmaz (oyuncunun vurma penceresi) | ÖNERİ | T |
-| O-6.5 | Dönme hızı | 90 °/s (oyuncu dodge ile arkasına geçebilsin) | KOD→ÖNERİ (kod 240 °/s; bu hızda arkaya geçmek mümkün değil) | E |
-| O-6.6 | Kesilemez saldırı | Boss başına 1–2 saldırı; ön işaretinde altın kenar | ÖNERİ | K |
+| O-6.5 | Dönme hızı | Yürüyen boss'lar için 90 °/s (oyuncu dodge ile arkasına geçebilsin; Kül Ejderi yürümez, baş dönüşü KE-2.7) | KOD→ÖNERİ (kod 240 °/s; bu hızda arkaya geçmek mümkün değil) | E |
+| O-6.6 | Kesilemez saldırı | Normal saldırılardan boss başına 1–2 tane; büyük duyurulu saldırılar her zaman kesilemez. Ön işaretinde altın kenar (#E8B04A, SI-2.16) | ÖNERİ | K |
 | O-6.7 | Oyuncu sayısı ölçeği | Boss canı × (1 + 0,8 × (oyuncu sayısı − 1)) | ÖNERİ (`eksik-parametreler`) | T |
 | O-6.8 | Öfke | Hedef dövüş süresinin 1,7 katında (180 s hedefse 300 s): saldırılar arası açık kalma yarıya iner | ÖNERİ | T |
 | O-6.9 | Can ve hasar ölçeği | Boss canı ve saldırı hasarları `kural-motoru-v4.json` → `scale` ölçeğindedir (oyuncu 1000). Boss JSON'undaki eski 120/22 ölçeği kaldırılır | ÖNERİ (§18) | T |
 
 ### 6.3 Ağların Kraliçesi (dilim boss'u)
 
+> **Kalkıyor (12 Ekim, karar A3).** Yerine Kül Ejderi geçer: `18-kul-ejderi.md`. Bu bölüm Kül Ejderi koda
+> girene kadar bugünkü kodu anlatır; yeni iş bu değerlere göre yapılmaz.
+
 Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 ölçeğine çevrildi (oyuncu canı
 1000). Boss tasarım oturumunda yeniden bakılacak; o zamana kadar bunlar geçerli.
+
+**Ölçüm tanımı (13 Ekim, K):** Koni/yelpaze açısı TAM açıdır (eksenden ± yarısı); boss saldırı mesafeleri boss
+MERKEZİNDEN ölçülür.
 
 | Kimlik | Madde | Değer | Kaynak |
 |---|---|---|---|
@@ -267,6 +274,11 @@ Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 �
 
 ## 7. Arena
 
+> **Yeni arena: `19-krater-arenasi.md` (12 Ekim).** O-7.1 ve O-7.2 aynen geçerli. O-7.3'ün çarpışma kısmı
+> (iç yüz 18 m, dış yüz 22 m, 4 m) geçerli, görünüm kısmı KA-6'ya geçer. O-7.4 → KA-5 (sütun ve kozalar
+> kalkar), O-7.5 → KA-8.1, O-7.6 → KA-2, O-7.7 → KA-1 ve KA-6, O-7.8 → KA-6.6 ve KA-7, O-7.9 → kalkar
+> (KA-11.2). Krater arenası koda girene kadar bu tablo bugünkü kodu anlatır.
+
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-7.1 | Şekil | Daire | KOD (`slice_arena`) | — |
@@ -282,6 +294,9 @@ Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 �
 ---
 
 ## 8. Sanat yönü
+
+Ayrıntılı görsel dil (palet, ışık, sis, malzeme, silüet, ölçek, yapılmaz listesi) `16-sanat-incili.md`'dedir.
+Aşağıdaki değerler orada aynen geçer.
 
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|

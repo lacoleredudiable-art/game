@@ -26,6 +26,60 @@ public class DodgeChainTests
         GlideTailMs = 120
     };
 
+    // 15-dodge-tasarimi §3.2-§3.4: test değerleri (T_tek 0,5 s, T_zincir 1,3 s), Model A.
+    // Ayar varsayılanlarıyla çalışır; sayılar dengelemede (Aşama 8) kesinleşecek.
+    [Test]
+    public void O_4_5_Zincir_PencereBirlesir()
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        var bank = new DodgeChargeBank(tuning);
+
+        Assert.That(DodgeChain.TryConsumePress(0, dodge, bank, tuning), Is.EqualTo(DodgeChain.PressOutcome.StartedNew));
+        // ikinci basış birinci pencere (T_tek) açıkken, hareket sürerken gelir
+        Assert.That(DodgeChain.TryConsumePress(300, dodge, bank, tuning), Is.EqualTo(DodgeChain.PressOutcome.UpgradedCombined));
+
+        // Model A: pencere birinci basıştan itibaren sabit T_zincir, arada boşluk yok
+        for (int t = 0; t < 1300; t++)
+            Assert.That(dodge.IsInvulnerable(t), Is.True, $"t={t} ms hasar alınabilir boşluk");
+        Assert.That(dodge.IsInvulnerable(1300), Is.False);
+    }
+
+    [Test]
+    public void O_4_5_GecIkinciBasis_BoslukKalir()
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        var bank = new DodgeChargeBank(tuning);
+
+        DodgeChain.TryConsumePress(0, dodge, bank, tuning);
+        // birleşme penceresi (T_tek) kapandıktan sonra basış: zincir değil, yeni tek dodge
+        Assert.That(DodgeChain.TryConsumePress(tuning.IframeMs + 100, dodge, bank, tuning),
+            Is.EqualTo(DodgeChain.PressOutcome.StartedNew));
+        Assert.That(dodge.IsCombined, Is.False);
+        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 50), Is.False, "iki pencere arasında vuruş hasar vermeli");
+        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 100), Is.True);
+    }
+
+    [Test]
+    public void O_4_7_Zincir_IkiHakYer()
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        var bank = new DodgeChargeBank(tuning);
+
+        DodgeChain.TryConsumePress(0, dodge, bank, tuning);
+        DodgeChain.TryConsumePress(300, dodge, bank, tuning);
+        Assert.That(bank.Ready, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void O_4_5_BirlesmePenceresi_TekPencereyeEsit()
+    {
+        var tuning = new DodgeTuning();
+        Assert.That(tuning.DoubleTapWindowMs, Is.EqualTo(tuning.IframeMs), "15 §3.4 / D-4: birleşme penceresi = T_tek");
+    }
+
     [Test]
     public void Recharge_IsSixSecondsPerCharge()
     {

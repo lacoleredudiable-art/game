@@ -14,7 +14,7 @@ namespace Dovus.Game.Editor
 {
     /// <summary>
     /// k3 (Blender → Mixamo → FBX) içe aktarma: model blend shape'leri, VUR klip olayları (klipler.csv,
-    /// zaman = (kare-1)/30), k3 controller'ı, prefab olay alıcısı, k3_Mat emission ve dilim oyuncusu.
+    /// zaman = (kare-1)/30), k3 controller'ı, silah yürüme setleri, prefab olay alıcısı, k3_Mat emission ve dilim oyuncusu.
     /// Menu: Dovus/k3/*. Batch: -executeMethod Dovus.Game.Editor.K3AssetSetup.Reimport
     /// </summary>
     public static partial class K3AssetSetup
@@ -25,13 +25,13 @@ namespace Dovus.Game.Editor
         internal const string ClipCsvPath = Root + "/klipler.csv";
         const string ModelFbx = Root + "/Model/k3_Armature.fbx";
         const string MaterialPath = Root + "/Model/k3_Mat.mat";
-        const string ControllerPath = Root + "/k3.controller";
+        internal const string ControllerPath = Root + "/k3.controller";
         const string ScenePath = "Assets/Scenes/Prototype.unity";
         const string SliceVisualField = "_slicePlayerVisualPrefab";
         internal const float Fps = 30f;
         const string WeaponsDir = Root + "/Silahlar";
         const string WeaponTexturesDir = WeaponsDir + "/doku";
-        const string LoopPrefix = "Loko_";
+        internal const string LoopPrefix = "Loko_";
 
         /// <summary>Blender'dan aktarılan klipler. Cekic_* / Loko_Agir_* bu listede yok: çekiç ayarlarına dokunulmaz.</summary>
         internal static readonly string[] ExportClips =
@@ -89,8 +89,8 @@ namespace Dovus.Game.Editor
 
         static readonly string[] FloatParams = { "Speed", "StrikeSpeed", "Forward", "Strafe", "Focus", "Pierce", "Spread", "Lift" };
         static readonly string[] BoolParams = { "ChannelHold", "GuardHold" };
-        const string LocoIdle = "Loko_Kilic_Idle";
-        const string LocoRun = "Loko_Kilic_Run";
+        internal const string LocoIdle = "Loko_Kilic_Idle";
+        internal const string LocoRun = "Loko_Kilic_Run";
         const string NoReturnClip = "Ortak_Olum";
         const float ReturnExitTime = 0.9f;
         const float ReturnBlendSec = 0.1f;
@@ -107,6 +107,7 @@ namespace Dovus.Game.Editor
             AnimatorController ctrl = EnsureController();
             EnsureClipStates(ctrl);
             EnableWriteDefaults(ctrl);
+            K3WeaponLocomotion.Ensure(ctrl);
             ConfigurePrefab(ctrl);
             AssetDatabase.SaveAssets();
             Debug.Log("[k3] yeniden alma tamam");

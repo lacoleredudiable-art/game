@@ -5,13 +5,33 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 
 ## Tasarım kaynağı
 - Tasarım kaynağı `docs/tasarim/00-OKU-BENI.md`. Bir kombo üzerinde çalışmadan önce o hücreyi oku.
-- Hangi işin sırada olduğunu `docs/tasarim/11-onarim-plani.md` söyler. Her PR açıklamasına önce/sonra Gözcü satır
-  sayısını yaz.
+- Hangi işin sırada olduğunu `docs/tasarim/14-kodlama-plani.md` söyler (aşamalar). Her aşama PR'ının açıklamasına
+  önce/sonra Gözcü satır sayısını yaz.
 - Ölçü, kamera, dodge veya arena işinde `10-olculer.md`'deki madde kimliğini (ör. O-7.2) PR'a ve test adına yaz.
 - Belgede olmayan davranışı ya da ölçüyü uydurma, sor.
 - Sayılar `kural-motoru-v4.json`'dadır. Belgeler çelişirse `00-OKU-BENI.md`'deki öncelik sırası geçerlidir.
 - `element-sistemi.json` (v6.1.1) ve eski skill motoru (MechanicGrammar, SkillExecutorRouter, eski executor'lar,
   24 el ayarı) DONDURULDU: düzeltilmez, genişletilmez, yeni kod onlara bağlanmaz. Taşıma bitince silinecek.
+
+## Tasarım konuşması kuralları
+Kullanıcı tasarım konuşuyorsa (fikir, kıyas, "hangisi daha iyi") bu bölüm geçerlidir; kod konuşuyorsa aşağısı.
+- Çıktı yalnız değerlendirmedir. Koda, belgeye dokunma; dosya, görev ya da işlem **teklif etme**. Cevap
+  değerlendirmeyle biter, "istersen şunu yazayım" ile değil.
+- Her fikre önce karşı sav: hangi oyunda denendi, ne tuttu ne tutmadı, bizde neden farklı olabilir.
+- Gerekçesiz katılma yasak. Katıldığın yerde gerekçe, katılmadığın yerde en güçlü itiraz yazılır.
+- Öneri projeye girmez. Karar kullanıcınındır; ajan **[Ö]** diye yazar, kullanıcı onaylayınca **[K]** olur.
+- Her sayı için kaynak ve sınıf: **(kâğıt)** kuralla belirlenir, **(ölçüm)** oynanarak bulunur, yazılan değer
+  başlangıç tahminidir. Kaynak yoksa "tahmin" denir, sayı uydurulmaz.
+- Belgelerdeki eski fikir (ör. README'deki prototip kalıntısı) kullanıcının sözüne karşı kanıt değildir;
+  kullanıcı "o eskiydi" derse belge güncellenir, fikir geri getirilmez.
+- Son üç mesaj oyunu değil yöntemi/aracı konuşuyorsa konu kaymıştır; ajan bunu söyler ve açık kalan oyun
+  sorusuna döner. Kullanıcının "konuya dön" demesi yeterlidir, açıklama istenmez.
+- Konuşma sonunda, kullanıcı isterse, hasat: `docs/tasarim/13-vizyon-ve-cerceve.md` biçiminde [K]/[Ö]/[AÇIK]/
+  [RED] satırları; reddedilenler ve nedenleri de yazılır.
+
+Kodda takılınca tasarım değişikliği önermek yasaktır. Önce üçünden hangisi olduğu log ya da ölçümle gösterilir:
+(a) kod hatası, (b) sayı yanlış (`kural-motoru-v4.json`), (c) kural eksik ya da çelişik. Yalnız (c) kullanıcıya
+tasarım sorusu olarak döner.
 
 ## Değişmez kurallar
 0. Tek dil: kod tanımlayıcıları İngilizce, yorumlar Türkçe olabilir.
@@ -25,14 +45,16 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
    bu sahiplik kuralına uyar; ikinci bir gizli konum yazan yol eklenmez.
 
 ## Çalışma biçimi
-- Bir PR = bir hata ya da bir özellik. Birden çok iş verilirse ilkini yap, diğerlerini PR'da "sonra" diye yaz.
+- İş aşamalarla yürür (`14-kodlama-plani.md`). Her aşamanın dalı `asama/N-<ad>`; aşama içindeki PR'lar bu dala girer,
+  master'a aşama başına bir kez, telefon testi geçince girilir.
+- Aşama içinde bir PR = bir hata ya da bir özellik. Birden çok iş verilirse ilkini yap, diğerlerini PR'da "sonra" diye yaz.
 - Önce kanıt: hatanın sebebini log ya da ölçümle göster, sonra yalnız o sebebi düzelt.
-- "Bitti" telefonda görülür: oynanışı değiştiren her PR'da dilim APK'sından ekran kaydı ya da logcat çıktısı.
+- "Bitti" telefonda görülür: her aşamanın master PR'ında dilim APK'sından ekran kaydı ya da logcat çıktısı.
   Editör testi tek başına yeterli değildir.
 - Her hata düzeltmesi önce hatayı oyunun GERÇEK yolundan (sahte dokunuş/çizim → görünen sonuç: oynayan klip,
   konum, çarpışma) yeniden üreten bir test yazar. Test düzeltmeden önce kırmızı, sonra yeşil olmalı.
   Hatayı yakalamayan testle "düzelttim" denmez.
-- Oynanışı değiştiren her PR, görsel duman testinin kontakt sayfasını PR'a ekler, sayfaya bakıp gözlemini yazar
+- Her aşamanın master PR'ı, görsel duman testinin kontakt sayfasını PR'a ekler, sayfaya bakıp gözlemini yazar
   ve Gözcü satırlarının sayısını raporlar. Resim PR açıklamasına eklenir, repoya kaydedilmez.
 - Fonksiyonu doğrudan çağırıp geçen test, oynanış hatasının kanıtı sayılmaz.
 - Testler gevşetilmez; bir test kırılırsa nedeni PR'da yazılır.
@@ -42,8 +64,11 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - Görevin adlandırmadığı dosyalara dokunma; repoyu baştan tarama.
 
 ## Testler
-- Her PR'dan önce yerelde O_ PlayMode testleri + Gözcü duman testi koşulur; PR açıklamasına sonuç (geçen/kalan/
-  atlanan sayısı ve Gözcü tür tablosu) yapıştırılır. Yapıştırılmamış PR merge edilmez.
+- Aşama içindeki PR: CI (OYUN.md, CoreTests, IntegrationTests, GameCompile) + değişen alanın `dotnet test --filter`
+  testi. Telefon ve Unity testi istemez.
+- Aşama sonunda, master PR'ından önce bir kez: yerelde O_ PlayMode testleri + Gözcü duman testi + dilim APK + telefon
+  testi; PR açıklamasına sonuç (geçen/kalan/atlanan sayısı ve Gözcü tür tablosu) yapıştırılır. Yapıştırılmamış PR
+  master'a merge edilmez.
 - Kırmızı bir test görürsen önce master'da çalıştır; master'da da kırmızıysa düzeltme, PR'a yaz ve geç.
 - Yalnız ilgili test sınıflarını `-testFilter` ile çalıştır.
 - Başlamadan önce hangi testleri çalıştıracağını ve tahmini süreyi yaz.
