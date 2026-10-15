@@ -10,12 +10,12 @@ namespace Dovus.Core.Cancel
     {
         readonly CancelRuleTable _table;
         readonly InputBuffer _buffer;
-        readonly ActionPlanResolver _resolve;
+        readonly Func<ActionKind, int, int, ActionPlan> _resolve;
         ActionPlan _running;
         int _startMs;
         bool _hasRunning;
 
-        public ActionArbiter(CancelRuleTable table, InputBuffer buffer, ActionPlanResolver resolver)
+        public ActionArbiter(CancelRuleTable table, InputBuffer buffer, Func<ActionKind, int, int, ActionPlan> resolver)
         {
             _table = table ?? throw new ArgumentNullException(nameof(table));
             _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
