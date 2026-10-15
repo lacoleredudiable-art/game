@@ -1,13 +1,5 @@
 namespace Dovus.Core.Targeting
 {
-    public enum LockPointKind
-    {
-        Body = 0,
-        Head = 1,
-        Wing = 2,
-        Other = 3,
-    }
-
     /// <summary>
     /// Bir hedef üzerindeki kilit noktası (kafa / gövde / kanat…). Yalnız nişan ve kamera bakış noktasıdır;
     /// vurulma bölgesi değildir (O-1.14: kafa, kol ayrı hurtbox yok). Yükseklik Game katmanında modelden ölçülür.
