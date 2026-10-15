@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core;
 using Dovus.Core.Element;
 using Dovus.Core.Grammar;
@@ -126,6 +128,7 @@ namespace Dovus.Game.Actors
             _hideWhenVisualPresent = hideWhenPresent;
             _baseController = animator != null ? animator.runtimeAnimatorController : null;
             _currentWeaponKey = null;
+            _locoOverrides.Clear();
             _handProps = null;
             _strikeSpeedParamCached = -1;
             if (_animator != null && _hideWhenVisualPresent != null)
@@ -170,7 +173,7 @@ namespace Dovus.Game.Actors
             }
 
             string archetype = WeaponArchetypeMap.ArchetypeFor(animationsKey);
-            ApplyArchetypeController(archetype);
+            ApplyArchetypeController(archetype, animationsKey);
 
             float speed = archetype is WeaponArchetypeMap.Hammer or WeaponArchetypeMap.Gun ? HeavyAnimSpeed : 1f;
             if (_animator != null)
@@ -195,7 +198,66 @@ namespace Dovus.Game.Actors
                 _handProps.Apply(animationsKey);
         }
 
-        void ApplyArchetypeController(string archetypeKey)
+        /// <summary>k3 temel controller'ın bekleme/yürüme klipleri Kılıç'ındır (Loko_Kilic_*); öteki silahlar bunun üstüne yazar.</summary>
+        const string DefaultLocoClipPrefix = "Loko_Kilic_";
+        const string LocoClipPrefix = "Loko_";
+
+        /// <summary>animations_key → Loko_&lt;ad&gt;_* klip adı parçası. Tabloda olmayan silah temel klipte kalır.</summary>
+        static readonly Dictionary<string, string> LocoClipWeaponNames = new(System.StringComparer.Ordinal)
+        {
+            ["kilic"] = "Kilic",
+            ["yay"] = "Yay",
+        };
+
+        readonly Dictionary<string, AnimatorOverrideController> _locoOverrides = new(System.StringComparer.Ordinal);
+
+        /// <summary>
+        /// Silaha göre bekleme/yürüme klibi (envanter B2): temel controller'ın Loko_Kilic_* klipleri, silahın
+        /// Loko_&lt;Silah&gt;_* klipleriyle değişir. Klip controller'da yoksa dilimde [V4-FALLBACK] yazılır.
+        /// </summary>
+        RuntimeAnimatorController WithWeaponLocomotion(RuntimeAnimatorController baseCtrl, string weaponKey)
+        {
+            if (baseCtrl == null || string.IsNullOrEmpty(weaponKey)
+                || !LocoClipWeaponNames.TryGetValue(weaponKey, out string weaponName)
+                || weaponName == "Kilic")
+                return baseCtrl;
+            if (_locoOverrides.TryGetValue(weaponKey, out AnimatorOverrideController cached))
+                return cached;
+
+            var ovr = new AnimatorOverrideController(baseCtrl);
+            var pairs = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+            ovr.GetOverrides(pairs);
+            bool swapped = false;
+            for (int i = 0; i < pairs.Count; i++)
+            {
+                string original = pairs[i].Key.name;
+                if (!original.StartsWith(DefaultLocoClipPrefix, System.StringComparison.Ordinal))
+                    continue;
+                string wanted = LocoClipPrefix + weaponName + "_" + original.Substring(DefaultLocoClipPrefix.Length);
+                AnimationClip replacement = null;
+                for (int j = 0; j < pairs.Count && replacement == null; j++)
+                {
+                    if (pairs[j].Key.name == wanted)
+                        replacement = pairs[j].Key;
+                }
+                if (replacement == null)
+                {
+                    if (RuleEngineV4Feature.Enabled)
+                        Debug.LogError($"[V4-FALLBACK] silah yürüme klibi: {wanted} controller'da yok (silah={weaponKey})");
+                    continue;
+                }
+                pairs[i] = new KeyValuePair<AnimationClip, AnimationClip>(pairs[i].Key, replacement);
+                swapped = true;
+            }
+            if (swapped)
+                ovr.ApplyOverrides(pairs);
+            RuntimeAnimatorController result = swapped ? ovr : baseCtrl;
+            if (swapped)
+                _locoOverrides[weaponKey] = ovr;
+            return result;
+        }
+
+        void ApplyArchetypeController(string archetypeKey, string weaponKey)
         {
             if (_animator == null)
                 return;
@@ -203,6 +265,8 @@ namespace Dovus.Game.Actors
             // Override yalnız kendi temel controller'ında anlamlı; başka iskeletin controller'ını ezmez.
             bool foreign = ctrl is AnimatorOverrideController ovr && ovr.runtimeAnimatorController != _baseController;
             RuntimeAnimatorController target = ctrl != null && !foreign ? ctrl : _baseController;
+            if (target == _baseController)
+                target = WithWeaponLocomotion(target, weaponKey);
             if (_animator.runtimeAnimatorController == target)
                 return;
             _animator.runtimeAnimatorController = target;

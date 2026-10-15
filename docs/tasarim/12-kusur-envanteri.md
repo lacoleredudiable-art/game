@@ -83,7 +83,8 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
   yedeği dilimde kaldırılır. Log'dan düşen koşul bulunur, kökü düzeltilir.
 - **Test:** gerçek dokunuşla Kılıç düz vuruşu → oynayan klip `Kilic_VUR`; Yay → `Yay_VUR`. `[V4-FALLBACK]` 0.
 
-### B2 ☐ Silah değişince eski silahın yürüme klibi
+### B2 ✅ Silah değişince eski silahın yürüme klibi
+- **Sonuç:** k3 controller'ında tek Locomotion ağacı vardı, yalnız `Loko_Kilic_*` bağlıydı; `Loko_Yay_*` klipleri hiçbir state'ten erişilemiyordu. `K3TimedClipStates` her `Loko_*` klibi için geçişsiz kaynak state ekler; `ActorView` silah değişince ağaçtaki klipleri `Loko_<Silah>_*` ile değiştirir (çalışma zamanı override, yerel dosyaya bağımlılık yok); klip yoksa `[V4-FALLBACK] silah yürüme klibi`. Test `B2_SilahDegisinceBeklemeKlibiSilahinAdiniTasir` (Kılıç→Yay→Kılıç). Gözcü `uyumsuz_klip` 46 → 2.
 - **Belirti:** Yay'a geçince karakter Kılıç gibi duruyor/yürüyor (Gözcü `uyumsuz_klip` 45).
 - **Yer:** `Game/Actors/ActorView.cs` (satır ~204, override controller değişimi),
   `Game/Weapons/WeaponVisualRegistry.cs`, `Game/Editor/K3AssetSetup.cs`.
@@ -218,3 +219,5 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | Y22 | #176 | Kılıç tutuş açısı (`Grip_R` / `Silah_Kilic`): Mixamo kesişi boyunca kılıç ileri yöne hiç yaklaşmıyor (MX 25–36 arasında ileri yönle en az 94°); vuruş anında namlu yana bakıyor. Tutuş `d631970d`'de 0°'ye alınmıştı | D13 (Kılıç kesiş zinciri) |
 | Y23 | #176 | k3 Blender boru hattı (`.blend` dosyaları, `ajan_dz.py`, `fbx_toplu_disa_aktar.py` vb.) repo dışında, `Desktop\k3`'te. FBX'ler repoda olduğu için derleme bağımsız, ama klip yeniden üretimi tek bilgisayara bağlı | Adım 6 / sanat boru hattı |
 | Y24 | #176 | Düz vuruş klibi sürerken gelen dokunuş için kural yok (O-4.14 yalnız 1,2 s zincir penceresini tanımlıyor). Kullanıcı kararı: sıraya alınır, mevcut klip bitince sonraki başlar. `10-olculer`'e yazılıp uygulanacak | D13 |
+| Y25 | B2 | Gözcü `uyumsuz_klip` kalan 2 satır: silah takasında yarım kalan `Kilic_VUR@w2` ve Yay eldeyken `Kilic_DURUS@w2` (kombo 4-4); yürüme klibi değil, aksiyon klibi | B3 |
+| Y26 | B2 | `O_4_14_KilicDuzVurus_KesisSupurur` kare hızına bağlı dalgalanıyor (master 96,3°, tam sette 89,4°, eşik 90°); iz penceresi gerçek saatle örnekleniyor | Y20 |
