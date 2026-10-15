@@ -19,29 +19,29 @@ namespace Dovus.Game.Config.Sections
                 // vurgu yalnız lav (LavaDecor/LavaCracks) ve VFX'te kalır. docs'ta sayı yok — PR #43'ün
                 // kendi commit'lerinde kullandığı değerler (DenemeSahnesi_PostFX.asset) buraya taşındı.
                 [Header("Arena atmosferi — mobil URP (ambiyans: PR #43 açık gri lav ovası)")]
-                public Color AmbientSky = new Color(0.66f, 0.70f, 0.73f);
-                public Color AmbientEquator = new Color(0.52f, 0.55f, 0.58f);
-                public Color AmbientGround = new Color(0.30f, 0.30f, 0.31f);
+                public Color AmbientSky = new Color(0.75f, 0.78f, 0.82f);
+                public Color AmbientEquator = new Color(0.62f, 0.64f, 0.67f);
+                public Color AmbientGround = new Color(0.42f, 0.43f, 0.45f);
                 public Color FogColor = new Color(0.69f, 0.718f, 0.737f);
                 public float FogDensity = 0.0032f;
-                public Color KeyLightColor = new Color(0.86f, 0.89f, 0.92f);
-                public float KeyLightIntensity = 0.85f;
+                public Color KeyLightColor = new Color(1f, 1f, 1f);
+                public float KeyLightIntensity = 1.6f;
                 public Vector3 KeyLightEuler = new Vector3(52f, -30f, 0f);
-                public float KeyShadowStrength = 0.38f;
+                public float KeyShadowStrength = 0.75f;
                 public Color RimLightColor = new Color(0.38f, 0.55f, 1f);
-                public float RimLightIntensity = 0.18f;
+                public float RimLightIntensity = 0f;
                 public Vector3 RimLightEuler = new Vector3(28f, 145f, 0f);
-                public float BloomIntensity = 0.65f;
+                public float BloomIntensity = 0.55f;
                 public float BloomThreshold = 0.95f;
                 public float BloomScatter = 0.55f;
-                public Color BloomTint = new Color(1f, 0.86f, 0.72f);
-                public float PostExposure = 0.15f;
-                public float ColorContrast = -14f;
+                public Color BloomTint = new Color(1f, 0.97f, 0.92f);
+                public float PostExposure = 0.3f;
+                public float ColorContrast = 10f;
                 /// <summary>Spec "~%35 doygunluk düşüşü" (task-ambience-fix); PR #43'ün gönderdiği -22
                 /// değil, görevin kendi istediği oran — sahnede görünür olmalı.</summary>
-                public float ColorSaturation = -35f;
-                public Color ColorFilterTint = new Color(0.95f, 0.975f, 1f);
-                public float PostVignetteIntensity = 0.12f;
+                public float ColorSaturation = -5f;
+                public Color ColorFilterTint = new Color(1f, 1f, 1f);
+                public float PostVignetteIntensity = 0.18f;
                 /// <summary>Ufuk siluet/kayaları görünür kalsın diye uzak kırpma düzlemi büyütüldü (eski 120m).</summary>
                 public float CameraFarClipM = 320f;
     }
