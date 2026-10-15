@@ -2,50 +2,6 @@ using System;
 
 namespace Dovus.Core.Cancel
 {
-    /// <summary>Gelen eylemin faz süreleri: çağıran (skill kataloğu, kılıç kombosu, silah değişimi) üretir.</summary>
-    public delegate ActionPlan ActionPlanResolver(ActionKind kind, int token, int nowMs);
-
-    public enum ArbiterOutcome : byte
-    {
-        /// <summary>Bir şey olmadı (Tick'te başlatılacak tampon girdisi yok).</summary>
-        None = 0,
-        /// <summary>Boşta başladı.</summary>
-        Started = 1,
-        /// <summary>Çalışanı kesip başladı.</summary>
-        Cancelled = 2,
-        /// <summary>Reddedildi, tamponda bekliyor.</summary>
-        Buffered = 3,
-        /// <summary>Reddedildi, saklanmadı.</summary>
-        Rejected = 4,
-    }
-
-    public readonly struct ArbiterResult
-    {
-        public ArbiterResult(ArbiterOutcome outcome, ActionPlan plan, ActionKind cutKind, CancelDecision decision, bool fromBuffer)
-        {
-            Outcome = outcome;
-            Plan = plan;
-            CutKind = cutKind;
-            Decision = decision;
-            FromBuffer = fromBuffer;
-        }
-
-        public ArbiterOutcome Outcome { get; }
-
-        /// <summary>Başlayan eylemin planı (yalnız Started/Cancelled).</summary>
-        public ActionPlan Plan { get; }
-
-        /// <summary>Kesilen eylemin türü (yalnız Cancelled).</summary>
-        public ActionKind CutKind { get; }
-
-        public CancelDecision Decision { get; }
-
-        /// <summary>Başlangıç tampondan geldi (girdi daha önce verilmişti).</summary>
-        public bool FromBuffer { get; }
-
-        public bool DidStart => Outcome == ArbiterOutcome.Started || Outcome == ArbiterOutcome.Cancelled;
-    }
-
     /// <summary>
     /// Tek oyuncu için "şu an ne çalışıyor, gelen girdi ne olur" hakemi: faz hesabı + iptal tablosu + girdi tamponu.
     /// Hasar, mana, CD, animasyon bilmez; yalnız karar verir. Zaman ms olarak parametredir.
