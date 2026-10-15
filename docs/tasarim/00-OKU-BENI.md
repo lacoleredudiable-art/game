@@ -4,9 +4,10 @@ Bu klasör oyunun tasarım kaynağıdır. Kod bu belgelerin uygulamasıdır; kod
 kod düzeltilir. Belgede olmayan bir davranışı kod uydurmaz: kaynakta yoksa PR'da "kaynakta yok" diye yazılır
 ve kullanıcıya sorulur.
 
-**İş sırası:** `11-onarim-plani.md`. Hangi işin şimdi yapılacağını bu dosya söyler; adımlar sırayla yapılır.
-Tasarım hattının (boss, arena, görsel dil) sırası: `13-tasarim-hatti.md`.
-Boss: `14-kul-ejderi.md` (KE-x.y). Arena: `15-krater-arenasi.md` (KA-x.y). Asset listesi: `16-asset-listesi.md` (AL-x.y).
+**İş sırası:** `14-kodlama-plani.md` (aşamalar; her aşama telefonda görülen bir gelişmeyle biter). Ayrıntılı kusur
+listesi: `12-kusur-envanteri.md`. `11-onarim-plani.md` arşivdir (14 Ekim'de `14` yerine geçti).
+Tasarım hattının (boss, arena, görsel dil) sırası: `17-tasarim-hatti.md`.
+Boss: `18-kul-ejderi.md` (KE-x.y). Arena: `19-krater-arenasi.md` (KA-x.y). Asset listesi: `20-asset-listesi.md` (AL-x.y).
 
 ## Öncelik sırası (çelişkide üstteki kazanır)
 
@@ -18,10 +19,14 @@ Boss: `14-kul-ejderi.md` (KE-x.y). Arena: `15-krater-arenasi.md` (KA-x.y). Asset
 6. `10-olculer.md` — kural dışı bütün ölçüler: karakter, silah boyu ve tutuşu, animasyon evreleri, dodge,
    kamera, boss, arena, sanat yönü, efekt sınırları, ses, ekran, performans, asset hattı, oyun akışı. Her
    maddenin kimliği (`O-x.y`) ve doğrulama yolu var. §18'deki çift değerler bu belgenin değerine bağlanır.
-7. `12-sanat-incili.md` — görsel dil: palet, ışık, sis, malzeme, silüet, ölçek, boss ve ortam efektleri,
+7. `16-sanat-incili.md` — görsel dil: palet, ışık, sis, malzeme, silüet, ölçek, boss ve ortam efektleri,
    "yapılmaz" listesi. `10` §8'in ayrıntısıdır (kimlik `SI-x.y`).
 8. `06-animasyon-kurallari.md`, `07-efekt-motoru.md` — görünüm (oyun sonucunu değiştirmez).
 9. `08-acik-sorular.md` — karar verilmemiş maddeler (bunlara göre kod yazılmaz; sorulur).
+
+Sıralamanın dışında, **üstünde**: `13-vizyon-ve-cerceve.md` — kim oynar, ne kadar, zorluk, yetenek katmanı,
+zaman ekonomisi; [K]/[Ö]/[AÇIK]/[RED] etiketli. Yalnız **[K]** satırları karardır ve yukarıdaki sırada 1 ile aynı
+güçtedir; **[Ö]** satırları öneridir, koda girmez. Bu belgedeki hiçbir madde dilime kendiliğinden girmez.
 
 Sayılar `unity/Assets/Resources/RuleEngineV4/kural-motoru-v4.json` içindedir; belgedeki sayılar başlangıç
 değeridir, JSON'daki güncel değer geçerlidir.

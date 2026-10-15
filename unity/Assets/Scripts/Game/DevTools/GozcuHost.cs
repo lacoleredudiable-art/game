@@ -37,6 +37,9 @@ namespace Dovus.Game.DevTools
         Animator _animator;
         CapsuleCollider _probe;
         HashSet<int> _startupRenderers;
+        Transform _bossBody;
+        float _bossBodyRadiusM;
+        float _bossBodyTopAboveRootM;
         Quaternion _lastCameraRotation;
         bool _hasCameraRotation;
         bool _noCameraWarned;
@@ -61,6 +64,14 @@ namespace Dovus.Game.DevTools
             _probe = probeGo.AddComponent<CapsuleCollider>();
             _probe.direction = 1;
             _probe.enabled = false;
+        }
+
+        /// <summary>O-5.15: boss gövdesi, kökün altından tepeye dikey silindir (yarıçap world_physics, tepe görsel boy).</summary>
+        public void WatchBossBody(Transform root, float radiusM, float topAboveRootM)
+        {
+            _bossBody = root;
+            _bossBodyRadiusM = radiusM;
+            _bossBodyTopAboveRootM = topAboveRootM;
         }
 
         void OnEnable() => Application.logMessageReceived += OnLog;
@@ -97,6 +108,7 @@ namespace Dovus.Game.DevTools
             }
             CheckCameraSpeed(cam);
             CheckCameraInCollider(cam);
+            CheckCameraInBossBody(cam);
             // Oyunun ana kamerası FOV'u eşiğin altına düşmemeli; düşerse ihlal, izdüşüm anlamsız olduğundan
             // ekran ölçümleri (oyuncu ekranda mı, efekt kaplaması) o kare yapılmaz.
             if (cam.fieldOfView < _rules.CameraFovMinDeg)
@@ -151,10 +163,7 @@ namespace Dovus.Game.DevTools
         {
             if (_motor == null)
                 return;
-            float r = BodyRadius();
-            Vector3 from = _player.position;
-            Vector3 p1 = from + Vector3.up * (r + KinematicMotorControllerDefaults.CapsuleProbeLiftM);
-            Vector3 p2 = from + Vector3.up * KinematicMotorControllerDefaults.CapsuleTopLiftM;
+            _motor.BodyCapsule(_player.position, out Vector3 p1, out Vector3 p2, out float r);
             int n = Physics.OverlapCapsuleNonAlloc(p1, p2, r, _overlap, ~0, QueryTriggerInteraction.Ignore);
             if (n == 0)
                 return;
@@ -183,11 +192,6 @@ namespace Dovus.Game.DevTools
             if (worst > _rules.BodyPenetrationMaxM)
                 Report(GozcuRule.BodyInCollider, Cm(worst) + "@" + worstCol.name);
         }
-
-        float BodyRadius() => _motor == null
-            ? KinematicMotorControllerDefaults.CapsuleRadiusFloorM
-            : Mathf.Max(KinematicMotorControllerDefaults.CapsuleRadiusFloorM,
-                _motor.BodyRadiusM * KinematicMotorControllerDefaults.CapsuleRadiusBodyScale);
 
         void CheckClip()
         {
@@ -237,6 +241,18 @@ namespace Dovus.Game.DevTools
                 Report(GozcuRule.CameraInCollider, col.name);
                 return;
             }
+        }
+
+        /// <summary>Boss gövdesi tetik çarpıştırıcı; collider yoklaması onu görmez. Değer: kenardan içeri derinlik.</summary>
+        void CheckCameraInBossBody(Camera cam)
+        {
+            if (_bossBody == null)
+                return;
+            Vector3 c = _bossBody.position;
+            Vector3 p = cam.transform.position;
+            float depth = _bossBodyRadiusM - new Vector2(p.x - c.x, p.z - c.z).magnitude;
+            if (depth > 0f && p.y < c.y + _bossBodyTopAboveRootM)
+                Report(GozcuRule.CameraInBossBody, Cm(depth));
         }
 
         void CheckPlayerOnScreen(Camera cam)

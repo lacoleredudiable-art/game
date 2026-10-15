@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Dovus.Core.RuleEngineV4
 {
@@ -20,5 +21,8 @@ namespace Dovus.Core.RuleEngineV4
         /// <summary>Boşa giden skillde uygulanan bekleme oranı.</summary>
         public float FizzleCooldownFrac { get; init; }
         public float RangeReferenceM { get; init; }
+
+        /// <summary>JSON'da olmayıp kod varsayılanıyla doldurulan scale anahtarları; okuyan taraf [V4-FALLBACK] yazar.</summary>
+        public IReadOnlyList<string> MissingKeys { get; init; } = Array.Empty<string>();
     }
 }

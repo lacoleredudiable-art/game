@@ -25,9 +25,10 @@ namespace Dovus.Core.Boss
         float _landingX;
         float _landingZ;
 
-        public BossAttack(BossTuning? tuning = null)
+        public BossAttack(BossTuning? tuning = null, BossAttackDamage? damageTable = null)
         {
             _tuning = tuning ?? new BossTuning();
+            DamageTable = damageTable;
             ApplyVariant(SlamVariant.Near);
         }
 
@@ -39,7 +40,11 @@ namespace Dovus.Core.Boss
         public float RadiusM => _radiusM;
         /// <summary>Tam daire (Slam) = 180; FireCone daha dar bir yay.</summary>
         public float ArcHalfAngleDeg => _arcHalfAngleDeg;
-        public int Damage => _kind switch
+
+        /// <summary>Verildiyse hasar tablosu (dilim); yoksa BossTuning hasarları.</summary>
+        public BossAttackDamage? DamageTable { get; }
+
+        public int Damage => DamageTable is BossAttackDamage table ? table.For(_kind) : _kind switch
         {
             BossAttackKind.FireCone => _tuning.FireConeDamage,
             BossAttackKind.Volley => _tuning.VolleyDamage,

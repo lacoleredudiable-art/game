@@ -31,14 +31,14 @@ namespace Dovus.Game.Boss
                     _visualRoot = animator.transform;
             }
 
-            if (_visualRoot == null)
-                _visualRoot = transform;
-            _baseLocal = _visualRoot.localPosition;
+            // Kök boss konumudur, sahibi reaktördür; görsel çocuk yoksa sarsılma yok.
+            if (_visualRoot != null)
+                _baseLocal = _visualRoot.localPosition;
         }
 
         public void KickFromWorldPoint(Vector3 worldHit, Vector3 bossCenter)
         {
-            if (_feel == null || _feel.BossFlinchMs <= 0 || _feel.BossFlinchOffsetM <= 0f)
+            if (_visualRoot == null || _feel == null || _feel.BossFlinchMs <= 0 || _feel.BossFlinchOffsetM <= 0f)
                 return;
 
             _baseLocal = _visualRoot.localPosition;

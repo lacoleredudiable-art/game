@@ -14,7 +14,10 @@ namespace Dovus.Core.RuleEngineV4
             float outerWallVisualInnerRadiusM,
             float outerWallVisualOuterRadiusM,
             int outerWallSegments,
-            float outerWallHeightM)
+            float outerWallHeightM,
+            bool hasOuterWallGeometry,
+            string outerWallColorHex,
+            bool hasOuterWallColor)
         {
             Columns = columns;
             Cocoons = cocoons;
@@ -23,6 +26,9 @@ namespace Dovus.Core.RuleEngineV4
             OuterWallVisualOuterRadiusM = outerWallVisualOuterRadiusM;
             OuterWallSegments = outerWallSegments;
             OuterWallHeightM = outerWallHeightM;
+            HasOuterWallGeometry = hasOuterWallGeometry;
+            OuterWallColorHex = outerWallColorHex;
+            HasOuterWallColor = hasOuterWallColor;
         }
 
         public IReadOnlyList<RuleEngineV4SliceArenaColumn> Columns { get; }
@@ -32,6 +38,18 @@ namespace Dovus.Core.RuleEngineV4
         public float OuterWallVisualOuterRadiusM { get; }
         public int OuterWallSegments { get; }
         public float OuterWallHeightM { get; }
+
+        /// <summary>
+        /// <c>outer_wall_collision_radius_m</c> ve <c>outer_wall_segments</c> JSON'da var. Yoksa değerler
+        /// <see cref="RuleEngineV4SliceArenaDefaults"/>'tandır; okuyan taraf bunu görünür kılmalı.
+        /// </summary>
+        public bool HasOuterWallGeometry { get; }
+
+        /// <summary>Görsel duvarın düz taş rengi (O-7.3, O-8.2), <c>outer_wall_color</c>.</summary>
+        public string OuterWallColorHex { get; }
+
+        /// <summary><c>outer_wall_color</c> JSON'da var; yoksa renk <see cref="RuleEngineV4SliceArenaDefaults"/>'tandır.</summary>
+        public bool HasOuterWallColor { get; }
 
         public static RuleEngineV4SliceArena Default => BuildDefaults();
 
@@ -94,7 +112,10 @@ namespace Dovus.Core.RuleEngineV4
                 visualInner,
                 visualOuter,
                 node["outer_wall_segments"].AsInt(RuleEngineV4SliceArenaDefaults.OuterWallSegments),
-                F(node["outer_wall_height_m"], null, RuleEngineV4SliceArenaDefaults.OuterWallHeightM));
+                F(node["outer_wall_height_m"], null, RuleEngineV4SliceArenaDefaults.OuterWallHeightM),
+                !node["outer_wall_collision_radius_m"].IsNull && !node["outer_wall_segments"].IsNull,
+                node["outer_wall_color"].AsString(RuleEngineV4SliceArenaDefaults.OuterWallColorHex),
+                !node["outer_wall_color"].IsNull);
         }
 
         static RuleEngineV4SliceArena BuildDefaults()
@@ -135,7 +156,10 @@ namespace Dovus.Core.RuleEngineV4
                 RuleEngineV4SliceArenaDefaults.OuterWallCollisionRadiusM,
                 RuleEngineV4SliceArenaDefaults.OuterWallVisualOuterRadiusM,
                 RuleEngineV4SliceArenaDefaults.OuterWallSegments,
-                RuleEngineV4SliceArenaDefaults.OuterWallHeightM);
+                RuleEngineV4SliceArenaDefaults.OuterWallHeightM,
+                hasOuterWallGeometry: false,
+                RuleEngineV4SliceArenaDefaults.OuterWallColorHex,
+                hasOuterWallColor: false);
         }
 
         static float F(JsonValue primary, JsonValue secondary, float fallback)

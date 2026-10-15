@@ -47,6 +47,9 @@ namespace Dovus.Game.Actors
         public Vector3 LastSlideStart { get; private set; }
         public bool IsBound => _dodge != null && _clock != null;
 
+        /// <summary>O-4.9: engel ile gövde kenarı arası pay; v4 Hareket süpürmesi de bunu okur.</summary>
+        public float EdgeGapM => _tuning != null ? _tuning.EdgeGapM : DodgeMotionControllerDefaults.FallbackEdgeGapM;
+
         /// <summary>Kayma başladı: başlangıç konumu + yön (toz/ses sunumu).</summary>
         public event System.Action<Vector3, Vector3> SlideStarted;
 
@@ -192,7 +195,7 @@ namespace Dovus.Game.Actors
             BossReactorController reactor = _reactorCache;
             if (reactor != null && reactor.BodyRadiusM > DodgeMotionControllerDefaults.MinBodyRadiusM)
                 bossR = reactor.BodyRadiusM;
-            float gap = _tuning != null ? _tuning.EdgeGapM : DodgeMotionControllerDefaults.FallbackEdgeGapM;
+            float gap = EdgeGapM;
             float x = pos.x;
             float z = pos.z;
             DodgeEdge.StopBeforeCrossing(
@@ -231,7 +234,7 @@ namespace Dovus.Game.Actors
             if (_motor == null)
                 return pos;
 
-            return ArenaClamp.XZ(pos, _motor.Tuning.Arena.ArenaHalfSizeM, _motor.BodyRadiusM);
+            return ArenaClamp.XZ(pos, ArenaBoundary.RadiusM(_motor.Tuning), _motor.BodyRadiusM);
         }
     }
 }

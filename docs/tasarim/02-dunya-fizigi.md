@@ -72,7 +72,7 @@ A'nın (takım lideri ajan) kararları kullanıcı kaydı değildir. Kayıtla ç
 #### 1.1 Gövde yarıçapları ve kenardan ölçme
 | # | Kural | Başlangıç değeri (ayar) | Kaynak |
 |---|---|---|---|
-| D-1 | Her varlığın bir gövde yarıçapı vardır. | oyuncu 0,35 m · boss 2,5 m (parçalı boss'larda parça başına, boss belgesinde; Kül Ejderi `14` KE-2.5) · yaratık 0,5 m · yapı 1 m | [K 22:15] |
+| D-1 | Her varlığın bir gövde yarıçapı vardır. | oyuncu 0,35 m · boss 2,5 m (parçalı boss'larda parça başına, boss belgesinde; Kül Ejderi `18` KE-2.5) · yaratık 0,5 m · yapı 1 m | [K 22:15] |
 | D-2 | **Bütün mesafeler gövde kenarından ölçülür:** menzil, halka, sekme, tasma uzunluğu, itme. | — | [K 22:15] (kullanıcı onayı, `v3-kararlar.md`) |
 | D-3 | **Canlılar birbirinin içinden geçemez.** Kenarda dururlar. | — | [K 22:15] (KG-38 kapandı) |
 | D-4 | Yörünge yarıçapı taşıyanın gövde yarıçapına eklenir: parçalar taşıyanın kenarından 2 m uzakta döner. | 2 m + taşıyan yarıçapı | [K 22:15] (kullanıcı onayı, `v3-kararlar.md`) |

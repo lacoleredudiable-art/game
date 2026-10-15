@@ -107,3 +107,8 @@ MonoBehaviour:
     LeftLocalPosition: {x: 0, y: 0, z: 0}
     LeftLocalEulerAngles: {x: 0, y: 0, z: 0}
     LeftLocalScale: {x: 1, y: 1, z: 1}
+  _weaponLocomotion:
+  - WeaponKey: kilic
+    Override: {fileID: 22100000, guid: ad99a2242f28f3345ba038770a6623dd, type: 2}
+  - WeaponKey: yay
+    Override: {fileID: 22100000, guid: a9bf3fe878b912347a78bc2362e0dd7d, type: 2}

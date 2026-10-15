@@ -66,8 +66,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (RuleEngineV4CommandAccess.TryOnSure(cmd, out OnSureCommand onSure))
                 {
                     timing = onSure;
-                    if (onSure.ChargeSec > 0)
-                        yield return CoWaitWorld(onSure.ChargeSec);
                     if (onSure.PrefireSec > 0)
                         yield return CoWaitWorld(onSure.PrefireSec);
                     delivery.Refresh(_director, plan, focus, _delivery);
@@ -146,9 +144,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     {
                         if (!delivery.HitAllowed(victim, focus))
                             continue;
-                        float scale = timing != null ? timing.DamageScale : 1;
-                        dealt += RuleEngineV4WorldHost.ApplyDamage(
-                            _director, victim, dmg * dmgMult * scale);
+                        dealt += RuleEngineV4WorldHost.ApplyDamage(_director, victim, dmg * dmgMult);
                     }
                     continue;
                 }
@@ -291,7 +287,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
             };
             if (body != null)
             {
-                yield return RuleEngineV4MotionBridge.CoRun(body, motor, template, targetFn, radius);
+                // Sabit varış gövde değil, süpürmenin bulduğu merkez noktası: koşucu ondan ayrıca pay bırakmaz.
+                float runnerBodyM = trackTarget != null ? radius : 0;
+                float runnerGapM = trackTarget != null ? _physics.EdgeGapM(caster) : 0;
+                yield return RuleEngineV4MotionBridge.CoRun(body, motor, template, targetFn, runnerBodyM, runnerGapM);
                 if (motionKind == "dash")
                 {
                     bool atEdge = requestedM - meters > MotionDefaults.MinDashM

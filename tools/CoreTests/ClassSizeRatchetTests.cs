@@ -22,15 +22,14 @@ public sealed class ClassSizeRatchetTests
         ["PortalSystem"] = 979,
         ["MixamoAnimatorBind"] = 843,
         ["BuildSelectHud"] = 825,
-        ["TuningPanelHud"] = 819,
+        ["TuningPanelHud"] = 811,
         ["VitalsHud"] = 753,
         ["MechanicWorldRuntime"] = 733,
         ["MechanicGrammar"] = 722,
         ["TeamComboSystem"] = 721,
         ["TeamComboHost"] = 706,
-        ["ActorView"] = 666,
+        ["ActorView"] = 665,
         ["LivingEffectView"] = 671,
-        ["FollowCameraController"] = 660,
         ["StatusBoard"] = 632,
     };
 

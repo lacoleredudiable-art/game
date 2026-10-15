@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Composition.Builders
 {
-    /// <summary>v4 dilim arena: sütunlar, dış duvar (fizik), 18–22 m görsel halka, kozalar.</summary>
+    /// <summary>v4 dilim arena: sütunlar, dış duvar (fizik), 18–22 m görsel duvar ve duvar ötesi zemin, kozalar.</summary>
     public static class RuleEngineV4SliceArenaBuilder
     {
         static int _nextCocoonActor = RuleEngineV4SliceArenaBuilderDefaults.CocoonActorIdStart;
@@ -22,7 +22,9 @@ namespace Dovus.Game.Composition.Builders
 
             Transform columns = BuildColumns(root.transform, arena);
             BuildOuterWall(root.transform, arena);
-            BuildVisualRing(root.transform, arena);
+            RuleEngineV4SliceArenaShellBuilder.BuildWall(root.transform, arena);
+            RuleEngineV4SliceArenaShellBuilder.BuildBeyondGround(root.transform, (visuals ?? RuleEngineV4SliceArenaVisuals.Disabled).Beyond,
+                arena.OuterWallVisualOuterRadiusM);
             Transform cocoons = BuildCocoons(ctx, root.transform, arena);
             RuleEngineV4SliceArenaVisualsBuilder.Build(ctx.Host.transform, columns, cocoons, visuals);
         }
@@ -59,18 +61,13 @@ namespace Dovus.Game.Composition.Builders
         {
             var wallRoot = new GameObject("OuterWallCollision");
             wallRoot.transform.SetParent(parent, false);
-            int segments = Mathf.Max((int)RuleEngineV4SliceArenaBuilderDefaults.MinWallSegmentCount, arena.OuterWallSegments);
-            float radius = arena.OuterWallCollisionRadiusM;
+            var geometry = new RuleEngineV4SliceArenaWall(arena);
+            int segments = geometry.Segments;
             float height = Mathf.Max(RuleEngineV4SliceArenaBuilderDefaults.MinWallHeightM, arena.OuterWallHeightM);
-            float arc = 2f * Mathf.PI * radius / segments;
-            float thickness = Mathf.Max(
-                RuleEngineV4SliceArenaBuilderDefaults.WallThicknessMinM,
-                arc * RuleEngineV4SliceArenaBuilderDefaults.WallThicknessArcScale);
-            float depth = thickness * RuleEngineV4SliceArenaBuilderDefaults.WallSegmentDepthScale;
-            // Dış köşeler tam çarpışma yarıçapında: segmentler boşluksuz birleşir, 18 m dışına taşmaz.
-            float halfStep = Mathf.PI / segments;
-            float chord = 2f * radius * Mathf.Sin(halfStep);
-            float centerRadius = radius * Mathf.Cos(halfStep) - depth * 0.5f;
+            float thickness = geometry.ThicknessM;
+            float depth = geometry.DepthM;
+            float chord = geometry.ChordM;
+            float centerRadius = geometry.CenterRadiusM;
             for (int i = 0; i < segments; i++)
             {
                 float angle = i * (2f * Mathf.PI / segments);
@@ -92,36 +89,6 @@ namespace Dovus.Game.Composition.Builders
                 if (renderer != null)
                     renderer.enabled = false;
             }
-        }
-
-        static void BuildVisualRing(Transform parent, RuleEngineV4SliceArena arena)
-        {
-            float inner = arena.OuterWallVisualInnerRadiusM;
-            float outer = arena.OuterWallVisualOuterRadiusM;
-            if (outer <= inner)
-                return;
-
-            var ringRoot = new GameObject("OuterWallVisual");
-            ringRoot.transform.SetParent(parent, false);
-            int segments = Mathf.Max((int)RuleEngineV4SliceArenaBuilderDefaults.MinVisualRingSegments, arena.OuterWallSegments);
-            float midR = (inner + outer) * 0.5f;
-            float width = outer - inner;
-            float y = RuleEngineV4SliceArenaBuilderDefaults.VisualRingLiftM;
-            var lr = ringRoot.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false;
-            lr.loop = true;
-            lr.positionCount = segments;
-            lr.widthMultiplier = width;
-            lr.material = new Material(Shader.Find("Sprites/Default"));
-            lr.startColor = new Color(0.35f, 0.55f, 0.75f, 0.35f);
-            lr.endColor = lr.startColor;
-            var pts = new Vector3[segments];
-            for (int i = 0; i < segments; i++)
-            {
-                float angle = i * (2f * Mathf.PI / segments);
-                pts[i] = new Vector3(Mathf.Sin(angle) * midR, y, Mathf.Cos(angle) * midR);
-            }
-            lr.SetPositions(pts);
         }
 
         static Transform BuildCocoons(WorldContext ctx, Transform parent, RuleEngineV4SliceArena arena)

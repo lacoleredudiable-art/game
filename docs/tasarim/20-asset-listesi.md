@@ -3,7 +3,7 @@
 Sürüm 1.0 · 12 Ekim 2026 · Kullanıcı: Mustafa
 
 Kül Ejderi ve krater arenası için üretilecek asset'ler. Her biri için ölçü, üçgen ve doku bütçesi, kaynak ve
-kabul kontrolü. Sıra `13-tasarim-hatti.md` D bölümündedir. İlk ve en uzun iş ejderhadır (§1); onarım planı
+kabul kontrolü. Sıra `17-tasarim-hatti.md` D bölümündedir. İlk ve en uzun iş ejderhadır (§1); onarım planı
 sürerken yapılabilir, kod beklemez.
 
 Kimlik `AL-x.y`. Kabul kontrol sayfası O-16.8 yoludur: kullanıcı onaylamadan asset oyuna girmez.
@@ -15,7 +15,7 @@ Kimlik `AL-x.y`. Kabul kontrol sayfası O-16.8 yoludur: kullanıcı onaylamadan 
 ### 1.1 Parçalar
 
 Ejderhanın tamamı tek modelde üretilmez: 45 m'lik bir modelde baş ayrıntısı kaybolur, ve gövdenin büyük kısmı
-hiç kıpırdamaz (`14` KE-2.2). Dört parça üretilir, Blender'da birleştirilir, iki dosya olarak çıkar.
+hiç kıpırdamaz (`18` KE-2.2). Dört parça üretilir, Blender'da birleştirilir, iki dosya olarak çıkar.
 
 | Kimlik | Parça | Tripo'da ayrı üretim | Çıkış dosyası | Hareket |
 |---|---|---|---|---|
@@ -131,7 +131,7 @@ yeniden yapılmaz. Yalnız 4 sinema anı klip olarak yapılır. Oyuncu karakterl
 
 #### 1.5.2 Geçiş kuralları (kod)
 
-Her saldırı boss JSON'unda bir **poz dizisi** olarak yazılır: `[{poz, süre, eğri}]`. Süreler `14`'teki saldırı
+Her saldırı boss JSON'unda bir **poz dizisi** olarak yazılır: `[{poz, süre, eğri}]`. Süreler `18`'teki saldırı
 satırından gelir; kod ayrı süre uydurmaz.
 
 | Kimlik | Evre | Süre | Eğri | Örnek: Pençe Çakması (KE-5.4) |

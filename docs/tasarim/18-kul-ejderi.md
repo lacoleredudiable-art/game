@@ -3,8 +3,8 @@
 Sürüm 1.0 · 12 Ekim 2026 · Kullanıcı: Mustafa
 
 Bu belge oyunun ilk boss'unu `10-olculer.md` §6.1 şablonunun bütün alanlarıyla tanımlar. Ağların Kraliçesi'nin
-yerine geçer (karar A3: örümcek tamamen kalkar). Görünüm kuralları `12-sanat-incili.md`'dedir; burada yalnız
-boss'a özgü olanlar var. Arena yerleşimi (çatlakların, taşların, eski silahların tam yeri) `15-krater-arenasi`
+yerine geçer (karar A3: örümcek tamamen kalkar). Görünüm kuralları `16-sanat-incili.md`'dedir; burada yalnız
+boss'a özgü olanlar var. Arena yerleşimi (çatlakların, taşların, eski silahların tam yeri) `19-krater-arenasi`
 belgesinde yazılacak; bu belge arenadan yalnız boss'un kullandığı noktaları sabitler.
 
 **Verilen kararlar (12 Ekim):** yön olduğu gibi onaylı (A1); ceza zorluğa göre (A2); ilk hedef tek oyuncu +
@@ -16,7 +16,7 @@ belgesinde yazılacak; bu belge arenadan yalnız boss'un kullandığı noktalar�
 
 - Kimlik `KE-x.y`. PR'da ve test adında yazılır (ör. `KE_4_2_PenceCakmasi_OnIsaret`).
 - Kaynak ve doğrulama sütunları `10-olculer.md` §0'daki anlamdadır. Bu belgedeki sayıların çoğu `ÖNERİ`dir:
-  gri kutu denemesinde (`13` C2) telefonda onaylanır ya da değişir.
+  gri kutu denemesinde (`17` C2) telefonda onaylanır ya da değişir.
 - **Koordinatlar:** arena merkezi (0, 0). X doğu, Z kuzey, Y yukarı; metre. Arena sınırı 18 m daire (O-7.2).
 - **Hasar** oyuncu azami canının yüzdesi (oyuncu canı 1000, O-13.1); Normal zorlukta. Zorluk çarpanı §9.
 - **Ön işaret** O-6.2 görünümündedir (kırmızı kenar, dolan iç); kesilemez saldırıda kenar altındır (O-6.6).
@@ -41,7 +41,7 @@ belgesinde yazılacak; bu belge arenadan yalnız boss'un kullandığı noktalar�
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | KE-2.1 | Toplam uzunluk | 45 m (oyuncunun 25 katı, SI-7.1) | YÖN | T |
-| KE-2.2 | Gövde | Kuzeyde düz uzanır: göğsün ön yüzü duvar çizgisinde (Z ≈ 18), sırt Z 18–58 arasında, en yüksek yeri 18 m; katlı iki kanat krater kenarına yayılır (X ±18). Kuyruk kanatların altına kıvrılıdır, görünmez. Boyun göğsün ortasından çıkıp duvarın üstünden başa iner. Sabit kaya kütlesi, çarpışması duvarın çarpışmasıdır; yalnız kanatlar oynar (KE-6.6). Yerleşim `15-krater-arenasi.md` §3 | YÖN + Tripo kaba modeli (12 Ekim, `ejder_govde` v0) | K |
+| KE-2.2 | Gövde | Kuzeyde düz uzanır: göğsün ön yüzü duvar çizgisinde (Z ≈ 18), sırt Z 18–58 arasında, en yüksek yeri 18 m; katlı iki kanat krater kenarına yayılır (X ±18). Kuyruk kanatların altına kıvrılıdır, görünmez. Boyun göğsün ortasından çıkıp duvarın üstünden başa iner. Sabit kaya kütlesi, çarpışması duvarın çarpışmasıdır; yalnız kanatlar oynar (KE-6.6). Yerleşim `19-krater-arenasi.md` §3 | YÖN + Tripo kaba modeli (12 Ekim, `ejder_govde` v0) | K |
 | KE-2.3 | Baş (faz 1, yatarken) | 9 m uzun, 7 m yüksek. Burun ucu (0, 7,5), kafatasının arkası (0, 16,5); çene zemine yaslı. Boyun Z = 16,5–18 arasında duvara girer | YÖN | T |
 | KE-2.4 | Ön pençeler | İki pençe, her biri 5,2 m uzun, 4,2 m geniş; tırnak ucu Z 11,3, topuk Z 16,5. Sol (batı) pençe merkezi (−8, 13,7), sağ (doğu) (8, 13,7). Bacak dirsekten geriye bükülür, omuz göğse (Z ≈ 19, 10 m yükseklik) girer | Tripo bacak modeli (12 Ekim, `ejder_on` v0) | T |
 | KE-2.5 | Çarpışma (oyuncu boss'un içine giremez) | Baş: kapsül, yarıçap 3,0 m, eksen Z, (0, 3, 9) – (0, 3, 15). Her pençe: kapsül, yarıçap 2,0 m, yükseklik 4 m, merkez (±8, 2, 13,7); bacak: kapsül, yarıçap 1,5 m, (±7,5, 0, 15) – (±7,4, 10, 19). Boyun ve gövde: duvar. Faz 2 ve 3'te konumlar KE-6'daki gibi değişir | ÖNERİ | T, G |
@@ -286,7 +286,7 @@ Arena belgesi bunları değiştirmez; geri kalan her şeyi o belirler.
 
 Dikili taşlar arası mesafeler: (−9, 4)–(9, 4) 18 m; yan taşlardan (0, −10)'a 16,6 m. Yürüme hızıyla (6,4 m/s)
 en uzak taşa ~3 s. Uyku Mührü'nün 15 s'si ve Kor Mührü'nün 10 s'si bu mesafelerle rahat ama boş geçmeyecek
-şekilde seçildi; gri kutuda denenir (`13` C2).
+şekilde seçildi; gri kutuda denenir (`17` C2).
 
 ---
 

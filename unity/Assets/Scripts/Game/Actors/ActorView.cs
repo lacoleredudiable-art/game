@@ -150,9 +150,9 @@ namespace Dovus.Game.Actors
         const float HeavyAnimSpeed = 0.9f;
 
         /// <summary>
-        /// docs/element-sistemi.json weapons[].animations_key — arketip override controller'ını
-        /// uygular (yoksa temel controller'da kalır, hata yok — Mixamo override'lar bu PC dışında
-        /// gitignored olduğundan boş olabilir). İdempotent: aynı anahtar tekrar gelirse no-op.
+        /// docs/element-sistemi.json weapons[].animations_key — silahın controller'ını uygular
+        /// (<see cref="WeaponVisualRegistry.ResolveController"/>: k3'te silah yürüme seti, diğer iskelette
+        /// arketip override'ı). İdempotent: aynı anahtar tekrar gelirse no-op.
         /// </summary>
         public void SetWeapon(string animationsKey) => SetWeapon(animationsKey, force: false);
 
@@ -170,7 +170,7 @@ namespace Dovus.Game.Actors
             }
 
             string archetype = WeaponArchetypeMap.ArchetypeFor(animationsKey);
-            ApplyArchetypeController(archetype);
+            ApplyWeaponController(animationsKey, archetype);
 
             float speed = archetype is WeaponArchetypeMap.Hammer or WeaponArchetypeMap.Gun ? HeavyAnimSpeed : 1f;
             if (_animator != null)
@@ -195,14 +195,13 @@ namespace Dovus.Game.Actors
                 _handProps.Apply(animationsKey);
         }
 
-        void ApplyArchetypeController(string archetypeKey)
+        void ApplyWeaponController(string weaponKey, string archetypeKey)
         {
             if (_animator == null)
                 return;
-            RuntimeAnimatorController ctrl = _weaponRegistry != null ? _weaponRegistry.FindOverride(archetypeKey) : null;
-            // Override yalnız kendi temel controller'ında anlamlı; başka iskeletin controller'ını ezmez.
-            bool foreign = ctrl is AnimatorOverrideController ovr && ovr.runtimeAnimatorController != _baseController;
-            RuntimeAnimatorController target = ctrl != null && !foreign ? ctrl : _baseController;
+            RuntimeAnimatorController target = _weaponRegistry != null
+                ? _weaponRegistry.ResolveController(weaponKey, archetypeKey, _baseController)
+                : _baseController;
             if (_animator.runtimeAnimatorController == target)
                 return;
             _animator.runtimeAnimatorController = target;

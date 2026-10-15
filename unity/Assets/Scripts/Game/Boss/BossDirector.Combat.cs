@@ -91,7 +91,7 @@ namespace Dovus.Game.Boss
             if (kind == BossAttackKind.Pounce)
             {
                 Vector3 land = aim != null ? aim.position : _reactor.Home;
-                float arenaR = _combat.SkillMotion.ArenaHalfSizeM - _combat.Boss.PounceWallMarginM;
+                float arenaR = ArenaBoundary.RadiusM(_combat.SkillMotion) - _combat.Boss.PounceWallMarginM;
                 land = ArenaClamp.XZ(land, Mathf.Max(0f, arenaR), 0f);
                 _attack.SetLanding(land.x, land.z);
                 _attack.ApplyPounce();

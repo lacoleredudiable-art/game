@@ -8,10 +8,12 @@ namespace Dovus.Core.Tuning
     /// (i-frame 260, kaçış 3,8 m, tek PERFECT 150 ms / HARİKA 190, kör %30, PERFECT bonusu 2 sn).
     /// Sürüm 9 = EnforceCooldown ve EnforceResourceCost varsayılan true (1.1b).
     /// Sürüm 10 = dodge 2×6 sn dolum + birleşik dodge ayarları (PLAN 1.3).
+    /// Sürüm 11 = SkillKick* Punch FOV oranı 0–0,25 (eski 0,8–3,2 FOV'u 0'a düşürüyordu).
+    /// Sürüm 12 = dodge zincir test değerleri: T_tek 500, birleşme penceresi 500, T_zincir 1300 ms (15-dodge-tasarimi §3.4).
     /// </summary>
     public static class TuningSchema
     {
-        public const int Version = 10;
+        public const int Version = 12;
 
         public enum LoadDecision
         {

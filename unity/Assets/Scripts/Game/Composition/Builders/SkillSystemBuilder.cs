@@ -103,9 +103,16 @@ namespace Dovus.Game.Composition.Builders
             var directorGo = ctx.Boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
             // kural_motoru_v4: denge çubuğu tavanı scale.boss_poise_bar (dünyaya özel CombatTuning örneği).
+            BossAttackDamage? sliceBossDamage = null;
             if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
+            {
                 combat.Boss.PoiseMax = ctx.Host.RuleEngineV4Scale.BossPoiseBar;
-            bossDir.Bind(ctx.Clock, combat, tuning, boss, input, player, vitals, ctx.BossVitals, telegraph, feel);
+                sliceBossDamage = RuleEngineV4BossDamage.Resolve(
+                    ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss, combat.Status);
+                RuleEngineV4BossDamage.ApplyPoisonBreathShape(ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss);
+                RuleEngineV4BossDamage.DisableLegacyPoisonCombo(combat.Status);
+            }
+            bossDir.Bind(ctx.Clock, combat, tuning, boss, input, player, vitals, ctx.BossVitals, telegraph, feel, sliceBossDamage);
             bossDir.BindTeam(ctx.TeamAccess);
             if (bossStatus != null)
                 bossDir.BindStatus(bossStatus);
@@ -118,10 +125,13 @@ namespace Dovus.Game.Composition.Builders
             var hostileTargets = directorGo.AddComponent<HostileTargetsHost>();
             TargetingConfig targetingConfig = BossEncounterData.LoadTargeting(tuning.Boss.ActiveBossResourcePath);
             hostileTargets.Configure(targetingConfig);
+            float playerBodyM = RuleEngineV4PhysicsBodies.PlayerBodyRadiusM(ctx, CompositionConstants.PlayerRadiusM);
+            float allyBodyM = RuleEngineV4PhysicsBodies.PlayerBodyRadiusM(
+                ctx, CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale);
             hostileTargets.Register(
                 player,
                 TargetKind.Player,
-                CompositionConstants.PlayerRadiusM,
+                playerBodyM,
                 alive: () => vitals == null || !vitals.IsDown,
                 stealthed: () => playerStatus != null && playerStatus.Board.IsStealthed);
             if (ctx.AllyDummyController != null)
@@ -130,7 +140,7 @@ namespace Dovus.Game.Composition.Builders
                 hostileTargets.Register(
                     ctx.AllyDummyController.transform,
                     TargetKind.Ally,
-                    CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale,
+                    allyBodyM,
                     alive: () => !ctx.AllyDummyController.IsDown,
                     stealthed: () => ctx.AllyDummyController.Board != null && ctx.AllyDummyController.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
@@ -145,7 +155,7 @@ namespace Dovus.Game.Composition.Builders
                 hostileTargets.Register(
                     ctx.AllyDummy2Controller.transform,
                     TargetKind.Ally,
-                    CompositionConstants.PlayerRadiusM * SkillSystemBuilderDefaults.PlayerColliderRadiusScale,
+                    allyBodyM,
                     alive: () => !ctx.AllyDummy2Controller.IsDown,
                     stealthed: () => ctx.AllyDummy2Controller.Board != null && ctx.AllyDummy2Controller.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
@@ -230,7 +240,7 @@ namespace Dovus.Game.Composition.Builders
             director.BindProjectiles(projectileHost);
 
             ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.Bind(
-                ctx.Clock, combat.SkillMotion.ArenaHalfSizeM, CompositionConstants.BossRadiusM);
+                ctx.Clock, ArenaBoundary.RadiusM(combat.SkillMotion), boss.BodyRadiusM);
             ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.BindFollowCamera(follow);
             ctx.Player.GetComponent<MotionTemplateBodyHost>()?.BindFollowCamera(follow);
             var webFields = directorGo.AddComponent<WebFieldView>();

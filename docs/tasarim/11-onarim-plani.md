@@ -2,6 +2,8 @@
 
 Sürüm 1.0 · 12 Ekim 2026 · Kullanıcı: Mustafa
 
+> **Arşiv (14 Ekim 2026):** bu planın yerine `14-kodlama-plani.md` geçti. Kalan adımlar oradaki aşamalara dağıtıldı.
+
 Bu plan tek tek hata kovalamak yerine hataları üreten dört kronik sebebi kapatır. Adımlar **sırayla**
 yapılır; bir adım bitmeden (merge + ölçüt sağlandı) sonrakine geçilmez. Her adım bir ya da birkaç küçük PR'dır;
 her PR tek iş yapar.
@@ -39,10 +41,27 @@ Her PR açıklamasında **önce/sonra Gözcü sayısı** yazılır. Sayı düşm
    değerler kaldırılır.
 3. **Can ve hasar ölçeği:** yalnız `scale` bloğu (oyuncu 1000). Boss JSON'undaki 120/22 ölçeği ve
    `PlayerSettings.PlayerMaxHp` dilim yolunda okunmaz. (O-6.9, O-13.1)
-4. **Telefondaki ayar dosyası:** dilim APK'sı `tuning.vNN.json` okumaz; değerler yalnız kod/JSON'dan gelir.
-   (O-17.8)
+4. **Telefondaki ayar dosyası:** dosya kalır (Adım 6'daki ayar masasının temeli), ama sessiz eski değer taşımaz:
+   sürüm değişince sıfırlanır; açılışta her ayar değerinin kaynağı (kod / JSON / ayar dosyası) log'a yazılır;
+   ayar dosyasındaki değer ancak panelden bilerek kaydedilmişse geçerlidir. (O-17.8)
 - Her PR'da: "bu değer şu tek yerde" diye test (`O_7_2_...` gibi adlı).
 - Ölçüt: §18'deki Ç-1…Ç-9 maddelerinin hepsi kapandı; Gözcü'de `ayak_zemin_alti` ve gövde-duvar satırı 0.
+
+### Adım 2.5 — Koruma kapısı
+Amaç: bozan değişiklik master'a giremesin. (Envanter A4)
+GitHub'da Unity CI yok (Unity 6 kişisel lisans). Koruma = yerelde zorunlu O_ testleri + Gözcü tür bazlı cırcır +
+GitHub'daki hızlı PR kapısı.
+1. **Yerelde zorunlu PlayMode testleri:** her PR'dan önce adı `O_` ile başlayan PlayMode testleri + Gözcü duman
+   testi yerelde koşulur; geçen/kalan/atlanan sayısı ve Gözcü tür tablosu (`cirlik.txt`) PR açıklamasına
+   yapıştırılır. Yapıştırılmamış PR merge edilmez (AGENTS.md).
+2. **Gözcü cırcırı:** `tools/gozcu-esik.txt` tür başına satır tavanı tutar. `engel` türü tavanı aşarsa duman
+   testi kırmızı ve hangi türün arttığını yazar; sayıyı düşüren PR eşiği de düşürür (düşürmezse test uyarır).
+   Gerçek saate bağlı oynayan türler (`uyumsuz_klip`, `efekt_ekran_kaplama`) şimdilik `uyari`; envanter Y20
+   ("tek oyun saati") bitince `engel` olur.
+3. **PR kapısı + dal koruması:** GitHub'daki "PR kapısı" (OYUN.md, Core, Integration, GameCompile) master için tek
+   zorunlu durum denetimi; master'a doğrudan push kapalı.
+- Ölçüt: Gözcü cırcırı tavanı aşan türde duman testini kırmızı yapar; AGENTS.md kuralı yazılı; dal koruması
+  açık.
 
 ### Adım 3 — K3: Sessiz geri dönüş yasağı
 1. Dilim yolundaki her geri dönüş noktası (`PlayBasicStrike`'ın 5 koşulu, klip bulunamadı, efekt bulunamadı,
@@ -73,6 +92,19 @@ Sırayla, her biri ayrı PR, her birinde önce/sonra Gözcü sayısı:
 5. Hareket ve Koruma hücrelerinden silah teslimini kaldır; Sabit yapıları (diken, kaynak, duvar, tuzak) — `09`.
 6. Boss efektlerinin ekran kaplaması (O-9.1), ortam: sis, duvar ötesi, ışık (O-7.7, O-8.5–O-8.7).
 7. `WaitForEndOfFrame` yüzünden atlanan 3 test: batchmode'da çalışan bekleme yöntemine geçir.
+
+### Adım 6 — Ayar masası (teknik onarım bittikten sonra)
+Amaç: görünüş ve his ayarlarını kod değiştirmeden, telefonda anında değiştirip denemek.
+1. Görünüş/his ayarları tek dosyada, bölümlere ayrılmış: kamera, hareket, animasyon, efekt, ortam. Her ayarın
+   `10-olculer` kimliği (ör. O-5.2) ve alt/üst sınırı dosyada yazılı.
+2. Debug APK'sında oyun içi panel: kaydırma çubukları (canlı), A/B karşılaştırma (iki ayar seti arasında tek
+   tuş), "Kaydet" ve "Dışa aktar". Mağaza sürümünde panel yok; yalnız kaydedilmiş değerler.
+3. Dışa aktarılan dosyayı ajan repoya koyar; telefonda bulunan his kalıcı olur.
+4. Animasyon için klip başına: oynatma hızı, evre zamanları (hazırlık/vuruş/toparlanma), silah tutuş açısı,
+   omuz/kol için küçük poz kaydırması (animasyon iskeleti kısıtlarıyla, birkaç derece). Hareketin yayını
+   değiştirmek panelle değil, yeni çekim ya da Blender düzenlemesiyle yapılır.
+- Ölçüt: kullanıcı yürüme hızını, kamera açısını ve dodge süresini telefonda değiştirip kaydedebiliyor; kayıt
+  sonraki açılışta geçerli; değerin kaynağı log'da görünüyor.
 
 ## Çalışma kuralları (bütün adımlar)
 - Bir PR tek iş. Aynı dalda iki ajan çalışmaz.

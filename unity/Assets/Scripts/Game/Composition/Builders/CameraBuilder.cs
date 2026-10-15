@@ -1,5 +1,6 @@
 using Dovus.Game.Arena;
 using Dovus.Game.Cameras;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Vfx;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -18,7 +19,6 @@ namespace Dovus.Game.Composition.Builders
             camera.backgroundColor = tuning.Visuals.BackgroundColor;
             camera.nearClipPlane = CameraBuilderDefaults.NearClipM;
             camera.farClipPlane = CameraBuilderDefaults.FarClipM;
-            camera.fieldOfView = tuning.Camera.CameraFovDeg;
 
             camGo.AddComponent<AudioListener>();
             var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
@@ -29,17 +29,47 @@ namespace Dovus.Game.Composition.Builders
             follow.Target = ctx.Player.transform;
             follow.BossTarget = ctx.Boss.transform;
             follow.BindCollisionFiltering(ctx.Player.transform, ctx.Boss.transform, ctx.AllyDummyController?.transform);
+            if (tuning.RuleEngineV4.SliceScene)
+                BindSliceCamera(ctx, follow);
+            camera.fieldOfView = follow.BaseFrame.FovDeg;
             Vector3 startOffset = tuning.Camera.CameraShoulderOffset
-                + Vector3.back * tuning.Camera.CameraDistanceM;
+                + Vector3.back * follow.BaseFrame.DistanceM;
             camGo.transform.position = ctx.Player.transform.position + startOffset;
             ctx.FollowCameraController = follow;
             ctx.MainCamera = camera;
             return follow;
         }
 
+        /// <summary>
+        /// O-5.1–O-5.4 tek kaynak (slice_camera); O-5.8 ve O-5.15 için boss gövdesi: yarıçap world_physics'ten,
+        /// tepe görsel boydan (O-6.10 <c>BossVisualHeightM</c>, kökün altındaki taban ActorsBuilder'daki gibi).
+        /// O-5.6, O-5.7, O-5.9, O-5.11 kuralları da slice_camera'dan; eksikse bağlanmaz ([V4-FALLBACK]).
+        /// </summary>
+        static void BindSliceCamera(WorldContext ctx, FollowCameraController follow)
+        {
+            var catalog = new RuleEngineV4CatalogAccess().Catalog;
+            follow.UseBaseFrame(RuleEngineV4CameraFrame.Resolve(catalog.SliceCamera, ctx.Tuning.Camera));
+            float footBelowRootM = CompositionConstants.BossHeightM * 0.5f;
+            var body = new CameraBossBody(
+                ctx.Boss.transform,
+                RuleEngineV4BossBody.RadiusM("CameraBuilder.kamera"),
+                ctx.Tuning.Player.BossVisualHeightM - footBelowRootM);
+            follow.BindBossBody(body);
+            CameraSliceRules? rules = RuleEngineV4CameraFrame.ResolveRules(catalog.SliceCamera);
+            if (!rules.HasValue)
+                return;
+            var fade = new CameraBossFade(ctx.Boss.transform, rules.Value.BossOccludedOpacity);
+            follow.SliceGuard = new CameraSliceGuard(rules.Value, body, fade);
+        }
+
         public void ApplyAtmosphere(WorldContext ctx)
         {
-            SceneAtmosphere.Apply(ctx.Sun, ctx.MainCamera, ctx.Tuning);
+            ArenaFog? sliceFog = ctx.Tuning.RuleEngineV4.SliceScene
+                ? (ArenaFog?)RuleEngineV4SliceArenaShellBuilder.Fog(new RuleEngineV4CatalogAccess().Catalog.SliceArenaVisuals.Beyond)
+                : null;
+            SceneAtmosphere.Apply(ctx.Sun, ctx.MainCamera, ctx.Tuning, sliceFog);
+            if (ctx.MainCamera != null && ctx.FollowCameraController != null)
+                ctx.MainCamera.fieldOfView = ctx.FollowCameraController.BaseFrame.FovDeg;
             BillboardVfxView.CreateEmberField(ctx.Boss.transform, new Color(1f, 0.45f, 0.12f), rate: CameraBuilderDefaults.BossEmberRate);
         }
     }

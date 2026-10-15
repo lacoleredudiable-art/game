@@ -3,9 +3,9 @@
 Sürüm 1.0 · 12 Ekim 2026 · Kullanıcı: Mustafa
 
 Kül Ejderi'nin arenası. Sıfırdan tasarlanmıştır; bugünkü arenanın hiçbir parçası (yıkık köy duvarı, kaburgalar,
-sütunlar, kozalar, ağ dokusu, yeşil zemin) kullanılmaz (`12` §12). Bu belge her nesnenin yerini, ölçüsünü,
-çarpışmasını ve hangi asset'ten yapılacağını söyler. Boss'un kullandığı noktalar (`14` §12) burada aynen
-geçer, değiştirilmez. Görünüm kuralları `12-sanat-incili.md`'dedir.
+sütunlar, kozalar, ağ dokusu, yeşil zemin) kullanılmaz (`16` §12). Bu belge her nesnenin yerini, ölçüsünü,
+çarpışmasını ve hangi asset'ten yapılacağını söyler. Boss'un kullandığı noktalar (`18` §12) burada aynen
+geçer, değiştirilmez. Görünüm kuralları `16-sanat-incili.md`'dedir.
 
 ---
 
@@ -46,7 +46,7 @@ geçer, değiştirilmez. Görünüm kuralları `12-sanat-incili.md`'dedir.
 
 ## 3. Ejderhanın gövdesi (duvar ve yamaç)
 
-`14` KE-2.2'deki yerleşim. Gövde sabit kaya kütlesidir; baş, boyun, pençeler ve kanatlar canlandırılır. Gövdenin
+`18` KE-2.2'deki yerleşim. Gövde sabit kaya kütlesidir; baş, boyun, pençeler ve kanatlar canlandırılır. Gövdenin
 ölçüleri Tripo kaba modelinden (`ejder_govde` v0, 12 Ekim) ölçülmüştür.
 
 | Kimlik | Parça | Konum | Ölçü | Not |
@@ -111,7 +111,7 @@ merkezden geçen çizgiye diktir (çember boyunca); değer azimut gibi okunur (0
 | KA-6.1 | Çarpışma | Tek parça halka: iç yüz 18 m, 4 m yükseklik, kesintisiz; boss sektörü dahil (O-7.2, O-7.3) | Kodla üretilen halka çarpışması (teknik hattın `fix/arena-siniri-tek-kaynak` işi) | T, G |
 | KA-6.2 | Kaya duvarı (azimut 30°–330°) | 18 kaya yüzü parçası, iç yüzleri r 18 m'de, yüksekliği 6–9 m arasında düzensiz, merkeze bakar; komşu parçalar en az 1 m bindirir (arada boşluk yok) | `PolyHaven/rock_face_01`, `rock_face_02` (4000'er üçgen), dönüş ve ölçek çeşitlemesi | K (SI-13.1 ortam turu) |
 | KA-6.3 | Duvar dibi kayaları | 10 kaya bloğu r 17,8–19 m'de, yarısı duvara gömülü; oynanış alanına en çok 0,2 m taşar, çarpışmaları duvarın içinde kalır | `PolyHaven/boulder_01` (3000 üçgen) | T (r < 17,8 m'de kaya yok) |
-| KA-6.4 | Ejderha duvarı (azimut 330°–30°) | Duvarın görünen yüzü ejderhanın göğsüdür (KA-3.4) | `13` D4 (ejderha gövdesi) | K |
+| KA-6.4 | Ejderha duvarı (azimut 330°–30°) | Duvarın görünen yüzü ejderhanın göğsüdür (KA-3.4) | `17` D4 (ejderha gövdesi) | K |
 | KA-6.5 | Yamaç | 22–60 m arasında dışa doğru yükselen kaya; kenar çizgisi r 45–60 m'de 25–40 m yükseklikte. 8 yamaç parçası | `PolyHaven/mountainside`, `namaqualand_cliff_02` | K |
 | KA-6.6 | Güney basamakları | Azimut 175°–185° arasında, duvarın üstünden (r 22 m) yamaca (r 40 m) çıkan eski oyma basamaklar: basamak 0,18 m yüksek, 0,35 m derin, 2,2 m geniş, yer yer kırık. Savaşçıların krater'e indiği yol; çarpışma yok | Blender'da basit modüler basamak (yeni, küçük iş) | K |
 | KA-6.7 | Uzak dağlar | 60–250 m'de 3 katman silüet; en yakını 60–90 m, en uzağı 200–250 m | `DenemeSahnesi/Meshes/Skyline.obj` + `FogSilhouette` shader | K |
@@ -148,7 +148,7 @@ SI-7.3. Yere eğik saplanmış, paslı, kırık kılıç ve mızraklar. Çarpı�
 | KA-8.5 | Yansıma sondası | Merkezde tek, 40 m kutu, pişirilmiş | ÖNERİ |
 | KA-8.6 | Ek ışıklar | Faz 3 kalp ışığı (0, 3, 13); ejderha ateşi sırasında ağız ucunda. Başka gerçek zamanlı ışık yok (SI-3.5) | SI-3.5 |
 | KA-8.7 | Yer sisi kartları | 6 kart, azimut 30°, 90°, 150°, 210°, 270°, 330°'de, r 20 m merkezli, 0,3 m/s sürüklenir; arena merkezine doğru opaklık SI-4.3'e göre azalır | SI-4.3 |
-| KA-8.8 | Ses kaynakları (yer) | Rüzgâr (2D, sürekli); kraterin uğultusu (3D, (0, 0, 24), göğsün altında); ejderha nefesi (3D, burun delikleri); çatlak cızırtısı (3D, yalnız alev sırasında, çatlakta). Ses tasarımı sonra (`13` D7) | ÖNERİ |
+| KA-8.8 | Ses kaynakları (yer) | Rüzgâr (2D, sürekli); kraterin uğultusu (3D, (0, 0, 24), göğsün altında); ejderha nefesi (3D, burun delikleri); çatlak cızırtısı (3D, yalnız alev sırasında, çatlakta). Ses tasarımı sonra (`17` D7) | ÖNERİ |
 | KA-8.9 | Gezinme ağı (yapay zekâ dostları) | Oynanış alanında, ajan yarıçapı 0,35 m (r ≤ 17,65 m); taşlar, pençeler ve faz 2 bacakları ağı oyar (carve). Faz geçişinde ağ yeniden hesaplanmaz, engeller güncellenir | KE-10.2 |
 
 ---
@@ -163,7 +163,7 @@ SI-7.3. Yere eğik saplanmış, paslı, kırık kılıç ve mızraklar. Çarpı�
 
 ---
 
-## 10. Gri kutu (`13` C1)
+## 10. Gri kutu (`17` C1)
 
 Model yapılmadan önce telefonda denenecek ilk sürüm. Her şey gerçek ölçüde, düz renkli basit şekiller.
 
@@ -177,7 +177,7 @@ Model yapılmadan önce telefonda denenecek ilk sürüm. Her şey gerçek ölç�
 | KA-10.6 | Eski silahlar | 16 ince çubuk (1,1 m) |
 | KA-10.7 | Sis ve ışık | SI-3 ve SI-4 değerleri baştan açık (sis ölçek hissinin yarısıdır) |
 
-**Gri kutuda ölçülecekler (`13` C2):**
+**Gri kutuda ölçülecekler (`17` C2):**
 
 | Kimlik | Ölçüm | Hedef |
 |---|---|---|
@@ -191,7 +191,7 @@ Model yapılmadan önce telefonda denenecek ilk sürüm. Her şey gerçek ölç�
 
 ## 11. Kaldırılanlar
 
-Karar A3 ve `12` §12 gereği. Silme işi teknik hatta, kendi PR'ında yapılır; diğer ajanların dallarına
+Karar A3 ve `16` §12 gereği. Silme işi teknik hatta, kendi PR'ında yapılır; diğer ajanların dallarına
 dokunulmaz.
 
 | Kimlik | Kalkan | Yer |
@@ -200,4 +200,4 @@ dokunulmaz.
 | KA-11.2 | Kaburgalar | `Art/Ortam/kaburga/`, `slice_arena_visuals.ribs`; `art/ortam-yerlesim` dalındaki kaburga işi bu tasarımla geçersiz |
 | KA-11.3 | Kozalar | `Art/Ortam/koza/`, `slice_arena` koza girdileri |
 | KA-11.4 | Köy duvarı ve sütunlar | `Art/Ortam/duvar/`, `Art/Ortam/sutun/` (sütunların yerini dikili taşlar alır) |
-| KA-11.5 | `10-olculer.md` O-7.3–O-7.9 | Bu belgeye bağlanır (`13` B4) |
+| KA-11.5 | `10-olculer.md` O-7.3–O-7.9 | Bu belgeye bağlanır (`17` B4) |

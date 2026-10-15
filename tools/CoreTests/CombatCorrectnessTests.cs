@@ -279,7 +279,7 @@ public class CombatCorrectnessTests
     public void S4_DotTick_PiercesArmor_IsUndodgeable_AndShowsNumber()
     {
         string status = Game("Actors/ActorStatusHost.cs");
-        Assert.That(status, Does.Contain("ApplyDamage(payload, dodgeable: false, pierceArmor: true)"));
+        Assert.That(status, Does.Contain("ApplyDamage(payload, dodgeable: false, pierceArmor: true, overTime: true)"));
         Assert.That(status, Does.Contain("DamageOverTimeDealt?.Invoke(LastAppliedDamage)"));
         Assert.That(Game("Skills/ManifestationDirector.cs"), Does.Contain("DamageOverTimeDealt += OnBossDamageOverTime"));
     }

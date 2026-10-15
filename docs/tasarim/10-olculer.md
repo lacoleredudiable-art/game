@@ -162,12 +162,14 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-4.4 | Bir basış = zıplama | Joystick yönünde (joystick boşsa karakterin baktığı yön) 3,8 m, 0,25 s, yay şeklinde. Yükseklik **yalnız klipte** (tepe 0,6 m); çarpışma kapsülü zeminde kalır | KOD `DodgeTuning.DistanceM`, `DurationMs` + BELGE (`06` §5) | T, G |
+| O-4.4a | İki faz | Dodge iki fazlıdır: **patlama** (ilk 0,25 s, mesafenin ~%75'i, kamera hafif hareket bulanıklığı) + **süzülme** (0,40 s, yavaşlayarak, kalan ~%25). Süzülme bitince doğrudan bekleme pozu; iniş sarsıntısı yok. Bugünkü süzülme kuyruğu 0,12 s (`GlideTailMs`) → 0,40 s. Referans: Dragon Nest 2:37,6 kare analizi (patlama 0,27 s, süzülme 0,40 s) | KOD→ÖNERİ (onaylı K 12 Ekim) | T, K |
 | O-4.5 | Havadayken ikinci basış = takla | İlk basıştan sonra 0,2 s içinde; toplam mesafe ×1,6 (6,1 m), toplam süre ×1,4 (0,35 s); takla klibi havada döner, ayaklar zeminin altına inmez | KOD `DoubleTapWindowMs`, `CombinedDistanceMult`, `CombinedDurationMult` + BELGE | T, G, K |
 | O-4.6 | Hasarsızlık penceresi | Tek basış: basıştan itibaren 0,26 s. Takla: 0,52 s | KOD `IframeMs`, `CombinedIframeMs` | T |
+| O-4.6a | Hasarsızlık görünür | I-frame penceresi boyunca karakterin kenarında kor turuncusu parlama (0,05 s'de açılır, pencere bitince 0,05 s'de söner); Hareket skillerinin yolculuğunda da aynı parlama. Referans: Dragon Nest dodge, 1. fazda altın parlama | ÖNERİ (onaylı K 12 Ekim) | K |
 | O-4.7 | Hak ve dolum | 2 hak; her biri 6 s'de dolar | KOD `MaxCharges`, `ChargeRechargeMs` | T |
 | O-4.8 | Kusursuz dodge | Boss vuruşuna 0,15 s kala yapılan dodge: hak iade edilir, sonraki 2 s içindeki ilk vuruş ×1,3; 0,2 s ağır çekim hissi | KOD `PerfectWindowMs` vb. | T, E |
-| O-4.9 | Engeller | Dodge duvardan, sütundan, kozadan ve boss gövdesinden geçemez: yol boyunca kapsül süpürülür (sweep), değdiği yerde kenardan 0,15 m önce durur | KOD `EdgeGapM` + ÖNERİ | G (her kare: oyuncu kapsülü bir engelin içinde ise kırmızı) |
-| O-4.10 | After-image (iz görüntüsü) | Yalnız gerçek yol üzerinde, oyuncunun arkasında; 3 kopya, 0,15 s ömür, %55 opaklık. İz oyuncunun önüne düşmez | KOD `AfterimageAlpha` + ÖNERİ | K |
+| O-4.9 | Engeller | Dodge duvardan, sütundan, kozadan ve boss gövdesinden geçemez; çarpınca durmaz, yüzey boyunca kayar. Kayma bütçesi (yol uzunluğu) = R × max(t, `SlideMinRatio`); R = çarpma anında kalan yol, t = çubuk yönünün yüzeye teğet bileşeni (0-1). Taraf: t ≥ `EngineChoiceT` ise çubuğun teğet işaretinden (oyuncu seçer, tehlike alanı hesaba katılmaz); değilse motor `SlideScanPadM` kadar ileri tarayıp daha boş tarafı seçer; aktif alan telegraph'ları (slam, koni, atılış, zehir ağı alanı; mermi ve volley hariç; pencere her saldırının kendi windup'ı başlayınca) dolu sayılır; iki taraf da eşitse saat yönü. Kayma `SlideStepMs` sabit adımlarla yüzeyi takip eder (adım başına en çok `SlideMaxIter` iterasyon), kayma boyunca `EdgeGapM` korunur, taraf dodge boyunca kilitlidir. Bir adımda gerçek ilerleme beklenenin `SlideStallRatio` oranından azsa (köşe) kayma durur. i-frame `IframeMs` kadar sürer, hareketten bağımsızdır; hak her durumda yanar. "Tam 90°" ayrı kural değil, `EngineChoiceT` bandının içinde kalır | KOD `EdgeGapM` + K (tasarımcı kararı); `SlideMinRatio` 0,5, `EngineChoiceT` 0,17, `SlideScanPadM` 0,5 m, `SlideMaxIter` 4, `SlideStallRatio` 0,1 = (ölçüm) test başlangıç değeri, tahmin; `SlideStepMs` değeri yok (ölçüm); yeri `*Defaults` | G (her kare: oyuncu kapsülü bir engelin içinde ise kırmızı); T (fps'ten bağımsız: sabit adımla aynı sonuç) |
+| O-4.10 | After-image (iz görüntüsü) | Yalnız süzülme fazında, gerçek yol üzerinde, oyuncunun arkasında; 4 kopya, 0,15 s ömür, %55 opaklık. İz oyuncunun önüne düşmez | KOD `AfterimageAlpha` + ÖNERİ | K |
 | O-4.11 | Arena sınırı | Dodge, takla, Hareket skilleri ve itilme arena duvarının (§7) içinde kalır; sınır daire şeklindedir, kare değil | ÖNERİ | G |
 
 ### 4.3 Girdi zamanlaması
@@ -244,11 +246,14 @@ Her yeni boss bu alanların hepsini doldurmadan koda girmez.
 
 ### 6.3 Ağların Kraliçesi (dilim boss'u)
 
-> **Kalkıyor (12 Ekim, karar A3).** Yerine Kül Ejderi geçer: `14-kul-ejderi.md`. Bu bölüm Kül Ejderi koda
+> **Kalkıyor (12 Ekim, karar A3).** Yerine Kül Ejderi geçer: `18-kul-ejderi.md`. Bu bölüm Kül Ejderi koda
 > girene kadar bugünkü kodu anlatır; yeni iş bu değerlere göre yapılmaz.
 
 Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 ölçeğine çevrildi (oyuncu canı
 1000). Boss tasarım oturumunda yeniden bakılacak; o zamana kadar bunlar geçerli.
+
+**Ölçüm tanımı (13 Ekim, K):** Koni/yelpaze açısı TAM açıdır (eksenden ± yarısı); boss saldırı mesafeleri boss
+MERKEZİNDEN ölçülür.
 
 | Kimlik | Madde | Değer | Kaynak |
 |---|---|---|---|
@@ -269,7 +274,7 @@ Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 �
 
 ## 7. Arena
 
-> **Yeni arena: `15-krater-arenasi.md` (12 Ekim).** O-7.1 ve O-7.2 aynen geçerli. O-7.3'ün çarpışma kısmı
+> **Yeni arena: `19-krater-arenasi.md` (12 Ekim).** O-7.1 ve O-7.2 aynen geçerli. O-7.3'ün çarpışma kısmı
 > (iç yüz 18 m, dış yüz 22 m, 4 m) geçerli, görünüm kısmı KA-6'ya geçer. O-7.4 → KA-5 (sütun ve kozalar
 > kalkar), O-7.5 → KA-8.1, O-7.6 → KA-2, O-7.7 → KA-1 ve KA-6, O-7.8 → KA-6.6 ve KA-7, O-7.9 → kalkar
 > (KA-11.2). Krater arenası koda girene kadar bu tablo bugünkü kodu anlatır.
@@ -277,7 +282,7 @@ Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 �
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-7.1 | Şekil | Daire | KOD (`slice_arena`) | — |
-| O-7.2 | Oynanış sınırı (duvarın iç yüzü) | Yarıçap 18 m. Oyuncu, boss, mermi ve itilen her şey bu dairenin içinde kalır | KOD `slice_arena.outer_wall_collision_radius_m` (§18: diğer iki değer bu değere bağlanır) | T, G |
+| O-7.2 | Oynanış sınırı (duvarın iç yüzü) | Yarıçap 18 m (görünen duvarın iç yüzüyle aynı; çarpışma duvarı da iç yüzü 18 m olacak şekilde kurulur, görünmez duvar yok). Oyuncu, boss, mermi ve itilen her şey bu dairenin içinde kalır | KOD `slice_arena.outer_wall_collision_radius_m` (§18: diğer iki değer bu değere bağlanır) | T, G |
 | O-7.3 | Duvar | İç yüz 18 m, dış yüz 22 m; çarpışma yüksekliği 4 m; görsel yükseklik 6–9 m arasında düzensiz (yıkık köy duvarı ve kaburgalar) | KOD + ÖNERİ (görsel yükseklik) | K |
 | O-7.4 | Engeller | 3 sütun (yarıçap 1 m, yükseklik 3 m): (−9, 4), (9, 4), (0, −10). 2 koza (yarıçap 0,6 m, 1,8 m, can 400): (−12, −6), (12, −6) | KOD `slice_arena` | T |
 | O-7.5 | Başlangıç noktaları | Oyuncu (0, −14), boss (0, 6) ve boss oyuncuya bakar; çok oyunculuda oyuncular (0, −14) çevresinde 2 m arayla yay şeklinde | ÖNERİ | T |
@@ -290,7 +295,7 @@ Bugünkü değerler `Resources/Bosses/aglarin-kralicesi.json`'dan. Hasarlar v4 �
 
 ## 8. Sanat yönü
 
-Ayrıntılı görsel dil (palet, ışık, sis, malzeme, silüet, ölçek, yapılmaz listesi) `12-sanat-incili.md`'dedir.
+Ayrıntılı görsel dil (palet, ışık, sis, malzeme, silüet, ölçek, yapılmaz listesi) `16-sanat-incili.md`'dedir.
 Aşağıdaki değerler orada aynen geçer.
 
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
@@ -454,14 +459,14 @@ Dilimde çok oyunculu yok ve kodda ağ paketi yok. Kurulduğunda bu değerler ge
 
 | # | Ölçü | Yer 1 | Yer 2 | Yer 3 | Bu belgenin değeri |
 |---|---|---|---|---|---|
-| Ç-1 | Arena sınırı | `kural-motoru-v4.json` duvar çarpışması **18 m** (daire) | `ArenaSettings.ArenaHalfSizeM` **25 m** | `Prototype.unity` sahne değeri **50 m**; dodge ve Hareket skilleri bunu kullanır ve **kare** sınır uygular (`ArenaClamp.XZ`) | 18 m daire (O-7.2). Dodge'un duvardan geçmesinin bir sebebi: duvar 18 m'de, hareket sınırı 50 m'lik karede |
+| Ç-1 | Arena sınırı | `kural-motoru-v4.json` duvar çarpışması **18 m** (daire) | `ArenaSettings.ArenaHalfSizeM` **25 m** | `Prototype.unity` sahne değeri **50 m**; dodge ve Hareket skilleri bunu kullanır (`ArenaClamp.XZ`, daire) | 18 m daire (O-7.2). Dodge'un duvardan geçmesinin bir sebebi: duvar 18 m'de, hareket sınırı 50 m'lik karede |
 | Ç-2 | Kamera uzaklığı | Kod varsayılanı 5,85 m | Sahne 3,4 m | — | 6,0 m (O-5.1) |
 | Ç-3 | Kamera FOV | Kod 54° | Sahne 56° | — | 55° (O-5.4) |
 | Ç-4 | Oyuncu canı | `scale.player_max_hp` 1000 | `PlayerSettings.PlayerMaxHp` 22, boss JSON 22 | — | 1000 (O-13.1) |
 | Ç-5 | Boss canı | `scale.boss_max_hp` 15000 | Boss JSON `total_hp` 120 | `eksik-parametreler` önerisi 12000 | 15000 (O-6.11) |
 | Ç-6 | Kamera bakış yüksekliği | `CameraLookHeightM` 0,38 | — | — | 1,2 m (O-5.3) |
 | Ç-7 | Boss dönme hızı | `BossTurnRateDegPerSec` 240 | — | — | 90 °/s (O-6.5) |
-| Ç-8 | Telefondaki ayar dosyası | `tuning.vNN.json` cihazda saklanıyor; kod varsayılanı değişse de eski kayıt telefonda kalabilir | — | — | Sürüm değişince sıfırla (O-17.8); dilim APK'sında ayar dosyası okunmaz, değerler yalnız koddan/JSON'dan gelir |
+| Ç-8 | Telefondaki ayar dosyası | `tuning.vNN.json` cihazda saklanıyor; kod varsayılanı değişse de eski kayıt telefonda kalabilir | — | — | Sürüm değişince sıfırla (O-17.8). Ayar dosyası kalır; dosyadaki bir değer yalnız panelden bilerek "Kaydet"e basılarak yazılmışsa geçerlidir (dosya panelden kaydedilen alanları işaretler, işaretsiz alanlar kod/JSON değerinde kalır; otomatik kayıt kullanıcı değeri sayılmaz). Açılışta tek log bloğu her ayarı `ad = değer (kaynak: JSON / ayar dosyası / kod)` diye yazar. Dilimde JSON'dan gelen ayarların panel kaydırıcıları gri ve "JSON" etiketli, değiştirilemez (plan §2.4, 12 Ekim) |
 | Ç-9 | Yay'ın diğer Hareket kombolarında geri sıçrama | `kural-motoru-v4.json` Yay `_not_hareket`: "diğer Hareket kombolarında kısa geri sıçrama" | `09` [K]: 3-3 geri sıçrama değildir; Hareket kombolarında silah teslimi yok | — | `09` geçerli; JSON notu ve `backstep_m` 3-3 ile çelişiyorsa kaldırılır |
 
 ---

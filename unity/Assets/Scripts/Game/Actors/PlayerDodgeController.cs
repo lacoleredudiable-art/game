@@ -183,7 +183,6 @@ namespace Dovus.Game.Actors
         {
             float dur = Mathf.Max(PlayerDodgeControllerDefaults.MinDodgeDurationSec, seconds);
             _feelUntilUnscaled = Time.unscaledTime + dur;
-            _camera?.Punch(PlayerDodgeControllerDefaults.CameraPunchAmplitude, PlayerDodgeControllerDefaults.CameraPunchFrequency, PlayerDodgeControllerDefaults.CameraPunchDurationSec, PlayerDodgeControllerDefaults.CameraPunchDecay);
             if (_visual == null)
                 _visual = GetComponent<ActorView>();
             Animator anim = _visual != null ? _visual.Animator : null;
