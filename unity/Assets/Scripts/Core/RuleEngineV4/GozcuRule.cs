@@ -11,6 +11,8 @@ namespace Dovus.Core.RuleEngineV4
         public const string CameraInCollider = "kamera_collider_icinde";
         /// <summary>10-olculer O-5.15 G: kamera boss gövdesinin (dikey silindir) içinde.</summary>
         public const string CameraInBossBody = "kamera_boss_govdesinde";
+        /// <summary>10-olculer O-5.10 G: kamera ile oyuncu arasına çarpışıcılı engel (sütun, duvar) girdi.</summary>
+        public const string PlayerBehindObstacle = "oyuncu_engel_arkasinda";
         public const string PlayerOffScreen = "oyuncu_ekran_disi";
         public const string EffectScreenCover = "efekt_ekran_kaplama";
         public const string CameraFovInvalid = "kamera_fov_gecersiz";
