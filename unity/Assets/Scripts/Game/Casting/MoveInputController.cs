@@ -164,7 +164,8 @@ namespace Dovus.Game.Casting
                 return;
             }
 
-            _moveDirection = clamped / maxRadiusPx;
+            // Analog değil (15 Ekim [K]): ölü bölge geçilince büyüklük tam 1, yalnız yön taşınır (O-1.17, O-4.2).
+            _moveDirection = clamped.normalized;
         }
     }
 }
