@@ -91,10 +91,23 @@ namespace Dovus.Game.Casting.Input
 
         public void OnFingerDown(Finger finger)
         {
-            if (_s.InputLocked || PanelBlocking)
+            if (PanelBlocking)
                 return;
 
             Vector2 pos = finger.screenPosition;
+            if (_s.InputLocked)
+            {
+                // O-3.11: dodge ölüm hariç her durumdan açılır (Sessizlik cast'i kilitler, dodge'u değil).
+                // Sersem/Stasis/Korku/ölümü TriggerDodge kendi kapılarıyla reddeder.
+                bool dodgeLocked = _s.Vitals != null && _s.Vitals.IsDown;
+                if (!dodgeLocked && HexagonPointerHits.IsDrawHalf(pos, _s.Tuning)
+                    && HexagonPointerHits.HitDodgeButton(pos, _s.Tuning))
+                    _dodge.TriggerDodge();
+                else
+                    Debug.Log($"[DODGE] InputLocked ekran dokunusu yutuldu olu={dodgeLocked}");
+                return;
+            }
+
             if (!HexagonPointerHits.IsDrawHalf(pos, _s.Tuning)
                 || (_s.DebugPanel?.HitTuningToggleButton(pos) ?? false))
                 return;
