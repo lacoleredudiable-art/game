@@ -11,8 +11,11 @@ namespace Dovus.App.Boss
 {
     public static class BossDirectorRules
     {
+        /// <summary>Faz 2 (öfke) can oranı eşiği: bu oran ve altı öfkelidir.</summary>
+        public const float EnrageHpRatio = 0.5f;
+
         public static bool IsEnraged(float hp, float maxHp) =>
-            maxHp > 0f && (hp / maxHp) <= 0.5f;
+            maxHp > 0f && (hp / maxHp) <= EnrageHpRatio;
 
         public static float CurrentPhaseSpeed(StatusBoard board, BossAttackMotion motion)
         {
