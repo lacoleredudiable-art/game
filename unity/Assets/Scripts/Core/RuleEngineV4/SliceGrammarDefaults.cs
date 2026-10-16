@@ -4,49 +4,29 @@ using Dovus.Core.Shared;
 namespace Dovus.Core.RuleEngineV4
 {
     /// <summary>
-    /// Dilim cümle grameri: prose/skills gövdesi gömülü; oynanış sayıları kural-motoru-v4.json scale/globals ile bağlanır.
-    /// Tek dış JSON: <c>kural-motoru-v4.json</c>.
+    /// Dilim cümle grameri: SkillMotor / EquipmentCatalog için JSON kökü
+    /// <c>kural-motoru-v4.json</c> → <c>slice_skill_motor</c> + scale bağlama.
     /// </summary>
-    public static partial class SliceGrammarDefaults
+    public static class SliceGrammarDefaults
     {
         public const int ComboMaxLength = 2;
-
-        static string PayloadJson =>
-            PayloadJsonPart01()
-            + PayloadJsonPart02()
-            + PayloadJsonPart03()
-            + PayloadJsonPart04()
-            + PayloadJsonPart05();
-
-        private static partial string PayloadJsonPart01();
-        private static partial string PayloadJsonPart02();
-        private static partial string PayloadJsonPart03();
-        private static partial string PayloadJsonPart04();
-        private static partial string PayloadJsonPart05();
 
         /// <summary>SkillMotor / EquipmentCatalog için dilim gramer JSON'u üretir.</summary>
         public static string BuildGrammarJson(string kuralMotoruV4Json)
         {
             if (string.IsNullOrWhiteSpace(kuralMotoruV4Json))
                 throw new ArgumentException("kural-motoru-v4 JSON boş.", nameof(kuralMotoruV4Json));
-            RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(kuralMotoruV4Json);
-            JsonValue root = BuildGrammarRoot(catalog);
+            JsonValue root = BuildGrammarRoot(kuralMotoruV4Json);
             return GrammarJsonCache.ToJson(root);
         }
 
-        public static JsonValue BuildGrammarRoot(RuleEngineV4Catalog catalog)
-        {
-            if (catalog == null)
-                throw new ArgumentNullException(nameof(catalog));
-            JsonValue root = MiniJson.Parse(PayloadJson);
-            BindScale(root, catalog.Scale);
-            return root;
-        }
+        public static JsonValue BuildGrammarRoot(RuleEngineV4Catalog catalog, JsonValue v4Root) =>
+            SliceGrammarBuilder.BuildGrammarRoot(catalog, v4Root);
 
         public static JsonValue BuildGrammarRoot(string kuralMotoruV4Json) =>
-            BuildGrammarRoot(RuleEngineV4Catalog.FromJson(kuralMotoruV4Json));
+            SliceGrammarBuilder.BuildGrammarRoot(kuralMotoruV4Json);
 
-        static void BindScale(JsonValue root, RuleEngineV4Scale scale)
+        internal static void BindScale(JsonValue root, RuleEngineV4Scale scale)
         {
             JsonValue global = root["global_rules"];
             JsonValue player = global["player_stats"];
@@ -63,12 +43,6 @@ namespace Dovus.Core.RuleEngineV4
 
             JsonValue cooldown = global["cooldown_rules"];
             cooldown.SetField("global_cooldown_sec", JsonValue.Number(scale.CooldownSec));
-
-            JsonValue combo = root["combo_system"];
-            combo.SetField("current_max_length", JsonValue.Number(ComboMaxLength));
-
-            JsonValue system = root["system"];
-            system.SetField("version", JsonValue.Of("v4-slice-inmemory"));
         }
     }
 }

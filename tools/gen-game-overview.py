@@ -10,8 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENE_UNITY = ROOT / "unity" / "Assets" / "Scenes" / "Prototype.unity"
-
-from slice_grammar_doc import load_slice_grammar_document  # noqa: E402
+RULE_V4 = ROOT / "unity" / "Assets" / "Resources" / "RuleEngineV4" / "kural-motoru-v4.json"
+COMBO_MAX = 2
 OUT_MD = ROOT / "docs" / "OYUN.md"
 
 GEN_BEGIN = "<!-- gen:begin -->"
@@ -60,6 +60,24 @@ def scaled_hp(raw: float, scale: float) -> int:
     return int(round(raw * scale))
 
 
+def load_slice_grammar_document() -> dict:
+    """kural-motoru-v4.json slice_skill_motor + scale alanları (SliceGrammarDefaults ile aynı bağlama)."""
+    v4 = json.loads(_read_text(RULE_V4))
+    motor = json.loads(json.dumps(v4["slice_skill_motor"]))
+    scale = v4["scale"]
+    motor["combo_system"]["current_max_length"] = COMBO_MAX
+    gr = motor["global_rules"]
+    gr["player_stats"]["max_hp"] = scale["player_max_hp"]
+    gr["player_stats"]["max_mana"] = scale["mana_pool"]
+    gr["boss_stats_default"]["max_hp"] = scale["boss_max_hp"]
+    gr["boss_stats_default"]["poise_bar"] = scale["boss_poise_bar"]
+    gr["resource_system"]["max_mana"] = scale["mana_pool"]
+    gr["resource_system"]["regen_per_sec"] = scale["mana_regen_per_sec"]
+    gr["cooldown_rules"]["global_cooldown_sec"] = scale["cooldown_sec"]
+    motor["system"]["version"] = "v4-slice-inmemory"
+    return motor
+
+
 def attack_kind_label(kind: str) -> str:
     mapping = {
         "slam": "Slam",
@@ -75,7 +93,7 @@ def build_generated_section() -> str:
     element = load_slice_grammar_document()
     combo_max = element["combo_system"]["current_max_length"]
     combo_source = (
-        "`kural-motoru-v4.json` + `SliceGrammarDefaults` → "
+        "`kural-motoru-v4.json` (`slice_skill_motor` + `scale`) → "
         "`combo_system.current_max_length` → `SkillMotor` / `HexagonInputController`"
     )
 

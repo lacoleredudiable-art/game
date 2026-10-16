@@ -37,8 +37,6 @@ public sealed class SkillIdLiteralTests
             {
                 if (file.EndsWith("SkillIds.cs", StringComparison.Ordinal))
                     continue;
-                if (file.Contains("SliceGrammarDefaults.Payload", StringComparison.Ordinal))
-                    continue;
                 if (file.Contains($"{Path.DirectorySeparatorChar}CoreTests{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
                     continue;
                 string text = File.ReadAllText(file);

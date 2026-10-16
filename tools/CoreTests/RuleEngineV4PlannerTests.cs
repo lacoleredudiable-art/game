@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Dovus.Core.RuleEngineV4;
 using NUnit.Framework;
 
@@ -34,11 +36,14 @@ public sealed class RuleEngineV4PlannerTests
     public void SliceRunes_ReadFromJson_ChangingDataChangesRunes()
     {
         string json = System.IO.File.ReadAllText(JsonPath());
-        const string original = "\"slice_runes\": [1, 2, 3, 4, 6, 9]";
-        Assert.That(json, Does.Contain(original), "slice_runes JSON'da yok");
+        var root = JsonNode.Parse(json)!.AsObject();
+        Assert.That(root.ContainsKey("slice_runes"), Is.True, "slice_runes JSON'da yok");
+        var alteredRoot = root.DeepClone().AsObject();
+        alteredRoot["slice_runes"] = new JsonArray(1, 3);
+        string altered = alteredRoot.ToJsonString();
         try
         {
-            RuleEngineV4Catalog.FromJson(json.Replace(original, "\"slice_runes\": [1, 3]"));
+            RuleEngineV4Catalog.FromJson(altered);
             Assert.That(RuleEngineV4Slice.Runes, Is.EqualTo(new[] { 1, 3 }));
             Assert.That(RuleEngineV4Slice.IsSliceCombo(1, 3), Is.True);
             Assert.That(RuleEngineV4Slice.IsSliceCombo(2, 1), Is.False, "2 artık dilimde değil");
