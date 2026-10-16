@@ -56,6 +56,7 @@
 | Mekanik gramer | `Core/Mechanic/MechanicGrammar.cs`, `Core/Mechanic/MechanicRules.cs`, `Game/Skills/ManifestationDirector.MechanicGrammar.cs` | `MechanicGrammar.Compose` |
 | Canlı efekt / plan | `Core/Manifestation/LivingEffect.cs`, `Core/Manifestation/SkillWorldPlanner.cs` | `LivingEffect.Tick`, `SkillWorldPlanner.Plan` |
 | Hedefleme | `Core/Boss/TargetPicker.cs`, `Core/Casting/TargetingRules.cs`, `Game/Actors/PlayerTargetingController.cs` | `PlayerTargetingController.Update` |
+| Hedef kilidi (alma, değiştirme, kilit noktası) | `Core/Targeting/TargetLock.cs`, `LockPointRules.cs` | `TargetLock.Update` (Game bağlantısı bekliyor) |
 | Boss mermileri | `Core/Boss/HostileProjectiles.cs`, `Game/Boss/HostileProjectileHost.cs` | `HostileProjectileHost.Update` |
 | Animasyon köprüsü | `Core/Presentation/AnimationDatabase.cs`, `Game/Actors/AnimationBridge.cs` | `AnimationDatabase.FromJson` |
 | Hexagon UI | `Game/Casting/HexagonView.cs` (partial'lar), `Game/Casting/HexagonLayoutScreen.cs` | `HexagonView` partial'ları |
