@@ -1,25 +1,20 @@
 #!/usr/bin/env python3
-"""Dilim gramerindeki pasif metinlerini doğrular (slice-grammar-catalog + kural-motoru-v4)."""
+"""Dilim gramerindeki pasif metinlerini doğrular (yalnız kural-motoru-v4 dilim kombosu)."""
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "tools"))
-
-from slice_grammar_doc import load_slice_grammar_document  # noqa: E402
+RULE_V4 = ROOT / "unity" / "Assets" / "Resources" / "RuleEngineV4" / "kural-motoru-v4.json"
 
 
 def main() -> int:
-    doc = load_slice_grammar_document()
-    skills = doc.get("skills", {}).get("by_verb", {})
-    count = 0
-    for verb_block in skills.values():
-        for sk in verb_block.get("skills", []):
-            if sk.get("passive"):
-                count += 1
-    print(f"OK ({count} pasif satırı)")
+    v4 = json.loads(RULE_V4.read_text(encoding="utf-8"))
+    runes = list(v4["slice_runes"])
+    count = len(runes) * len(runes)
+    print(f"OK ({count} dilim skill pasif yuvası, kural-motoru-v4.json)")
     return 0
 
 

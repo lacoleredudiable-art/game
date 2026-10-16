@@ -11,14 +11,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCENE_UNITY = ROOT / "unity" / "Assets" / "Scenes" / "Prototype.unity"
 RULE_V4 = ROOT / "unity" / "Assets" / "Resources" / "RuleEngineV4" / "kural-motoru-v4.json"
-COMBO_MAX = 2
-
-sys.path.insert(0, str(ROOT / "tools"))
-from slice_grammar_doc import load_slice_grammar_document  # noqa: E402
 OUT_MD = ROOT / "docs" / "OYUN.md"
+COMBO_MAX = 2
 
 GEN_BEGIN = "<!-- gen:begin -->"
 GEN_END = "<!-- gen:end -->"
+
+VERB_LABELS = {
+    "zarar": "Zarar",
+    "sifa": "Şifa",
+    "hareket": "Hareket",
+    "koruma": "Koruma",
+    "kontrol": "Kontrol",
+    "arindirma": "Arındırma",
+}
+
+WEAPON_LABELS = {"yay": "Yay", "kilic": "Kılıç", "cekiç": "Çekiç"}
 
 
 def _read_text(path: Path) -> str:
@@ -74,9 +82,35 @@ def attack_kind_label(kind: str) -> str:
     return mapping.get(kind, kind)
 
 
+def slice_grammar_summary(v4: dict) -> dict:
+    """OYUN.md için dilim özet alanları (yalnız kural-motoru-v4.json)."""
+    scale = v4["scale"]
+    slice_runes = list(v4["slice_runes"])
+    rune_names = []
+    for rid in slice_runes:
+        verb = v4.get("verbs", {}).get(str(rid), {})
+        key = verb.get("key", str(rid))
+        rune_names.append(VERB_LABELS.get(key, key))
+    weapon_names = []
+    for wid, w in v4.get("weapons", {}).items():
+        if int(wid) not in (2, 4):
+            continue
+        key = w.get("key", wid)
+        weapon_names.append(WEAPON_LABELS.get(key, str(key)))
+    return {
+        "combo_max": COMBO_MAX,
+        "player_max_hp": scale["player_max_hp"],
+        "boss_max_hp": scale["boss_max_hp"],
+        "rune_names": rune_names,
+        "weapon_names": weapon_names,
+        "elements": [],
+    }
+
+
 def build_generated_section() -> str:
-    element = load_slice_grammar_document()
-    combo_max = element["combo_system"]["current_max_length"]
+    v4 = json.loads(_read_text(RULE_V4))
+    element = slice_grammar_summary(v4)
+    combo_max = element["combo_max"]
     combo_source = (
         "`kural-motoru-v4.json` (`slice_runes` + `scale`) → "
         "`SliceGrammarBuilder` → `combo_system.current_max_length` → "
@@ -86,8 +120,8 @@ def build_generated_section() -> str:
     combat_scale_cs = _read_text(ROOT / "unity/Assets/Scripts/Core/Damage/CombatScale.cs")
     scale = _regex_float(combat_scale_cs, r"public const float DamageAndHp = ([0-9.]+f?)")
 
-    player_raw = element["global_rules"]["player_stats"]["max_hp"]
-    boss_raw = element["global_rules"]["boss_stats_default"]["max_hp"]
+    player_raw = element["player_max_hp"]
+    boss_raw = element["boss_max_hp"]
     player_hp = scaled_hp(float(player_raw), scale)
     boss_hp = scaled_hp(float(boss_raw), scale)
 
@@ -104,9 +138,8 @@ def build_generated_section() -> str:
     dev_pool = _regex_int(dev_hp_cs, r"public const int Pool = ([0-9_]+)", default=None)
     dev_pool = int(str(dev_pool).replace("_", ""))
 
-    crit = element.get("crit_system", {})
-    crit_chance = float(crit.get("base_crit_chance", 0.05))
-    crit_mult = float(crit.get("crit_multiplier", 2.0))
+    crit_chance = 0.05
+    crit_mult = 2.0
 
     scene_text = _read_text(SCENE_UNITY)
     active_boss_id, arena_half = load_scene_fields(scene_text)
@@ -130,12 +163,9 @@ def build_generated_section() -> str:
         atk = ", ".join(f"`{x}`" for x in p.get("attacks", []))
         phase_lines.append(f"- Faz {p.get('phase', '?')} ({p.get('name', '')}): can %{pr[0]}→%{pr[1] if len(pr) > 1 else '?'} — {atk}")
 
-    runes = element.get("runes", [])
-    weapons = element.get("weapons", [])
-    elements = element.get("elements", [])
-    rune_names = [r.get("name") or r.get("id") for r in runes]
-    weapon_names = [w.get("name") or w.get("id") for w in weapons]
-    element_names = [e.get("name") or e.get("id") for e in elements]
+    rune_names = element["rune_names"]
+    weapon_names = element["weapon_names"]
+    element_names = element["elements"]
 
     vitals_note = (
         f"Boss JSON `vitals.total_hp` / `player_hp` ({boss_doc.get('vitals', {}).get('total_hp')}/"
@@ -169,17 +199,17 @@ def build_generated_section() -> str:
         "**Fazlar:**",
         *phase_lines,
         "",
-        f"### Rünler ({len(runes)})",
+        f"### Rünler ({len(rune_names)})",
         "",
         ", ".join(f"**{n}**" for n in rune_names),
         "",
-        f"### Silahlar ({len(weapons)})",
+        f"### Silahlar ({len(weapon_names)})",
         "",
         ", ".join(f"**{n}**" for n in weapon_names),
         "",
-        f"### Elementler ({len(elements)})",
+        f"### Elementler ({len(element_names)})",
         "",
-        ", ".join(f"**{n}**" for n in element_names),
+        ", ".join(f"**{n}**" for n in element_names) if element_names else "—",
         " (oynanış çarpanı `element_mult` = 1.0; ağırlıklı VFX/boya)",
         "",
         "### Okunmayan boss JSON alanları",

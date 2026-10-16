@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Dovus.Core.Portal;
 using Dovus.Core.Shared;
@@ -13,5 +14,5 @@ partial class SkillMechanicTagTests
     internal static readonly IReadOnlyDictionary<string, TeamOp> ExpectedTeamOps =
         new Dictionary<string, TeamOp>();
 
-    internal static readonly string[] ExpectedSwapCancelSkillIds = { "1-1", "1-4", "6-3" };
+    internal static readonly string[] ExpectedSwapCancelSkillIds = Array.Empty<string>();
 }

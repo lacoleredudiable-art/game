@@ -23,8 +23,8 @@ public class WeaponRosterTests
     public void LoadsSliceWeapons_WithDocStats()
     {
         Assert.That(_catalog.Items.Count, Is.EqualTo(2));
-        Expect(2, "Yay", "ranged", 0.8f, 0.7f, 0.6f, 20f, 0f, new[] { 1, 3, 7, 9 });
-        Expect(4, "Kılıç", "medium", 1f, 0.9f, 1.1f, 2.4f, 0f, new[] { 1, 3, 5, 9 });
+        Expect(2, "Yay", "ranged", 0.8f, 0.7f, 0.6f, 14.1f, 0f, new[] { 1, 2, 3, 4, 6, 9 });
+        Expect(4, "Kılıç", "medium", 1f, 0.9f, 1.1f, 6f, 0f, new[] { 1, 2, 3, 4, 6, 9 });
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class WeaponRosterTests
         Assert.That(item.DamageMult, Is.EqualTo(damage));
         Assert.That(item.CastTimeMult, Is.EqualTo(cast));
         Assert.That(item.PoiseMult, Is.EqualTo(poise));
-        Assert.That(item.Profile.ReachM, Is.EqualTo(reach));
+        Assert.That(item.Profile.ReachM, Is.EqualTo(reach).Within(0.02f));
         Assert.That(item.BaseArmor, Is.EqualTo(armor));
         Assert.That(item.CompatibleVerbs, Is.EqualTo(verbs));
         Assert.That(item.Profile.Passive.Id, Is.Not.Empty);

@@ -16,7 +16,7 @@ public partial class TeamComboTests
     public void Threshold_OnBelow_OffAbove()
     {
         var mode = new BorderMode();
-        var eng12 = BorderEngine("1-2");
+        var eng12 = Tier20BorderEngine();
         Assert.That(mode.OnSkill(1, (SkillId)"1-2", eng12, 0.20f), Is.False);
         Assert.That(mode.Active(1), Is.False);
         Assert.That(mode.OnSkill(1, (SkillId)"1-2", eng12, 0.19f), Is.True);
@@ -36,7 +36,7 @@ public partial class TeamComboTests
     public void Skill_1_2_LifestealStaysForTheCast()
     {
         var mode = new BorderMode();
-        var eng = BorderEngine("1-2");
+        var eng = Tier20BorderEngine();
         Assert.That(mode.OnSkill(1, (SkillId)"1-2", eng, 0.19f), Is.True);
         Assert.That(mode.LifestealAdd(1), Is.EqualTo(0.25f).Within(0.001f));
         mode.Tick(1, Gap, 0.1f);

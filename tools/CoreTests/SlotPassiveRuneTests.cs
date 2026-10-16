@@ -40,14 +40,12 @@ public class SlotPassiveRuneTests
     }
 
     [Test]
-    public void Rune2_Emme_LifestealOutweighsTheSmallDamageCut()
+    public void Rune2_Odakli_RaisesDamageAndSingleTarget()
     {
         SlotPassiveDirector director = Arm(2, out _, out int later);
-        Assert.That(director.LifestealAddFor(later), Is.EqualTo(0.3f).Within(0.001f));
-        Assert.That(director.DamageMultFor(later), Is.EqualTo(0.95f).Within(0.001f));
-        float dealt = 100f * director.DamageMultFor(later);
-        float healed = dealt * director.LifestealAddFor(later);
-        Assert.That(healed, Is.GreaterThan(100f - dealt));
+        Assert.That(director.LifestealAddFor(later), Is.EqualTo(0f).Within(0.001f));
+        Assert.That(director.DamageMultFor(later), Is.EqualTo(1.15f).Within(0.001f));
+        Assert.That(director.ArmorPenPercentFor(later), Is.EqualTo(SlotPassiveCombat.IgnoreArmorPierce).Within(0.001f));
     }
 
     [Test]
@@ -137,10 +135,10 @@ public class SlotPassiveRuneTests
         Assert.That(skillHitbox * focus.HitboxSizeMultFor(focusTrigger), Is.EqualTo(0.55f).Within(0.001f));
         Assert.That(skillDamage * focus.DamageMultFor(focusLater), Is.EqualTo(1.35f * 1.35f).Within(0.001f));
 
-        SlotPassiveDirector drain = Arm(2, out int drainTrigger, out int drainLater);
-        const float skillLifesteal = 0.3f;
-        Assert.That(skillLifesteal + drain.LifestealAddFor(drainTrigger), Is.EqualTo(0.3f).Within(0.001f));
-        Assert.That(skillLifesteal + drain.LifestealAddFor(drainLater), Is.EqualTo(0.6f).Within(0.001f));
+        SlotPassiveDirector odak = Arm(2, out int odakTrigger, out int odakLater);
+        Assert.That(odak.DamageMultFor(odakTrigger), Is.EqualTo(1f).Within(0.001f));
+        Assert.That(odak.DamageMultFor(odakLater), Is.EqualTo(1.15f).Within(0.001f));
+        Assert.That(odak.ArmorPenPercentFor(odakLater), Is.EqualTo(SlotPassiveCombat.IgnoreArmorPierce).Within(0.001f));
     }
 
     [Test]

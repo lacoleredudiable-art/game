@@ -41,15 +41,15 @@ Sahne `ActiveBossId`; saldırı türleri `BossAttackKind` ile eşlenir.
 
 ### Rünler (6)
 
-**Saldırı**, **İyileştirme**, **Hareket**, **Savunma**, **Kontrol**, **Arındırma**
+**Zarar**, **Şifa**, **Hareket**, **Koruma**, **Kontrol**, **Arındırma**
 
 ### Silahlar (2)
 
 **Yay**, **Kılıç**
 
-### Elementler (1)
+### Elementler (0)
 
-**Ateş**
+—
  (oynanış çarpanı `element_mult` = 1.0; ağırlıklı VFX/boya)
 
 ### Okunmayan boss JSON alanları

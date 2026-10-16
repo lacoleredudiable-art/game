@@ -54,7 +54,7 @@ public class AttackFacingAndRangeTests
     }
 
     [Test]
-    public void Verb3And7_WrittenSizeIsWidth_GameplayRadiusIsHalf()
+    public void Verb3_DashLine_WrittenSizeIsWidth_GameplayRadiusIsHalf()
     {
         var boxes = VerbExecutionData.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
         Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec jab), Is.True);
@@ -62,17 +62,11 @@ public class AttackFacingAndRangeTests
         Assert.That(HitboxSizing.Resolve(jab, 1f, 1f).RadiusM, Is.EqualTo(0.5f).Within(0.001f));
 
         Assert.That(boxes.TryGetHitbox(3, out VerbHitboxSpec line), Is.True);
-        Assert.That(boxes.TryGetHitbox(7, out VerbHitboxSpec capsule), Is.True);
         Assert.That(line.SizeB, Is.EqualTo(0.8f).Within(0.001f));
-        Assert.That(capsule.SizeB, Is.EqualTo(1f).Within(0.001f));
         Assert.That(line.SizeBIsWidth, Is.True);
-        Assert.That(capsule.SizeBIsWidth, Is.True);
         HitboxSize lineSize = HitboxSizing.Resolve(line, 1f, 1f);
-        HitboxSize capsuleSize = HitboxSizing.Resolve(capsule, 1f, 1f);
         Assert.That(lineSize.RadiusM * 2f, Is.EqualTo(0.8f).Within(0.001f), "çizgi genişliği 0.8 m");
-        Assert.That(capsuleSize.RadiusM * 2f, Is.EqualTo(1f).Within(0.001f), "kapsül genişliği 1 m");
         Assert.That(lineSize.ReachM, Is.EqualTo(3f).Within(0.001f));
-        Assert.That(capsuleSize.ReachM, Is.EqualTo(3f).Within(0.001f));
     }
 
     [Test]
