@@ -83,7 +83,7 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
         }
 
         public bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing ctx) =>
-            !(RuleEngineV4Feature.Enabled && RuleEngineV4Bridge.OwnsSkill(skill))
+            !RuleEngineV4Bridge.OwnsSkill(skill)
             && _md.TryBeginMotionTemplate(skill, ctx);
 
         public void NoteSustainedCast(SkillResolution skill) => _md.NoteSustainedCast(skill);
@@ -129,8 +129,7 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
             in SkillMotionPlan motion)
         {
             _md.EnsureLaunchServices();
-            if (RuleEngineV4Feature.Enabled
-                && RuleEngineV4Bridge.TryLaunch(ctx, skill, in motion, out float v4Dealt))
+            if (RuleEngineV4Bridge.TryLaunch(ctx, skill, in motion, out float v4Dealt))
             {
                 _lastCastDealt = v4Dealt;
                 return true;
@@ -155,30 +154,7 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
             if (logic == null)
                 return 0f;
 
-            if (RuleEngineV4Feature.Enabled)
-                return _lastCastDealt;
-
-            if (route.IsStub)
-                DebugConfig.DevLog($"[SkillExecutor] stub → LivingEffect: {route.Reason}");
-            _md.LastExecutorKind = SkillExecutorKind.Fallback;
-            _md.ApplyBossClosing(logic, ctx.Closing, skill);
-            bool bossReached = _md._boss != null && _md.IsClosingInRange(logic, ctx.Closing);
-            float dealt = 0f;
-            if (bossReached)
-            {
-                dealt = _md.ApplyClosingDamage(
-                    ctx.Closing,
-                    skill,
-                    isBasicStrike: false,
-                    motion.SlashCommitMult);
-            }
-
-            _md.ApplyClosingStatuses(ctx, skill, bossReached);
-            if (bossReached)
-                _md.ApplyMechanicHitEffects(_md.LastMechanicPlan, new Vector3(logic.TipX, 0f, logic.TipZ));
-            _md.ApplyClosingHeal(ctx.Closing, skill);
-            _lastCastDealt = dealt;
-            return dealt;
+            return _lastCastDealt;
         }
 
         public void ApplyCooldown(SkillResolution skill, PendingClosing ctx, bool cosmeticIfDisabled)

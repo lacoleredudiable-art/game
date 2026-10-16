@@ -301,13 +301,11 @@ namespace Dovus.Tests.PlayMode
             var boot = new GameObject("TuningFileSourceBoot");
             boot.SetActive(false);
             _host = boot.AddComponent<GameBootstrapHost>();
-            _host.SceneTuning.RuleEngineV4.Enabled = true;
             _host.SceneTuning.RuleEngineV4.SliceScene = true;
             boot.SetActive(true);
             RuleEngineV4WorldPhysicsPlayModeTests.DisableGozcu();
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
-            Assert.That(RuleEngineV4Feature.Enabled, Is.True, "RuleEngineV4Feature.Enabled");
             _md = Object.FindAnyObjectByType<ManifestationDirector>();
             Assert.That(_md, Is.Not.Null, "ManifestationDirector");
             if (BuildSelectHud.IsOpen)
@@ -325,7 +323,6 @@ namespace Dovus.Tests.PlayMode
                 if (root != null && !_preexisting.Contains(root))
                     Object.Destroy(root);
             }
-            RuleEngineV4Feature.Enabled = false;
             _host = null;
             _md = null;
             yield return null;

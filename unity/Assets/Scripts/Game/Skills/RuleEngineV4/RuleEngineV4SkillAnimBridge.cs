@@ -55,8 +55,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (combat == null)
                 return BasicStrikeFallback("combat yok", null, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
-            if (!RuleEngineV4Feature.Enabled)
-                return BasicStrikeFallback("v4 bayrağı kapalı", combat, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
             RuleEngineV4CastHost castHost = combat.CastHost;
             if (castHost == null)
                 return BasicStrikeFallback("v4 CastHost yok", combat, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);

@@ -14,7 +14,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             float raw,
             System.Func<float, bool> applyToAlly)
         {
-            if (!RuleEngineV4Feature.Enabled || combat == null || ally == null || raw <= 0)
+            if (combat == null || ally == null || raw <= 0)
                 return applyToAlly(raw);
 
             RuleEngineV4WorldSession session = combat.Session;

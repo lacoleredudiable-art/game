@@ -287,21 +287,7 @@ namespace Dovus.Game.Skills.Execution
 
         void SpawnWeaponAttack(Vector3 from)
         {
-            // Dilimde eski motorun trail yolu çalışmaz (Adım 4).
-            if (RuleEngineV4Feature.Enabled || Context.Target == null)
-                return;
-            string pathClass = _weaponPathClass;
-            bool ranged = pathClass is "silahla:ucan" or "silahla:hat" or "silahla:belirme";
-            if (!ranged)
-                return;
-            GameObject shot = Context.Placeholders?.CreateTrail(
-                pathClass == "silahla:hat" ? "beam" : "straight",
-                Context.ColorKey,
-                from,
-                Context.Target.position,
-                transform.parent);
-            if (shot != null)
-                Destroy(shot, SummonExecutorDefaults.ShotFxLifetimeSec);
+            // Eski motorun trail yolu kaldırıldı (Adım 4).
         }
 
         public void CollectWithin(float x, float z, float radiusM, List<Transform> into)

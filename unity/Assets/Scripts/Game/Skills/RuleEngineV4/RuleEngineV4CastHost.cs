@@ -87,7 +87,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         /// <summary>Dilim kombosu + dilim silahı: teslimi v4 koşucusu üstlenir, eski hareket kalıbı değil.</summary>
         internal bool OwnsSkill(SkillResolution skill)
         {
-            if (!RuleEngineV4Feature.Enabled || !TryCombo(skill, out int verb, out int adj))
+            if (!TryCombo(skill, out int verb, out int adj))
                 return false;
             _ = _catalogAccess.Catalog;
             return RuleEngineV4Slice.IsSliceCombo(verb, adj)
@@ -110,8 +110,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             dealt = 0;
             _lastDealt = 0;
-            if (!RuleEngineV4Feature.Enabled)
-                return false;
             // Katalog okunmadan dilim rünleri (slice_runes) bağlı değildir.
             RuleEngineV4Planner planner = _catalogAccess.Planner;
             RuleEngineV4Catalog data = _catalogAccess.Catalog;

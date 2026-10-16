@@ -285,8 +285,7 @@ namespace Dovus.Game.Casting.Input
             _s.StrokeAccepted++;
             _s.StrokeAcceptedPx.Add(dotPx);
             _s.Engine.OnDotTouched(hit.Value, worldMs);
-            _s.StrokeClosedAtCap = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.IgnoreDotsAfterCapInStroke
-                && _s.Engine.State.Phase != SentencePhase.Building;
+            _s.StrokeClosedAtCap = _s.Engine.State.Phase != SentencePhase.Building;
             _s.RaiseDotAccepted?.Invoke(hit.Value);
 
             if (inkFrom.HasValue)

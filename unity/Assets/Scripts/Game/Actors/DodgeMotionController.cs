@@ -196,7 +196,7 @@ namespace Dovus.Game.Actors
             BossReactorController reactor = _reactorCache;
             if (reactor != null && reactor.BodyRadiusM > DodgeMotionControllerDefaults.MinBodyRadiusM)
                 bossR = reactor.BodyRadiusM;
-            else if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled && !_bossRadiusFallbackLogged)
+            else if (!_bossRadiusFallbackLogged)
             {
                 _bossRadiusFallbackLogged = true;
                 Debug.LogError("[V4-FALLBACK] DodgeMotionController.KeepBossEdge: boss gövde yarıçapı okunamadı; "

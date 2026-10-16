@@ -23,14 +23,6 @@ public sealed class RuleEngineV4PlannerTests
     }
 
     [Test]
-    public void FeatureFlag_DefaultOff()
-    {
-        RuleEngineV4Feature.Enabled = false;
-        Assert.That(RuleEngineV4Feature.Enabled, Is.False);
-        Assert.That(RuleEngineV4Feature.FlagName, Is.EqualTo("kural_motoru_v4"));
-    }
-
-    [Test]
     public void SliceRunes_AreSharedBetweenVerbAndAdjective()
     {
         var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
@@ -131,23 +123,6 @@ public sealed class RuleEngineV4PlannerTests
     {
         RuleEngineV4Scale s = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath())).Scale;
         Assert.That(s.BaseDamage / s.PlayerMaxHp, Is.EqualTo(0.1f).Within(1e-6f));
-    }
-
-    [Test]
-    public void Feature_ScaleCombatMagnitudes_OnlyWhenFlagOff()
-    {
-        bool was = RuleEngineV4Feature.Enabled;
-        try
-        {
-            RuleEngineV4Feature.Enabled = false;
-            Assert.That(RuleEngineV4Feature.ScaleCombatMagnitudes, Is.True, "bayrak kapalı: eski ölçek");
-            RuleEngineV4Feature.Enabled = true;
-            Assert.That(RuleEngineV4Feature.ScaleCombatMagnitudes, Is.False, "bayrak açık: ham sayı");
-        }
-        finally
-        {
-            RuleEngineV4Feature.Enabled = was;
-        }
     }
 
     [Test]

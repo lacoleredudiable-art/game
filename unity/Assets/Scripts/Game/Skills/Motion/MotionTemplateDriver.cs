@@ -258,76 +258,12 @@ namespace Dovus.Game.Skills.Motion
             return true;
         }
 
-        /// <summary>Düz vuruş: katalogdaki basic_strike lunge; hasar zamanlamasına dokunmaz.</summary>
+        /// <summary>Düz vuruş yerinde; eski basic_strike lunge yolu kapalı.</summary>
         public bool TryBeginBasicStrikeStep()
         {
-            if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
-            {
-                Debug.LogError("[V4-FALLBACK] eski motor: basic_strike lunge (MotionTemplateDriver.TryBeginBasicStrikeStep); " +
-                               "dilimde düz vuruş yerinde, adım atılmadı");
-                return false;
-            }
-            if (_host.Player == null)
-                return false;
-            EnsureMotionReady();
-            // Kira yalnız dodge'da ya da sonraki kalıp başında sıfırlanır; bitmiş bir kalıbın kirası adımı kesmesin.
-            if (_host.MotionBody == null || _host.MotionBody.IsDisplacing)
-                return false;
-
-            MotionTemplate template = MotionRepo.BasicStrike;
-            if (template == null || template.Phases.Count == 0)
-                return false;
-
-            Transform aim = ResolveMotionEnemy(template);
-            if (aim == null || aim == _host.Player)
-                return false;
-
-            var steps = new List<GrammarPositionStep>();
-            MotionFallbacks fallbacks = MotionRepo.Fallbacks;
-            PositionPlayback playback = PositionOwnership.Prepare(
-                template, steps, fallbacks.PhaseSec, fallbacks.StepM);
-            template = playback.Template ?? template;
-            if (!playback.OwnsPosition)
-                return false;
-
-            _castLease.Arm(true);
-            _templateOwnsPosition = true;
-            _templateSkill = SkillResolution.Empty;
-            _templatePending = default;
-            _templateChain = 0f;
-            _templateStatusSent = false;
-            SetTemplateAim(aim);
-            _emiciContactPull = false;
-            _recoilInTemplate = false;
-            if (_host.Boss != null)
-                _templateStartCenter = _host.FlatDistance(_host.Player.position, _host.Boss.transform.position);
-
-            float bodyR = _host.PlayerBodyRadiusM();
-            if (bodyR < MotionTemplateDriverDefaults.BodyRadiusMinM)
-                bodyR = 0.5f;
-            float arena = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : CombatFallbacks.ArenaHalfSizeFallbackM;
-            _host.MotionBody.Bind(_host.Clock, arena, bodyR);
-            string weapon = _host.EquippedWeapon != null
-                ? (string.IsNullOrEmpty(_host.EquippedWeapon.AnimationsKey) ? _host.EquippedWeapon.Id : _host.EquippedWeapon.AnimationsKey)
-                : string.Empty;
-            _host.MotionBody.SetAnimContext(MotionRepo.Anims, weapon, 0);
-            _host.MotionBody.NoteSkill(default);
-            float stopGap = fallbacks.StopGapM;
-            _host.MotionBody.Play(
-                template,
-                () =>
-                {
-                    if (aim == null)
-                        return default;
-                    Vector3 pos = aim.position;
-                    return new MotionTarget(true, pos.x, pos.z, ColliderRadius(aim));
-                },
-                () => false,
-                _ => { },
-                bodyR,
-                stopGap);
-            DebugConfig.DevLog($"[Motion] basic_strike → {template.Name}");
-            return true;
+            Debug.LogError("[V4-FALLBACK] eski motor: basic_strike lunge (MotionTemplateDriver.TryBeginBasicStrikeStep); " +
+                           "dilimde düz vuruş yerinde, adım atılmadı");
+            return false;
         }
 
         static int VerbOf(string skillId)

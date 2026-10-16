@@ -51,11 +51,8 @@ namespace Dovus.Game.Config
             c.Boss.Damage = 28;
             c.Boss.ApproachSpeedMps = 1.8f;
             p.Boss.BossApproachStopPadM = 0.6f;
-            if (RuleEngineV4Feature.Enabled)
-                Debug.LogError("[V4-FALLBACK] TuningPresets.Agir: PlayerMaxHp 30 uygulanmadı; dilimde oyuncu canı yalnız " +
-                               "kural-motoru-v4.json scale.player_max_hp");
-            else
-                p.Player.PlayerMaxHp = 30;
+            Debug.LogError("[V4-FALLBACK] TuningPresets.Agir: PlayerMaxHp 30 uygulanmadı; oyuncu canı yalnız " +
+                           "kural-motoru-v4.json scale.player_max_hp");
 
             p.Camera.FollowSmoothTimeSec = 0.26f;
             c.Feel.CameraPerfectZoomKick = 0.18f;

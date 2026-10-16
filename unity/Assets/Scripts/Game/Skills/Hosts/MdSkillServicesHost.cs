@@ -98,13 +98,8 @@ public sealed class MdSkillServicesHost
         public void SyncVisualDelivery() => _md.SyncVisualDelivery();
         public void PlayBasicStrikeVisual(int slotRune)
         {
-            if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
-            {
-                RuleEngineV4.RuleEngineV4SkillAnimBridge.PlayBasicStrike(
-                    RuleEngineV4ManifestationAdapter.Bind(_md), slotRune);
-                return;
-            }
-            _md._visual?.PulseBasicStrike();
+            RuleEngineV4.RuleEngineV4SkillAnimBridge.PlayBasicStrike(
+                RuleEngineV4ManifestationAdapter.Bind(_md), slotRune);
         }
         public void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing) =>
             _md.StopBasicCannonAtFirstBody(logic, origin, facing);

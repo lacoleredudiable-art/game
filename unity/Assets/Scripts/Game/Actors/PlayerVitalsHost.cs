@@ -77,14 +77,9 @@ namespace Dovus.Game.Actors
         /// </summary>
         public void SetMaxHp(int maxHp)
         {
-            if (RuleEngineV4Feature.Enabled)
-            {
-                Debug.LogError(
-                    $"[V4-FALLBACK] PlayerVitalsHost.SetMaxHp: panel PlayerMaxHp {maxHp} istedi; dilimde oyuncu canı " +
-                    $"yalnız kural-motoru-v4.json scale.player_max_hp ({MaxHp}), değiştirilmedi");
-                return;
-            }
-            _health.SetMaxHp(maxHp);
+            Debug.LogError(
+                $"[V4-FALLBACK] PlayerVitalsHost.SetMaxHp: panel PlayerMaxHp {maxHp} istedi; oyuncu canı " +
+                $"yalnız kural-motoru-v4.json scale.player_max_hp ({MaxHp}), değiştirilmedi");
         }
 
         /// <summary>Play sweep vakası: yarı can, diriliş zamanlayıcısı sıfır (eski private alan yansıması).</summary>

@@ -138,7 +138,7 @@ public class PlayerStateMachineTests
         sm.SyncWorld(false, false, false, false, false, isDrawing: true, false);
         Assert.That(sm.CurrentId, Is.EqualTo("drawing"));
         Assert.That(sm.AllowsDraw, Is.True);
-        Assert.That(sm.BlocksMove, Is.True);
+        Assert.That(sm.BlocksMove, Is.False, "v4: çizerken tam hız");
     }
 
     [Test]

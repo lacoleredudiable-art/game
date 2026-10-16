@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Dovus.Core.RuleEngineV4
 {
     /// <summary>
-    /// O-17.8: dilimde (<see cref="RuleEngineV4Feature.Enabled"/>) değeri ayar dosyasından ya da koddan değil
+    /// O-17.8: dilimde değeri ayar dosyasından ya da koddan değil
     /// kural-motoru-v4.json'dan gelen ayarlar. <see cref="Entry.Path"/> ayar dosyasının alan yoludur ("combat.*",
     /// "prototype.*"); dosyada olmayan ayarlar "GameTuning.*" adını taşır. Açılış kaynak log'u ve paneldeki gri
     /// kaydırıcılar (Y4, Y10) bu tabloyu okur; değeri asıl kullanan yer (kamera, can, boss hasarı, arena) aynı JSON

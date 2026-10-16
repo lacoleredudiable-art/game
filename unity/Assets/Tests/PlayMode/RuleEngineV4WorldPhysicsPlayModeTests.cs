@@ -64,7 +64,6 @@ namespace Dovus.Tests.PlayMode
             var boot = new GameObject("RuleEngineV4SliceBoot");
             boot.SetActive(false);
             var host = boot.AddComponent<GameBootstrapHost>();
-            host.SceneTuning.RuleEngineV4.Enabled = true;
             host.SceneTuning.RuleEngineV4.SliceScene = true;
             host.SlicePlayerVisualPrefab = LoadSlicePlayerVisual();
             boot.SetActive(true);
@@ -74,7 +73,6 @@ namespace Dovus.Tests.PlayMode
 
             _md = Object.FindAnyObjectByType<ManifestationDirector>();
             Assert.That(_md, Is.Not.Null, "ManifestationDirector");
-            Assert.That(RuleEngineV4Feature.Enabled, Is.True, "RuleEngineV4Feature.Enabled");
             _player = _md.MechanicsPlayer;
             Assert.That(_player, Is.Not.Null, "oyuncu");
             // Açılışta build seçimi açık ve dünya saati duraklı; varsayılan build ile kapatılır.
@@ -99,7 +97,6 @@ namespace Dovus.Tests.PlayMode
                 if (root != null && !_preexisting.Contains(root))
                     Object.Destroy(root);
             }
-            RuleEngineV4Feature.Enabled = false;
             yield return null;
             Application.logMessageReceived -= OnLog;
             Assert.That(_errors, Is.Empty, "konsol hatası:\n" + string.Join("\n", _errors));

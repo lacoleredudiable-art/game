@@ -7,19 +7,16 @@ using UnityEngine;
 namespace Dovus.Game.Actors
 {
     /// <summary>
-    /// Arena yarıçapının tek okuma yeri (O-7.2, O-4.11). Dilimde (<see cref="RuleEngineV4Feature.Enabled"/>)
-    /// dış duvarın iç yüzü: kural-motoru-v4.json <c>slice_arena</c> → <see cref="RuleEngineV4SliceArenaWall"/>;
-    /// sahnedeki <c>ArenaHalfSizeM</c> okunmaz. Bayrak kapalıyken eski değer.
+    /// Arena yarıçapının tek okuma yeri (O-7.2, O-4.11). Dış duvarın iç yüzü:
+    /// kural-motoru-v4.json <c>slice_arena</c> → <see cref="RuleEngineV4SliceArenaWall"/>; sahnedeki <c>ArenaHalfSizeM</c> okunmaz.
     /// </summary>
     public static class ArenaBoundary
     {
         static float? _sliceRadiusM;
 
-        public static float RadiusM(GameTuning tuning) =>
-            RuleEngineV4Feature.Enabled ? SliceRadiusM() : tuning.Arena.ArenaHalfSizeM;
+        public static float RadiusM(GameTuning tuning) => SliceRadiusM();
 
-        public static float RadiusM(SkillMotionTuning motion) =>
-            RuleEngineV4Feature.Enabled ? SliceRadiusM() : motion.ArenaHalfSizeM;
+        public static float RadiusM(SkillMotionTuning motion) => SliceRadiusM();
 
         static float SliceRadiusM()
         {

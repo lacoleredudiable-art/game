@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Config
 {
-    /// <summary>kural_motoru_v4 dilim ayarları (varsayılan kapalı).</summary>
+    /// <summary>kural_motoru_v4 dilim sahne ayarları (motor her zaman v4).</summary>
     [Serializable]
     public sealed class RuleEngineV4Settings
     {
@@ -22,12 +22,11 @@ namespace Dovus.Game.Config
         {
             if (!IsSliceBuild)
                 return;
-            Enabled = true;
             SliceScene = true;
         }
 
-        [Tooltip("Açıkken skill yürütme RuleEngineV4 komut planına gider; kapalıda eski yol.")]
-        public bool Enabled;
+        [Tooltip("Sahne uyumu; motor her zaman RuleEngineV4. Yeni sahnelerde true bırakın.")]
+        public bool Enabled = true;
 
         [Tooltip("Boss + 2-3 hafif yaratık + 2 AllyDummy dilim sahnesi.")]
         public bool SliceScene;

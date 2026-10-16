@@ -90,9 +90,7 @@ namespace Dovus.Game.Skills.Flow
                 {
                     _host.SyncVisualDelivery();
                     _host.PlayBasicStrikeVisual(basicDot);
-                    // Dilimde düz vuruş yerinde: Kılıç iaido, Yay'da ön sürede hareket yok (04 ritim tablosu).
-                    if (!Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
-                        _host.TryBeginBasicStrikeStep();
+                    // Düz vuruş yerinde: Kılıç iaido, Yay'da ön sürede hareket yok (04 ritim tablosu).
                     _host.Pose?.PulseRune(sentence.Words[0].Rune, _host.Clock.Director.WorldTimeMs);
                 }
                 else
@@ -139,11 +137,7 @@ namespace Dovus.Game.Skills.Flow
                 castMult /= atkSpd;
             recoverySec *= castMult;
 
-            double bangAt = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.LaunchOnResolve
-                ? _host.Clock.Director.WorldTimeMs
-                : _host.Clock.Director.WorldTimeMs
-                  + recoverySec * Units.SecToMs
-                  + _host.Combat.Feel.PostHitSilenceMs;
+            double bangAt = _host.Clock.Director.WorldTimeMs;
 
             _host.Pose?.BeginRecovery(recoverySec, _host.Clock.Director.WorldTimeMs);
             _host.PosedForRecovery = true;

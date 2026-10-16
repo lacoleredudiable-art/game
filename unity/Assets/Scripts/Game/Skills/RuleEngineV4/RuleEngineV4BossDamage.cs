@@ -52,7 +52,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         /// </summary>
         public static bool RejectLegacyPoison(StatusKind kind, string where)
         {
-            if (kind != StatusKind.Poison || !RuleEngineV4Feature.Enabled)
+            if (kind != StatusKind.Poison)
                 return false;
             Debug.LogError(
                 $"[V4-FALLBACK] {where}: dilimde zehir yalnız slice_boss_attacks.poison_breath_* ile uygulanır; " +

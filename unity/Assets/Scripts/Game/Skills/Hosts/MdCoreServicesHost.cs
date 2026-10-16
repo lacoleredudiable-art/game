@@ -68,8 +68,6 @@ public sealed class MdCoreServicesHost
 
         public bool TryHoldForRelease(CompletedSentence sentence)
         {
-            if (!Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
-                return false;
             EnsureCastPort();
             return _md._castPort.RuleEngineV4Bridge.HeldCast.TryHold(sentence);
         }

@@ -199,9 +199,7 @@ namespace Dovus.Game.DevTools
         {
             var c = _config.Combat;
             var p = _config.Prototype;
-            _sliceJson = RuleEngineV4Feature.Enabled
-                ? RuleEngineV4SliceTuningSources.Resolve(new RuleEngineV4CatalogAccess().Catalog)
-                : null;
+            _sliceJson = RuleEngineV4SliceTuningSources.Resolve(new RuleEngineV4CatalogAccess().Catalog);
 
             AddHeader("DODGE (§6)");
             AddIntSlider("Startup", 0, 150, () => c.Dodge.StartupMs, v => c.Dodge.StartupMs = v, "ms");

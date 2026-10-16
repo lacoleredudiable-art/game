@@ -94,8 +94,7 @@ namespace Dovus.Game.Skills.Presentation
             if (skill.IsEmpty || _host.Visual == null || _host.Visual.Animator == null)
                 return;
 
-            if (RuleEngineV4Feature.Enabled
-                && int.TryParse(skill.Identity.Verb, out int v4Verb)
+            if (int.TryParse(skill.Identity.Verb, out int v4Verb)
                 && int.TryParse(skill.Identity.Adjective, out int v4Adj)
                 && RuleEngineV4Slice.IsSliceCombo(v4Verb, v4Adj)
                 && RuleEngineV4Slice.IsSliceWeapon(WeaponNumber(_host.EquippedWeapon?.Id)))

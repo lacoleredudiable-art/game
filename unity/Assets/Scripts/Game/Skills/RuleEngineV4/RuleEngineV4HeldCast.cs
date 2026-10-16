@@ -43,7 +43,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             HexagonInputController input = _combat.Input;
             if (_releasing
-                || !RuleEngineV4Feature.Enabled
                 || sentence == null
                 || sentence.Phase == SentencePhase.Aborted
                 || !sentence.Closing.HasValue

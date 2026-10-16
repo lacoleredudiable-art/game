@@ -256,7 +256,7 @@ namespace Dovus.Game.Casting.Input
             {
                 _stroke.FinishDrawingStroke(cancelled);
                 if (!cancelled && _s.Engine != null
-                    && Dovus.Core.RuleEngineV4.RuleEngineV4Feature.CenterReleaseAbortsSentence(
+                    && Dovus.Core.RuleEngineV4.RuleEngineV4CastContext.ShouldAbortSentenceOnCenterRelease(
                         HexagonPointerHits.HitCenter(_s.LastPos, _s.Tuning), _s.Engine.State))
                     _s.Engine.Abort();
             }

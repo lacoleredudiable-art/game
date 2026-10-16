@@ -79,14 +79,9 @@ namespace Dovus.Game.Skills.Mechanics
             MechanicWorldProfile profile = MechanicWorldProfile.From(plan);
             Vector3 center = ResolveMechanicCenter(plan, aimDir, landedAt);
             double lifeMs = Math.Max(100, plan.Body.LifeSec * Dovus.Core.Shared.Units.SecToMs);
-            // v4 açıkken duvar ve alanı yalnız v4 yürütücüsü kurar (C2); eski motor kapalıdır, bu geri dönüş değil.
-            if (profile.BlocksMovement && !Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
-                SpawnMechanicWall(plan, center, aimDir, worldMs + lifeMs);
+            // Duvar ve alan yalnız v4 yürütücüsü kurar (C2); eski MechanicWorld spawn yolu kaldırıldı.
             if (profile.Decoy)
                 SpawnMechanicDecoy(plan, worldMs);
-            if (!Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled && (profile.TempoField || profile.Cloud || profile.Vortex
-                || profile.CleanseField || profile.Reflector || profile.ProjectileBarrier || profile.Continuous || profile.Payload))
-                SpawnMechanicVolume(plan, profile, center, worldMs);
             if (profile.Link)
                 SpawnMechanicLink(plan, worldMs);
             if (profile.ProjectileBarrier)

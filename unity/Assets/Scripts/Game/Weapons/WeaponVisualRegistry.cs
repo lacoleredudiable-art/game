@@ -69,9 +69,8 @@ namespace Dovus.Game.Weapons
                 AnimatorOverrideController loco = FindWeaponLocomotion(weaponKey, baseController);
                 if (loco != null)
                     return loco;
-                if (RuleEngineV4Feature.Enabled)
-                    Debug.LogError($"[V4-FALLBACK] silah yürüme klibi: '{weaponKey}' için '{baseController.name}' kaydı yok " +
-                                   "(WeaponVisualRegistry; Dovus/k3/Silah yürüme setleri); temel controller'ın seti kalır");
+                Debug.LogError($"[V4-FALLBACK] silah yürüme klibi: '{weaponKey}' için '{baseController.name}' kaydı yok " +
+                               "(WeaponVisualRegistry; Dovus/k3/Silah yürüme setleri); temel controller'ın seti kalır");
                 return baseController;
             }
             RuntimeAnimatorController ctrl = FindOverride(archetypeKey);

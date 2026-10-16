@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace CoreTests;
 
 /// <summary>
-/// Kılıç ATIL VFX tetikleri path-bağımsız: kural_motoru_v4 bayrağı AÇIK/KAPALI aynı plan;
+/// Kılıç ATIL VFX tetikleri: VfxPlanResolver dilim planı;
 /// shout / NotifyBossStruck / v4 ApplyDamage kabloları kaynakta doğrulanır.
 /// </summary>
 [TestFixture]
@@ -66,31 +66,10 @@ public sealed class RuleDrivenVfxPathTests
     }
 
     [Test]
-    public void ZenitsuTriggers_Identical_WithFlagOffAndOn()
+    public void ZenitsuTriggers_ResolveFromVfxPlan()
     {
-        bool previous = RuleEngineV4Feature.Enabled;
-        try
-        {
-            RuleEngineV4Feature.Enabled = false;
-            VfxPlan off = VfxPlanResolver.Resolve(KilicAtil(), "kilic");
-            AssertZenitsuTriggers(off);
-
-            RuleEngineV4Feature.Enabled = true;
-            VfxPlan on = VfxPlanResolver.Resolve(KilicAtil(), "kilic");
-            AssertZenitsuTriggers(on);
-
-            Assert.That(on.SkillAwaken, Is.EqualTo(off.SkillAwaken));
-            Assert.That(on.RuneLetterFlash, Is.EqualTo(off.RuneLetterFlash));
-            Assert.That(on.LightningDashTrail, Is.EqualTo(off.LightningDashTrail));
-            Assert.That(on.DragonTailArcSilhouette, Is.EqualTo(off.DragonTailArcSilhouette));
-            Assert.That(on.ZararClawMarksOnHit, Is.EqualTo(off.ZararClawMarksOnHit));
-            Assert.That(on.SlashArcOnHit, Is.EqualTo(off.SlashArcOnHit));
-            Assert.That(on.IsSwordDashSlice, Is.EqualTo(off.IsSwordDashSlice));
-        }
-        finally
-        {
-            RuleEngineV4Feature.Enabled = previous;
-        }
+        VfxPlan plan = VfxPlanResolver.Resolve(KilicAtil(), "kilic");
+        AssertZenitsuTriggers(plan);
     }
 
     [Test]

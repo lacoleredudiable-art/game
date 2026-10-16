@@ -193,7 +193,7 @@ namespace Dovus.Game.Skills
                 ApplyVariance = true,
                 VarianceRoll01 = _combatRng.NextRoll01(),
                 Poise = poise,
-                ScaleMagnitudes = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.ScaleCombatMagnitudes
+                ScaleMagnitudes = false
             });
 
             if (outcome.Amount > 0f && weaponArmorBonus)
