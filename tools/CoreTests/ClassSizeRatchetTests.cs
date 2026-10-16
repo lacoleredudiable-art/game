@@ -22,7 +22,7 @@ public sealed class ClassSizeRatchetTests
         ["PortalSystem"] = 979,
         ["MixamoAnimatorBind"] = 843,
         ["BuildSelectHud"] = 836,
-        ["TuningPanelHud"] = 808,
+        ["TuningPanelHud"] = 807,
         ["VitalsHud"] = 753,
         ["MechanicWorldRuntime"] = 733,
         ["MechanicGrammar"] = 722,
