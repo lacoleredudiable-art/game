@@ -212,7 +212,7 @@ durur. Sonraki tasarım sorusu bu.
   kaç 4'lü fırsatı.
 - **[Ö] Adalet paketi:** girdi tamponu (pencereden önce başlayan çizim pencere açılınca işlenir); köşe toleransı;
   zamanlama pencereleri cihaz dokunma gecikmesinin ≥ 2 katı (ölçüm, M-13.2); parry/dodge kararı cihazda, host
-  toleranslı; dodge coyote time.
+  toleranslı. ~~Dodge coyote time~~ **[RED]**: hasar karesinden sonra gelen basış korumaz (`15` §7 D-5, [K] 14 Ekim).
 - **[Ö]** Ölçülen yetenek deneme kartına girer: ortalama çizim süresi, parry sayısı/başarı, just-frame, 4'lü
   sayısı, dodge zamanlaması.
 
@@ -228,13 +228,22 @@ durur. Sonraki tasarım sorusu bu.
 - **[Ö] Teşhis:** usta gizli tuş bilmiyor, **zamanı kaynak olarak görüyor**; DPS'in paydasını küçültüyor. İptal =
   çizelgeleme problemi.
 - **[Ö] Skill üç fazlı:** hazırlık, etki, toparlanma. Kurallar (kâğıt):
-  - Hazırlık yalnız dodge ile kesilir; dodge hakkı yanar, CD yanmaz (bedava kandırmaca olmasın).
-  - Etki kesilmez.
-  - Toparlanma kesilebilir; öncelik **dodge > silah değişimi > düz vuruş sıfırlama.**
-  - Etki geçtiyse CD yanar.
-  - Silah değişiminin kendi kısa toparlanması var ve iptal edilemez (sonsuz zincir olmasın); iki silahın CD
+  - **[K 16.10] Dodge skill'i her fazda hemen keser** (hazırlık, etki, toparlanma). ~~Hazırlık: CD yanmaz~~ ve
+    ~~etki kesilmez~~ [Ö] satırları reddedildi. Hazırlıkta kesilen skill atılmaz ama mana ve CD yanar, iade yok
+    ("yanlış zamanda skill atmamalıydın"); etki geçtiyse de CD yanar.
+  - **[K 16.10] Hak iadesi hiçbir durumda yok** (engele çarpıp yol alamayan dodge dahil).
+  - **[K 16.10] Toparlanma silah değişimiyle kesilebilir.**
+  - **[K 16.10] Toparlanma düz vuruşla kesilmez.** Düz vuruş komboya dahildir; düz vuruşun animasyonunu skill
+    keser: düz vuruş vuruş karesini geçtiyse etkisi uygulanır ama kalan animasyon görünmez, skill başlar; vuruş
+    karesinden önce basılırsa düz vuruş etki de etmez. (Örnek: 0,6 s'lik düz vuruşun 0,30 s'sinde skill → vuruş
+    etki eder, skill hemen başlar; daha erken → düz vuruş hiç olmaz. Süreler ölçüm, M-13.4.)
+  - **[K 16.10] Dodge sürerken skill ve düz vuruş çalışmaz. Silah değişimi sürerken skill ve düz vuruş çalışmaz.**
+    Düz vuruş sürerken silah değişimi basılırsa, düz vuruş vuruş karesini geçtiyse etki eder ve kombo sayacı
+    sıfırlanır (skill ile aynı kural).
+  - Öncelik **dodge > silah değişimi > düz vuruş** (kuyruk sırası, [Ö] kalıyor).
+  - Silah değişiminin kendi kısa toparlanması var ve iptal edilemez (sonsuz zincir olmasın) [Ö]; iki silahın CD
     havuzu ayrı (dönüşümlü oynamaya iter).
-  - Düz vuruş sıfırlama (weave): kombo bırakıldığı an düz vuruş sayacı sıfırlanır; bedel yok, ödül küçük ve
+  - Düz vuruş sıfırlama (weave) [Ö]: kombo bırakıldığı an düz vuruş sayacı sıfırlanır; bedel yok, ödül küçük ve
     sürekli; acemi atlar, usta hep yapar. Sayaç görünür (küçük halka).
   - Girdi tamponu var. İptal kararı cihazda, host toleranslı.
   - Sayılar (ölçüm, M-13.4): üç toparlanma süresi (kısa/orta/uzun = 2/3/4'lü), silah değişimi CD'si, tampon
@@ -334,3 +343,29 @@ Oyunda ölçüm (başlangıç tahmini yazılır, oynanarak bulunur):
 - 5v5.
 - Lore, animasyon, efekt: dilim sonrası (telegraf okunabilirliği hariç; o oynanış).
 - Geçiş anı kutlaması (ekran görüntüsü, tek seferlik); bir sonraki hedef aynı gece görünür.
+
+## 14. Kararlar (16 Ekim 2026, Mustafa'nın cevapları; kaynak: `plan/kararlar-2026-10-15.md`)
+
+Hepsi **[K]**. Kod işleri ayrı iş parçalarında; bu bölüm yalnız kayıttır.
+
+- **[K] Dövüş akışı (§9'a işlendi):** dodge skill'i her fazda keser; hazırlık kesilirse mana + CD yanar; hak iadesi
+  yok; toparlanma silah değişimiyle kesilir, düz vuruşla kesilmez; skill düz vuruşu vuruş karesinden sonra keserse
+  etkisi geçer; dodge ve silah değişimi sürerken skill ve düz vuruş çalışmaz.
+- **[K] Deneme döngüsü:** aynı karede boss ve oyuncu ölürse boss ölümü sayılır · "Tekrar"da boss yine uyur ve
+  oyuncu 6 m'ye yaklaşınca 2 s'de uyanır · uyanışın 2 s'sinde oyuncu hasar almaz · ölüm/sonuç ekranında boss canı
+  büyük yazılır (§5 [Ö] onaylandı).
+- **[K] Boss:** faz eşiğine (%60 / %25) inen vuruş sürmekte olan saldırıyı iptal edip geçişi hemen başlatır ·
+  takım görevi sürerken faz 1'de duyurulu saldırı bekler · boss iki "uzun" saldırıyı 6 s içinde arka arkaya atmaz
+  (saldırı aralığı ≥ dolum süresi; `15` §7 D-7, alfa için).
+- **[K] Hedef kilidi:** silah menzili içinde alınır; alındıktan sonra menzilden bağımsız sürer, yalnız hedef
+  ölünce ya da kaybolunca düşer (`02` G-10 onaylandı).
+- **[K] Dodge:** zincirin ikinci basışında joystick yönü engelin içine bakıyorsa takla joystick yönüne gider,
+  engelde durur · hak iadesi yok (yolsuz çarpma dahil).
+- **[K] Görsel:** karakter 2048 dokusu için Mustafa orijinal dosyaları verecek · Linear renk uzayına geçiş ayrı
+  aşama olarak yapılacak · test cihazı POCO X7 Pro.
+- **[K] Belge temizliği:** eski satırlar `15` ve LED ışığa göre güncellenir (bu değişiklikle).
+- **[AÇIK] Sonuç ekranında "Silah değiştir" (O-17.2/O-17.3)** ve **faz 2 baş erişimi (KE-2.8)** Mustafa'ya yeniden
+  soruldu, cevap bekliyor.
+- **[AÇIK] Dodge sırasında basılan skill/düz vuruş** tampona girip sonra mı çalışır, yoksa tamamen yok mu sayılır?
+  (Cevap "çalışmaz"; tampon O-4.12 yalnız toparlanma için yazılı.)
+- **[AÇIK]** `plan/kararlar-2026-10-15.md` 21-29 (dilim dışı): cevap bekliyor.

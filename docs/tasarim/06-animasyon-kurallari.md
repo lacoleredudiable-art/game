@@ -406,7 +406,7 @@ Son satır kuralın gücünü gösterir: **"koşar mıyım?" sorusunu fiil/sıfa
 - **Havadayken (inmeden) tekrar → takla.** Takla **ikinci bir kendini taşımadır.** K 15:53 kuralı olduğu gibi işler, yeni kural gerekmez:
   - eski yol kesilir (H-1)
   - eski hızın yarısı yeni yöne aktarılır (H-2)
-  - toplam en çok 1,5× (H-3)
+  - toplam en çok 1,5× (H-3); **dodge taklası bu tavana tabi değildir, ×1,6 kullanır** (`15` §9, [K] 14 Ekim)
   - Dodge'un "kendini taşıma" sayılması → §11 S-2.
 - Havada en çok **1 takla** [test]. Üçüncü basış yok sayılır.
 
