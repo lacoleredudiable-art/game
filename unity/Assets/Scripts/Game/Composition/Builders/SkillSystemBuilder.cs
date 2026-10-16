@@ -144,7 +144,7 @@ namespace Dovus.Game.Composition.Builders
                     alive: () => !ctx.AllyDummyController.IsDown,
                     stealthed: () => ctx.AllyDummyController.Board != null && ctx.AllyDummyController.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
-                        RuleEngineV4ManifestationAdapter.Ensure(ctx),
+                        CombatContext(ctx),
                         ctx.AllyDummyController.transform,
                         raw,
                         ctx.AllyDummyController.ApplyBossDamage));
@@ -159,7 +159,7 @@ namespace Dovus.Game.Composition.Builders
                     alive: () => !ctx.AllyDummy2Controller.IsDown,
                     stealthed: () => ctx.AllyDummy2Controller.Board != null && ctx.AllyDummy2Controller.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
-                        RuleEngineV4ManifestationAdapter.Ensure(ctx),
+                        CombatContext(ctx),
                         ctx.AllyDummy2Controller.transform,
                         raw,
                         ctx.AllyDummy2Controller.ApplyBossDamage));
@@ -290,6 +290,9 @@ namespace Dovus.Game.Composition.Builders
             ctx.CameraOrbitController?.BindElementMenu(elementMenu);
             ctx.PlayerTargetingController?.BindElementMenu(elementMenu);
         }
+
+        static RuleEngineV4CombatContext CombatContext(WorldContext ctx) =>
+            ctx.RuleEngineV4Combat ?? RuleEngineV4ManifestationAdapter.Bind(ctx.ManifestationDirector);
 
         static void LogDesignWarning(string message) => Debug.LogWarning(message);
 

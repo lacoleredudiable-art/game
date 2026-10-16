@@ -1,6 +1,4 @@
-using Dovus.Game.Composition.Builders;
 using Dovus.Game.Skills.RuleEngineV4;
-using UnityEngine;
 
 namespace Dovus.Game.Skills
 {
@@ -40,16 +38,6 @@ namespace Dovus.Game.Skills
             };
             md.RuleEngineV4Session = combat.Session;
             return combat;
-        }
-
-        public static RuleEngineV4CombatContext Ensure(WorldContext ctx)
-        {
-            if (ctx?.RuleEngineV4Combat != null)
-                return ctx.RuleEngineV4Combat;
-            if (ctx?.ManifestationDirector == null)
-                return null;
-            ctx.RuleEngineV4Combat = Bind(ctx.ManifestationDirector);
-            return ctx.RuleEngineV4Combat;
         }
     }
 }

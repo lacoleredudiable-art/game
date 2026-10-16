@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Dovus.Core.Boss;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
-using Dovus.Core.Hud;
 using Dovus.Core.Presentation;
-using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Casting.Input;
+using Dovus.Game.Config;
+using Dovus.Game.Hud;
 using Dovus.Game.Platform;
 using Dovus.Game.Skills.Closing;
 using Dovus.Game.Skills.Targeting;
@@ -19,31 +20,31 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// <summary>v4 dünya/kapanış yolu: ManifestationDirector yerine doğrudan bağlanan servisler.</summary>
     public sealed class RuleEngineV4CombatContext
     {
-        public MonoBehaviour CoroutineHost { get; init; }
+        public MonoBehaviour CoroutineHost { get; set; }
         public Transform HostTransform => CoroutineHost != null ? CoroutineHost.transform : null;
-        public RuleEngineV4WorldSession Session { get; init; } = new();
-        public Transform Player { get; init; }
-        public ActorView Visual { get; init; }
-        public GameClockHost Clock { get; init; }
-        public BossReactorController Boss { get; init; }
-        public BossVitals BossVitals { get; init; }
-        public BossDirector BossDirector { get; init; }
-        public AllyDummyController Ally { get; init; }
-        public DamageNumberHud DamageHud { get; init; }
-        public Func<PlayerVitalsHost> PlayerVitals { get; init; }
-        public HexagonInputController Input { get; init; }
-        public PlayerTargetingController Targeting { get; init; }
-        public SkillAim SkillAim { get; init; }
-        public ClosingQueue ClosingQueue { get; init; }
-        public SceneLiveRegistry<TargetableHost> LiveTargetables { get; init; }
-        public GameTuning Colors { get; init; }
-        public EquipmentItem EquippedWeapon { get; init; }
-        public AnimationBridge AnimationBridge { get; init; }
-        public Action EnsureAnimationReady { get; init; }
-        public Func<IReadOnlyList<SentenceWord>, SkillResolution> ResolveSkillWords { get; init; }
-        public Action<float> NotifyCastDealt { get; init; }
-        public Action<bool, bool> NotifyBossStruck { get; init; }
-        public Func<Vector3?> BossHitPoint { get; init; }
+        public RuleEngineV4WorldSession Session { get; set; } = new();
+        public Transform Player { get; set; }
+        public ActorView Visual { get; set; }
+        public GameClockHost Clock { get; set; }
+        public BossReactorController Boss { get; set; }
+        public BossVitals BossVitals { get; set; }
+        public BossDirector BossDirector { get; set; }
+        public AllyDummyController Ally { get; set; }
+        public DamageNumberHud DamageHud { get; set; }
+        public Func<PlayerVitalsHost> PlayerVitals { get; set; }
+        public HexagonInputController Input { get; set; }
+        public PlayerTargetingController Targeting { get; set; }
+        public SkillAim SkillAim { get; set; }
+        public ClosingQueue ClosingQueue { get; set; }
+        public SceneLiveRegistry<TargetableHost> LiveTargetables { get; set; }
+        public GameTuning Colors { get; set; }
+        public EquipmentItem EquippedWeapon { get; set; }
+        public AnimationBridge AnimationBridge { get; set; }
+        public Action EnsureAnimationReady { get; set; }
+        public Func<IReadOnlyList<SentenceWord>, SkillResolution> ResolveSkillWords { get; set; }
+        public Action<float> NotifyCastDealt { get; set; }
+        public Action<bool, bool> NotifyBossStruck { get; set; }
+        public Func<Vector3?> BossHitPoint { get; set; }
         public Action<Transform, float> PlaceMark { get; set; }
         public Action<RuleEngineV4SurfaceAim, float> PlaceSurfaceMark { get; set; }
         public RuleEngineV4CastHost CastHost { get; set; }

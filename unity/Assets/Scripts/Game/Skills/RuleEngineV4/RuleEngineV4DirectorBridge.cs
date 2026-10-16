@@ -14,7 +14,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             _castHost = new RuleEngineV4CastHost(combat);
             combat.CastHost = _castHost;
             combat.PlaceMark = _castHost.PlaceMark;
-            combat.PlaceSurfaceMark = _castHost.PlaceSurfaceMark;
+            combat.PlaceSurfaceMark = (aim, life) => _castHost.PlaceSurfaceMark(aim, life);
             _heldCast = new RuleEngineV4HeldCast(combat, _castHost);
         }
 

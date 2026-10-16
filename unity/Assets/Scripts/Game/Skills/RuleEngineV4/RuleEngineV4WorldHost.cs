@@ -23,7 +23,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     amount, false, combat.BossHitPoint?.Invoke(), null, victimIsBoss: true);
                 RuleDrivenVfxSink.NotifyBossStrike(
                     combat.Player, victim, victim.position);
-                combat.NotifyBossStruck?.Invoke(false, allowHitstop: true);
+                combat.NotifyBossStruck?.Invoke(false, true);
                 return amount;
             }
 
