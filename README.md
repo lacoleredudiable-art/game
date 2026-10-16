@@ -5,8 +5,8 @@ Unity C# mobil kooperatif boss dövüşü — alfa prototip.
 ## Oyun
 
 Sol joystick hareket. Sağ altıgen: **2 rün** (fiil + 1 sıfat); merkeze kısa dokunuş düz vuruş.
-Dodge ayrı düğme (2 hak, 6 sn dolum; çift basış birleşik kaçış). Mükemmel dodge yalnız kısa **görsel donma** —
-dünya ve CD akmaya devam eder. CD ve mana zorunlu (`CombatTuning`). Aktif boss: sahnede `aglarin_kralicesi`.
+Dodge ayrı düğme (2 hak, 6 sn dolum; çift basış birleşik kaçış). Mükemmel dodge **yoktur** (kaldırıldı,
+`docs/tasarim/13-vizyon-ve-cerceve.md` §3). CD ve mana zorunlu (`CombatTuning`). Aktif boss: sahnede `aglarin_kralicesi`.
 
 ## Unity
 

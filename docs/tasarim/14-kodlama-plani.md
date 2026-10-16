@@ -111,9 +111,9 @@ yöne fırlıyorsun, duvar Ağ Tükürüğü mermisini tutuyor, tuzağa basan mi
 
 ### Aşama 7 — Zaman ekonomisi: silah değiştirerek iptal ve Kılıç zinciri
 Kaynak: `13` §9 [K] (iki silah animasyon iptali, zor kombo), O-4.12, O-4.14, Y24, D13.
-**Başlamadan önce karar gerekir:** `13` §9'daki üç faz / iptal öncelik kuralları [Ö]; onaylanmadan kod yazılmaz.
+**Kararlar (16 Ekim, `13` §9 ve §14):** dodge her fazda keser, hak/CD iadesi yok, toparlanma silah değişimiyle kesilir (düz vuruşla kesilmez), skill düz vuruşu vuruş karesinden sonra keser. Kalan [Ö] (silah değişiminin kendi toparlanması, weave sayacı, kuyruk önceliği) kodlanacak varsayılan; telefonda beğenilmezse değişir.
 Kılıç `Kilic_VUR_b`, `_c` klipleri gelmeden 3 kesiş zinciri yapılmaz.
-1. Toparlanma silah değişimiyle kesilir (kurallar onaylanınca).
+1. Toparlanma silah değişimiyle kesilir (onaylandı, 16 Ekim).
 2. Girdi tamponu 0,15 s (O-4.12); düz vuruş sırası (Y24).
 3. Kılıç 3 kesiş zinciri (klipler gelince).
 
