@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Dovus.App.Casting
 {
-    /// <summary>Düz vuruş pending kapanışı — ManifestationDirector.IsPendingBasic ile birebir.</summary>
+    /// <summary>Düz vuruş pending kapanışı — RuleEngineV4SentenceHost.IsPendingBasic ile birebir.</summary>
     public static class PendingBasicStrikeRules
     {
         public static bool IsPendingBasic(

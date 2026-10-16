@@ -64,10 +64,7 @@ public class RootAndSkillNumberTests
     [Test]
     public void SkillNumbers_ComeFromCanonicalJson()
     {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..",
-            "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json"));
+        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
         Assert.That(File.Exists(path), Is.True, path);
         string json = File.ReadAllText(path);
         JsonValue root = MiniJson.Parse(json);
@@ -86,7 +83,7 @@ public class RootAndSkillNumberTests
         Assert.That(c6, Is.EqualTo(cooldown).Within(0.001f));
         Assert.That(m6, Is.EqualTo(mana).Within(0.001f));
         Assert.That(dur6, Is.EqualTo(duration).Within(0.001f));
-        Assert.That(range6, Is.EqualTo(4f).Within(0.001f), "kontrol konisi 4m");
+        Assert.That(range6, Is.EqualTo(catalog.RangeM(6)).Within(0.001f), "verb 6 menzil katalogdan");
         Assert.That(radius6, Is.GreaterThan(0f));
         Assert.That(catalog.GlobalCooldownSec, Is.EqualTo(gcd).Within(0.001f));
         Assert.That(catalog.MaxMana, Is.EqualTo(maxMana).Within(0.001f));

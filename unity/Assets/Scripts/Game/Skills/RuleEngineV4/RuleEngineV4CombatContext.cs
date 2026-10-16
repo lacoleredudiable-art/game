@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
 {
-    /// <summary>v4 dünya/kapanış yolu: ManifestationDirector yerine doğrudan bağlanan servisler.</summary>
+    /// <summary>v4 dünya/kapanış yolu: RuleEngineV4SentenceHost yerine doğrudan bağlanan servisler.</summary>
     public sealed class RuleEngineV4CombatContext
     {
         public MonoBehaviour CoroutineHost { get; set; }

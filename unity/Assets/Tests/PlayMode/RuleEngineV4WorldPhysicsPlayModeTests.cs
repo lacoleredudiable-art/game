@@ -41,7 +41,7 @@ namespace Dovus.Tests.PlayMode
         readonly HashSet<GameObject> _preexisting = new();
         readonly List<string> _errors = new();
         string _label = "kurulum";
-        ManifestationDirector _md;
+        RuleEngineV4SentenceHost _md;
         RuleEngineV4CastHost _cast;
         RuleEngineV4PhysicsServices _physics;
         RuleEngineV4CatalogAccess _catalog;
@@ -71,8 +71,8 @@ namespace Dovus.Tests.PlayMode
                 DisableGozcu();
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
-            _md = Object.FindAnyObjectByType<ManifestationDirector>();
-            Assert.That(_md, Is.Not.Null, "ManifestationDirector");
+            _md = Object.FindAnyObjectByType<RuleEngineV4SentenceHost>();
+            Assert.That(_md, Is.Not.Null, "RuleEngineV4SentenceHost");
             _player = _md.MechanicsPlayer;
             Assert.That(_player, Is.Not.Null, "oyuncu");
             // Açılışta build seçimi açık ve dünya saati duraklı; varsayılan build ile kapatılır.

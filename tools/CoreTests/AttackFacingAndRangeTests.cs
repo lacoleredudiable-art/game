@@ -76,34 +76,6 @@ public class AttackFacingAndRangeTests
     }
 
     [Test]
-    public void BasicStrikeRange_MissingHitbox_WarnsOnceAndKeepsFallback()
-    {
-        string json = File.ReadAllText(JsonPath());
-        int marker = json.IndexOf("\"fiil_hitbox\"", System.StringComparison.Ordinal);
-        int entry = json.IndexOf("\"1\":", marker, System.StringComparison.Ordinal);
-        int next = json.IndexOf("\"2\":", entry, System.StringComparison.Ordinal);
-        Assert.That(marker, Is.GreaterThan(0));
-        Assert.That(next, Is.GreaterThan(entry));
-        string broken = json.Remove(entry, next - entry);
-
-        var catalog = SkillNumberCatalog.FromJson(broken);
-        Assert.That(catalog.RangeM(1), Is.EqualTo(SkillNumberFallbacks.RangeM).Within(0.001f));
-        Assert.That(DesignWarnings.WasWarned("verb_base.1.hitbox"), Is.True);
-
-        DesignWarnings.ResetForTests();
-        int warnings = 0;
-        DesignWarnings.Warned += message =>
-        {
-            if (message != null && message.Contains("verb_base.1", System.StringComparison.Ordinal))
-                warnings++;
-        };
-        SkillNumberCatalog.FromJson(broken);
-        SkillNumberCatalog.FromJson(broken);
-        Assert.That(warnings, Is.EqualTo(1), "eksik menzil bir kez uyarır");
-        Assert.That(DesignWarnings.WasWarned("verb_base.1.hitbox"), Is.True);
-    }
-
-    [Test]
     public void AttackFacing_LocksTarget_HoldsWithoutOne_DashStaysDirectional()
     {
         Assert.That(
@@ -126,10 +98,7 @@ public class AttackFacingAndRangeTests
 
     static string JsonPath()
     {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..",
-            "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json"));
+        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
         Assert.That(File.Exists(path), Is.True, path);
         return path;
     }

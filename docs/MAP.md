@@ -15,7 +15,7 @@
 | Kalıp teslim kuyruğu | `Game/Skills/Motion/TemplateDeliveryRuntime.cs`, `Game/Skills/ManifestationDirector.zMotionServices.cs` | `TemplateDeliveryRuntime.ArmTemplateDelivery` |
 | Mermi silme | `Game/Skills/Projectiles/ProjectileEraser.cs`, `Game/Skills/ManifestationDirector.Projectiles.cs` | `ProjectileEraser.TickProjectileErase`, `ManifestationDirector.BindProjectiles` |
 | Rün / cümle grameri | `Core/Element/Rune.cs`, `Core/Element/RuneLoadout.cs`, `Core/Grammar/RuneManager.cs`, `Core/Input/HexagonLayout.cs`, `Core/Input/JumpKind.cs` | `RuneManager.TrySelect`, `SentenceEngine` |
-| Skill verisi (JSON) | `docs/element-sistemi.json`, `unity/Assets/Resources/ElementSystem/element-sistemi.json`, `Core/Data/ElementSystemDocument.cs` | `ElementSystemDocument.Parse`, `SkillMotor.FromDocument`, `ElementSystemJsonLoader.TryLoad` |
+| Skill verisi (JSON) | `unity/Assets/Resources/RuleEngineV4/slice-sentence-grammar.json`, `Core/Data/ElementSystemDocument.cs` | `ElementSystemDocument.Parse`, `SkillMotor.FromDocument`, `SliceCombatBootstrap` |
 | JSON mapper'lar | `Core/Boss/BossEncounterMapper.cs`, `Core/Data/VfxBindingMapper.cs`, `Core/Data/ElementSystemHeader.cs`, `Core/Data/ElementSystemDocument.cs`, `Core/Grammar/SkillEngineModifiers.cs` | `BossEncounterMapper.TryParseHud`, `VfxBindingMapper.TryParse`, `ElementSystemHeader.TryParse`, `ElementSystemDocument.Parse` |
 | Hareket kalıbı — Core | `Core/Motion/MotionTemplateRunner.cs`, `Core/Motion/MotionTemplateCatalog.cs`, `Core/Motion/PositionOwnership.cs` | `MotionTemplateRunner.Tick`, `PositionOwnership.Prepare` |
 | Hareket kalıbı — Game | `Game/Actors/MotionTemplateBodyHost.cs`, `docs/motion-templates.json` (üretim: `tools/build-motion-templates.py`) | `MotionTemplateBodyHost.TickMotion` |
@@ -40,11 +40,9 @@
 | Debug / dev | `Game/Diagnostics/DebugConfig.cs`, `Game/DevTools/` (`Dovus.Game.DevTools.asmdef`, `UNITY_EDITOR \|\| DOVUS_DEBUG`), `DebugPanelsController`, `GrammarDebugHud`, `SentenceDebugHud`, `TuningPanelHud` | `DebugPanelsController`, `GrammarDebugHud.Update`; runtime girdi `Diagnostics/DebugPanelInput` |
 | Editor menüleri | `Game/Editor/Sweep/PlaySweep*.cs`, `Game/Editor/*Bind.cs`, `Game/Editor/AndroidBuilder.cs` | `[MenuItem("Dovus/...")]` |
 | Play Sweep (saf) | `App/Sweep/SweepComboCatalog.cs`, `App/Sweep/SweepCsvFormat.cs` | `SweepComboCatalog.OrderedCombos` |
-| Testler — Core | `tools/CoreTests/*Tests.cs`, `tools/CoreTests/AppSimulationTests.cs` (App, shim yok) | `dotnet test tools/CoreTests` |
+| Testler — Core | `tools/CoreTests/*Tests.cs` | `dotnet test tools/CoreTests` |
 | Testler — Integration | `tools/IntegrationTests/*Tests.cs` | `dotnet test tools/IntegrationTests` |
 | Git dışı asset yedeği (Synty/Mixamo/VFX) | `docs/asset-yedegi.md`, `tools/IntegrationTests/known-missing-asset-guids.txt` | yedek zip: PC `C:\Users\lacol\_backup\` |
-| Araç — gramer | `tools/AtomSim/Program.cs` | `dotnet run --project tools/AtomSim` |
-| Araç — başsız tarama | `tools/SweepV2/Host/Program.cs`, `tools/SweepV2/Shim/*` (Unity shim; davranış doğrulaması) | `SweepV2.Program.Main` |
 | Araç — Game derleme | `tools/GameCompile/check.py`, `tools/GameCompile/GameCompile.csproj` | `python tools/GameCompile/check.py` |
 | CI | `.github/workflows/sweep-v2.yml` | workflow `sweep` job |
 | Zaman / saat | `Core/Time/TimeDirector.cs`, `App/Time/TimeDirectorClock.cs`, `Game/Platform/GameClockHost.cs` | `TimeDirector.Tick`, `GameClockHost.Update`, `GameClockHost.World` |

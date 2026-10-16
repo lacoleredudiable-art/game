@@ -5,6 +5,8 @@ namespace Dovus.Core.Grammar
     {
         public const float CaptionFadeStartRatio = 0.75f;
         public const int ExpectedV61SkillCount = 144;
+        public const int ExpectedSliceRuneCount = 6;
+        public const int ExpectedSliceSkillCount = 36;
         public const int DrawCaptionBufferCapacity = 32;
     }
 }

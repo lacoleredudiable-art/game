@@ -6,7 +6,6 @@ using Dovus.Game.Feel;
 using Dovus.Game.Hud;
 using Dovus.Game.Skills.Execution;
 using Dovus.Game.Team;
-using Dovus.Game.Skills.Execution;
 using Dovus.Game.Vfx;
 
 namespace Dovus.Game.Composition
@@ -23,7 +22,6 @@ namespace Dovus.Game.Composition
         public UiJuiceRuntime UiJuice { get; }
         public SceneLiveRegistry<TargetableHost> Targetables { get; } = new();
         public SceneLiveRegistry<AllyDummyController> AllyDummies { get; } = new();
-        public SceneLiveRegistry<SummonExecutor> SummonExecutors { get; } = new();
         public IDebugPanelInputState DebugPanelInput { get; set; }
         public IDebugPanelsChromeSink DebugPanelsChrome { get; set; }
 

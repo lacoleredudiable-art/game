@@ -132,7 +132,6 @@ namespace Dovus.Game.Skills.Weapons
 
         public void ApplyWeaponDelivery(
             in SkillResolution skill,
-            SkillExecutorKind kind,
             Transform target,
             ref Vector3 origin,
             ref float range,
@@ -141,8 +140,6 @@ namespace Dovus.Game.Skills.Weapons
             ref float angleDeg,
             ref float speed)
         {
-            if (kind == SkillExecutorKind.Movement)
-                return;
             WeaponCombatProfile profile = _host.EquippedProfile;
             if (profile == null)
                 return;

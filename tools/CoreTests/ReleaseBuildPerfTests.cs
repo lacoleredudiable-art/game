@@ -138,13 +138,10 @@ public class ReleaseBuildPerfTests
         Assert.That(Regex.Matches(Game("Team/TeamComboHost.cs"), @"_boss\.GetComponent<BossReactorController>\(\)").Count, Is.EqualTo(1),
             "yalnız CachedBossReactor içinde");
         Assert.That(Game("Actors/DodgeMotionController.cs"), Does.Contain("_reactorCache"));
-        foreach (string f in new[] { "Actors/PlayerTargetingController.cs", "Skills/ManifestationDirector.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
+        foreach (string f in new[] { "Actors/PlayerTargetingController.cs", "Skills/RuleEngineV4SentenceHost.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
             Assert.That(Game(f), Does.Not.Contain("FindObjectsByType<TargetableHost>"), f);
-        foreach (string f in new[] { "Skills/ManifestationDirector.cs", "Skills/ManifestationDirector.VerbExecution.cs", "Skills/ManifestationDirector.MechanicWorld.cs" })
+        foreach (string f in new[] { "Skills/RuleEngineV4SentenceHost.cs", "Skills/RuleEngineV4SentenceHost.VerbExecution.cs", "Skills/RuleEngineV4SentenceHost.Damage.cs" })
             Assert.That(Regex.Matches(Game(f), @"(?<!_playerVitalsCache = )_player\.GetComponent<PlayerVitalsHost>\(\)").Count, Is.EqualTo(0), f);
-        string summon = Game("Skills/Execution/SummonExecutor.cs");
-        Assert.That(summon, Does.Contain("_weaponPathClass"));
-        Assert.That(summon, Does.Contain("_targetCollider"));
     }
 
     [Test]
@@ -152,8 +149,8 @@ public class ReleaseBuildPerfTests
     {
         foreach (string f in new[]
                  {
-                     "Skills/ManifestationDirector.MechanicWorld.cs", "Skills/Motion/MotionTemplateDriver.cs",
-                     "Skills/Execution/SummonExecutor.cs", "Team/TeamComboHost.cs", "Boss/HostileProjectileHost.cs",
+                     "Skills/RuleEngineV4SentenceHost.Damage.cs",
+                     "Team/TeamComboHost.cs", "Boss/HostileProjectileHost.cs",
                      "Boss/AttackTelegraphView.cs"
                  })
         {

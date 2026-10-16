@@ -29,37 +29,14 @@ namespace Dovus.App.Casting
         void ApplyResourceCost(SkillResolution skill);
         SkillMotionPlan ResolveMotion(SkillResolution skill);
         void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion);
-        bool TryBeginMotionTemplate(SkillResolution skill, TCtx ctx);
         void NoteSustainedCast(SkillResolution skill);
         void NotifyCast(SkillId skillId);
 
-        SkillExecutorRoute Route(SkillResolution skill);
-        SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route);
-        void SetLastExecutorKind(SkillExecutorKind kind);
-
         void ApplySelfCastEffects(SkillResolution skill);
         void NoteJsonCast(SkillResolution skill, TCtx ctx);
-        void BeginMechanicPlan(TCtx ctx, SkillResolution skill);
-        void ArmTemplateDelivery(SkillResolution skill, TCtx ctx, in SkillMotionPlan motion);
 
-        bool TryLaunchExecutor(
-            SkillExecutorKind kind,
-            TCtx ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion);
-
-        void ScheduleFollowUps(
-            SkillExecutorKind kind,
-            TCtx ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion);
-
-        /// <summary>Fallback teslimat; boss menzil dallanması port içinde kalır.</summary>
-        float ApplyFallbackDelivery(
-            TCtx ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion,
-            in SkillExecutorRoute route);
+        /// <summary>v4 dilim teslimi; eski executor yolu yok.</summary>
+        bool TryLaunchSkill(TCtx ctx, SkillResolution skill, in SkillMotionPlan motion, out float dealt);
 
         void ApplyCooldown(SkillResolution skill, TCtx ctx, bool cosmeticIfDisabled);
         void SpawnClosingImpact(TCtx ctx);

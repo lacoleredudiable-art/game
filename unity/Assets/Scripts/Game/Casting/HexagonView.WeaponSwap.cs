@@ -18,11 +18,11 @@ namespace Dovus.Game.Casting
         Image _swapReserveIcon;
         Text _swapActive;
         Text _swapReserve;
-        ManifestationDirector _swapSource;
+        RuleEngineV4SentenceHost _swapSource;
         GameClockHost _swapClock;
         bool _wasSwapping;
 
-        public void BindWeaponSwap(ManifestationDirector source, GameClockHost clock)
+        public void BindWeaponSwap(RuleEngineV4SentenceHost source, GameClockHost clock)
         {
             _swapSource = source;
             _swapClock = clock;

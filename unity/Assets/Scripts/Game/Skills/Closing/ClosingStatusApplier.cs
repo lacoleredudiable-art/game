@@ -192,12 +192,6 @@ namespace Dovus.Game.Skills.Closing
             float rate = _host.SlotPassives.TickRateMultFor(castId);
             float baseTick = _host.Combat != null ? _host.Combat.Manifestation.ExecutorFieldTickSec : 1f;
             float fraction = PassiveFlowMath.DefaultTickFraction;
-            if (_host.MechanicEngine != null)
-            {
-                double fromJson = _host.MechanicEngine.Rules.Param("flow_tick_fraction");
-                if (fromJson > 0d)
-                    fraction = (float)fromJson;
-            }
             if (!PassiveFlowMath.TryPlan(channel, rate, dealt, baseTick, fraction, out PassiveFlowPlan plan))
                 return;
             double now = _host.Clock != null ? _host.Clock.Director.WorldTimeMs : 0d;

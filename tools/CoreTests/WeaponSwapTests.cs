@@ -16,20 +16,7 @@ namespace CoreTests;
 [TestFixture]
 public class WeaponSwapTests
 {
-    static string Json()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        if (!File.Exists(path))
-        {
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        }
-        Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
-        return File.ReadAllText(path);
-    }
+    static string Json() => SliceGrammarTestPaths.ReadSliceGrammarJson();
 
     static EquipmentItem Weapon(string id) => new(id, id, EquipmentSlot.Weapon, string.Empty);
 

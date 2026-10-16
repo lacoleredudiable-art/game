@@ -83,7 +83,7 @@ public sealed class RuleDrivenVfxPathTests
     [Test]
     public void NotifyBossStruck_WiresHitClaws_PathIndependent()
     {
-        string feel = Game("Skills/ManifestationDirector.Feel.cs");
+        string feel = Game("Skills/RuleEngineV4SentenceHost.Feel.cs");
         Assert.That(feel, Does.Contain("RuleDrivenVfxSink.NotifyBossStrike"));
     }
 
@@ -123,15 +123,6 @@ public sealed class RuleDrivenVfxPathTests
         string points = Game("Weapons/WeaponBladePoints.cs");
         Assert.That(points, Does.Contain("\"Vfx_Kabza\""));
         Assert.That(points, Does.Contain("\"Vfx_Tip\""));
-    }
-
-    [Test]
-    public void MotionTemplateDriver_DoesNotCallBeginSkill_ShoutOwnsArm()
-    {
-        string motion = Game("Skills/Motion/MotionTemplateDriver.cs");
-        Assert.That(motion, Does.Not.Contain("RuleDrivenVfxSink.BeginSkill"));
-        Assert.That(motion, Does.Not.Contain(".BeginSkill("));
-        Assert.That(motion, Does.Contain("RuleDrivenVfxSink.NotifyHit"));
     }
 
     [Test]

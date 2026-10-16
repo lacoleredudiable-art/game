@@ -50,7 +50,7 @@ public sealed class SkillIdsRuntimeTests
     }
 
     [Test]
-    public void JsonSwapCancelTags_MatchExpectedTen()
+    public void JsonSwapCancelTags_MatchSliceGrammar()
     {
         SkillMotor motor = SkillMechanicTagTests.LoadMotorPublic();
         var tagged = new List<string>();
@@ -65,29 +65,4 @@ public sealed class SkillIdsRuntimeTests
         Assert.That(tagged, Is.EqualTo(expected));
     }
 
-    [Test]
-    public void JsonSustainedTags_CoverFlowingWeaponPassives()
-    {
-        SkillMotor motor = SkillMechanicTagTests.LoadMotorPublic();
-        string[] flowing = { "1-12", "2-12", "5-12", "8-12", "12-12" };
-        foreach (string id in flowing)
-        {
-            Assert.That(motor.TryGetSkill(id, out var entry), Is.True, id);
-            Assert.That(new Dovus.Core.Grammar.SkillEngineModifiers(entry.Engine).Sustained(), Is.True, id);
-        }
-    }
-
-    [Test]
-    public void JsonBorderModeTags_CoverBorderTiers()
-    {
-        SkillMotor motor = SkillMechanicTagTests.LoadMotorPublic();
-        Assert.That(motor.TryGetSkill("1-2", out var t20), Is.True);
-        Assert.That(Dovus.Core.Border.BorderMode.TryTier(
-            new Dovus.Core.Grammar.SkillEngineModifiers(t20.Engine),
-            out float th, out _, out _, out _), Is.True);
-        Assert.That(th, Is.EqualTo(Dovus.Core.Border.BorderMode.Tier20).Within(0.001f));
-        Assert.That(motor.TryGetSkill("12-8", out var col), Is.True);
-        var eng = new Dovus.Core.Grammar.SkillEngineModifiers(col.Engine);
-        Assert.That(Dovus.Core.Border.BorderModeTier.OpensColumn(eng), Is.True);
-    }
 }

@@ -32,10 +32,7 @@ public sealed class ScaffoldWiringTests
     [Test]
     public void SkillNumberTuningApplier_WritesBasicStrikeRangeFromVerbOne()
     {
-        string json = File.ReadAllText(Path.Combine(
-            Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..")),
-            "docs",
-            "element-sistemi.json"));
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         var catalog = SkillNumberCatalog.FromJson(json);
         var tuning = new ManifestationTuning();
         SkillNumberTuningApplier.ApplyBasicStrikeRange(catalog, tuning);

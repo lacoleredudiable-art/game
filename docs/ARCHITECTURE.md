@@ -9,7 +9,7 @@ Tek belge: hedef plan, bugünkü katmanlar, Core sırası, skill modeli, isimlen
 |------|-------------|------------------------|
 | Katmanlar | **Core** + **App** + **Game** (+ Composition, DevTools, Editor asmdef) | Domain / Application / Infrastructure / Presentation / Composition / DevTools / Editor |
 | Boss beyni | `App/Boss/BossBrain`, `BossAttackSelector` | Application use case |
-| Skill yürütme | `Game/Skills/ManifestationDirector` partial (ClassSizeRatchet ≤3411) | İnce presenter + olaylar |
+| Skill yürütme | `Game/Skills/RuleEngineV4SentenceHost` partial | v4 dilim + düz vuruş |
 | Girdi | `HexagonInputController` + `HexagonInputSession` | Presentation Casting |
 | Test ağı | Normalize sweep hash, 144/144, PlaySweep tipli erişim | Girdi/boss/dodge otomasyonu (PLAN 2C) |
 | Sabitler | `*Defaults` const; oynanış literal ratchet | JSON/tuning; const = geçici taşıma (kural 5) |
@@ -23,7 +23,7 @@ Bu belge **hedefi** anlatır; bugünkü kodun nerede olduğu için `docs/MAP.md`
 
 ## Değişmez ilke
 - Aşama 2 refaktörleri **davranış değiştirmez**: `dotnet test tools/CoreTests` sayısı ve
-  `SweepV2 --all --gate` 1440 sonucu birebir aynı kalır. Aynı kalamıyorsa iş durur, rapor edilir.
+  CoreTests + IntegrationTests + GameCompile CI kapıları geçer.
 - Unity dosyası taşınırken `.meta` ile birlikte taşınır (`git mv` ikisini birden) → GUID korunur.
 - `.unity` / `.prefab` elle düzenlenmez (kök `AGENTS.md`).
 
@@ -118,14 +118,14 @@ Sürüm ve sayı adları (`V611`, `Weapons10`, `Cw3`) tip adlarından kalkar; s�
 3. BossDirector (1.154): boss AI Unity tarafında
 4. PrototypeBootstrap (922): 77 sınıfa bağlı
 5. PrototypeTuning: 243 ayar, 39 dosya bağımlı
-6. element-sistemi.json: 231 KB, veri + lore + changelog, 10–12 kez parse
+6. (eski) element-sistemi.json kaldırıldı; dilim grameri tek kaynak
 ### Katman / izolasyon
 7. Game katmansız: 132 dosya tek klasör/namespace; 120 sınıftan 54'ü döngüsel
 8. Core içi döngüler: Combat↔Status, Equipment↔Grammar
 9. Skill akışı, boss AI, oyuncu canı Unity'de (Core'da değil)
 10. Mana Time.deltaTime (PlayerResource.cs:43), diriliş unscaledTime (PlayerVitals.cs:41)
 11. Tohumsuz Random (DamagePipeline.cs:25), Random.value (PortalBorderTeamHost.cs:61)
-12. Game testleri 6.477 satırlık sahte Unity katmanına (SweepV2) bağımlı
+12. (eski) SweepV2 kaldırıldı
 ### Anti-pattern
 13. Global statik çarpanlar (PortalBorderTeamHooks: 9 dosya / 40 erişim) + 7 singleton
 14. Skill ID switch'leri: PortalSystem 20, TeamComboSystem 18; 88 string ID, 234 string case; pasifler string
@@ -160,7 +160,7 @@ Sürüm ve sayı adları (`V611`, `Weapons10`, `Cw3`) tip adlarından kalkar; s�
 
 1. **Shared** — JSON (`MiniJson`), kimlik enum'ları (`PortalOp`, `TeamOp`, `SlamVariant`), `ResourceTracker`, paylaşılan yardımcılar. Core içi çıkış yok.
 2. **Border, Time, Hud** — sahne/çerçeve; Core içi çıkış yok veya yalnız Shared.
-3. **Data** — `element-sistemi.json` ve diğer ham belge kökleri; yalnız Shared'a bağımlı.
+3. **Data** — dilim grameri JSON ve kural motoru; yalnız Shared'a bağımlı.
 4. **Element, Input** — rün kimliği (`Rune`, `RuneLoadout`), altıgen geometri (`HexagonLayout`, `JumpKind`).
 5. **Tuning** — tüm `*Tuning` serileştirme tipleri + `CombatTuning` kökü; Shared (ve gerektiğinde Manifestation sayıları).
 6. **Presentation, Mechanic, Manifestation** — görsel/mechanic planlama; Data + Grammar + Motion'a doğru tek yön.
@@ -193,7 +193,7 @@ Tek kavram haritası: JSON katalog → çözülmüş cast → yürütme planı. 
 
 ```mermaid
 flowchart LR
-  JSON["element-sistemi.json"]
+  JSON["slice-sentence-grammar.json"]
   Catalog["SkillCatalogEntry\n(skills.by_verb satırı)"]
   Motor["SkillMotor.Resolve"]
   Resolution["SkillResolution\n(bir cast'in çözülmüş hali)"]

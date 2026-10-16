@@ -52,7 +52,7 @@ public sealed class SkillIframeWindowTests
     [Test]
     public void SpawnIframe_11_10_NoLongerFreezesPlayer()
     {
-        string src = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "Skills", "ManifestationDirector.VerbExecution.cs"));
+        string src = File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", "Game", "Skills", "RuleEngineV4SentenceHost.VerbExecution.cs"));
         int at = src.IndexOf("void ApplySpawnIFrame", System.StringComparison.Ordinal);
         Assert.That(at, Is.GreaterThan(0));
         string body = src.Substring(at, src.IndexOf("}", src.IndexOf("{", at), System.StringComparison.Ordinal) - at);

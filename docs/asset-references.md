@@ -22,7 +22,7 @@ IntegrationTests bu dosyadaki **bilinen eksikler** listesini tarama sonucuyla ka
 ## Taranan sabit Resources yolları
 - `Animation/WeaponVisualRegistry`
 - `Bosses/Visuals/AglarinKralicesi`
-- `ElementSystem/element-sistemi`
+- `RuleEngineV4/slice-sentence-grammar`
 - `ElementSystem/motion-templates`
 - `Fonts/HudFont`
 - `Fonts/HudFont SDF`

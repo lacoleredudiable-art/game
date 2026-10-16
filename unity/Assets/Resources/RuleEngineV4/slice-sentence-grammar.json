@@ -1,0 +1,1762 @@
+{
+  "system": {
+    "version": "v4-slice-grammar"
+  },
+  "combo_system": {
+    "current_max_length": 2,
+    "future_lengths": [
+      3,
+      4
+    ],
+    "combo_structure": {
+      "1": "Kök fiil",
+      "2": "Fiil + Sıfat",
+      "3_future": "(Fiil+Sıfat) + Sıfat",
+      "4_future": "(Fiil+Sıfat) + (Sıfat+Sıfat)"
+    },
+    "skills_per_build": 36,
+    "unique_skills": 144,
+    "total_build_skill_pairs": 33264,
+    "player_main_skills": "5-6",
+    "learning_curve": {
+      "level_1": "2'li only",
+      "level_5": "3'lü unlock (future)",
+      "level_10": "4'lü unlock (future)"
+    },
+    "drawing_preview": {
+      "enabled": true,
+      "live_update": true,
+      "description": "Oyuncu çizerken skill ismi ve efekti anlık gösterilir"
+    },
+    "wrong_combo_result": "farklı_skill_ceza_değil",
+    "parse_lock": "İlk nokta = o rünün fiil yüzü; ikinci nokta = o rünün sıfat yüzü."
+  },
+  "runes": [
+    {
+      "id": 1,
+      "name": "Saldırı",
+      "verb_face": "Saldırı",
+      "adjective_face": "Yoğunlaştırma",
+      "adjective_prefix": "Yoğun",
+      "verb_noun": "Vuruş",
+      "family": "strike",
+      "category": "hasar",
+      "target_mode": "enemy_only",
+      "base_effect": "Tek hedefe dar, odaklı vuruş",
+      "passive_duration_default": 5
+    },
+    {
+      "id": 2,
+      "name": "İyileştirme",
+      "verb_face": "İyileştirme",
+      "adjective_face": "Emme",
+      "adjective_prefix": "Emici",
+      "verb_noun": "Şifa",
+      "family": "mend",
+      "category": "destek",
+      "target_mode": "self_or_ally",
+      "base_effect": "Can verir",
+      "passive_duration_default": 7
+    },
+    {
+      "id": 3,
+      "name": "Hareket",
+      "verb_face": "Hareket",
+      "adjective_face": "Sıçrama",
+      "adjective_prefix": "Sıçrayan",
+      "verb_noun": "Adım",
+      "family": "motion",
+      "category": "hareket",
+      "target_mode": "self_only",
+      "base_effect": "Konum değiştirir, dash",
+      "passive_duration_default": 5
+    },
+    {
+      "id": 4,
+      "name": "Savunma",
+      "verb_face": "Savunma",
+      "adjective_face": "Sabitleme",
+      "adjective_prefix": "Sabit",
+      "verb_noun": "Kalkan",
+      "family": "guard",
+      "category": "savunma",
+      "target_mode": "self_only",
+      "base_effect": "Hasar emer, armor verir",
+      "passive_duration_default": 7
+    },
+    {
+      "id": 6,
+      "name": "Kontrol",
+      "verb_face": "Kontrol",
+      "adjective_face": "Bağlama",
+      "adjective_prefix": "Bağlayıcı",
+      "verb_noun": "Bağ",
+      "family": "control",
+      "category": "savunma",
+      "target_mode": "enemy_only",
+      "base_effect": "CC uygular (root/slow/stun)",
+      "passive_duration_default": 4
+    },
+    {
+      "id": 9,
+      "name": "Arındırma",
+      "verb_face": "Arındırma",
+      "adjective_face": "Odaklama",
+      "adjective_prefix": "Odaklı",
+      "verb_noun": "Arınma",
+      "family": "purge",
+      "category": "destek",
+      "target_mode": "self_or_ally",
+      "base_effect": "Debuff siler",
+      "passive_duration_default": 5
+    }
+  ],
+  "verb_base": {
+    "1": {
+      "action": "damage",
+      "base_damage": 40,
+      "base_poise": 15,
+      "base_cost": 12,
+      "base_cooldown": 0.8,
+      "hitbox": "projectile"
+    },
+    "2": {
+      "action": "heal",
+      "base_heal": 35,
+      "base_damage": 0,
+      "base_cost": 14,
+      "base_cooldown": 1.0,
+      "hitbox": "self_aura"
+    },
+    "3": {
+      "action": "dash",
+      "dash_distance_m": 3.0,
+      "base_damage": 0,
+      "base_cost": 10,
+      "base_cooldown": 0.9,
+      "hitbox": "dash_line"
+    },
+    "4": {
+      "action": "shield",
+      "shield_absorb": 50,
+      "base_damage": 0,
+      "base_cost": 12,
+      "base_cooldown": 1.2,
+      "hitbox": "self"
+    },
+    "6": {
+      "action": "cc",
+      "cc_kind": "root",
+      "cc_duration_sec": 1.5,
+      "base_damage": 8,
+      "base_cost": 14,
+      "base_cooldown": 1.5,
+      "hitbox": "target"
+    },
+    "9": {
+      "action": "cleanse",
+      "cleanse_count": 1,
+      "base_damage": 0,
+      "base_cost": 10,
+      "base_cooldown": 1.0,
+      "hitbox": "self_or_ally"
+    }
+  },
+  "adjective_mods": {
+    "1": {
+      "label": "Yoğunlaştırma",
+      "damage_mult": 1.35,
+      "hitbox_scale_mult": 0.55,
+      "poise_damage_mult": 1.2
+    },
+    "2": {
+      "label": "Emme",
+      "lifesteal": 0.3,
+      "damage_mult": 0.95
+    },
+    "3": {
+      "label": "Sıçrama",
+      "bounce_targets": 2,
+      "bounce_damage_mult": 0.5,
+      "hitbox_scale_mult": 1.1
+    },
+    "4": {
+      "label": "Sabitleme",
+      "poise_damage_mult": 1.5,
+      "lifetime_add": 2.0,
+      "cast_mobility": "rooted"
+    },
+    "6": {
+      "label": "Bağlama",
+      "apply_root_sec": 1.5,
+      "apply_slow": 0.3
+    },
+    "9": {
+      "label": "Odaklama",
+      "ignore_armor": true,
+      "damage_mult": 1.15,
+      "max_targets": 1
+    }
+  },
+  "skills": {
+    "by_verb": {
+      "1": {
+        "skills": [
+          {
+            "id": "1-1",
+            "name": "Yoğun Vuruş",
+            "adjective": "Yoğunlaştırma",
+            "effect": "Dar, odaklı, yüksek hasar",
+            "passive": "5 sn boyunca vuruşlar +%15 hasar",
+            "engine": {
+              "action": "damage",
+              "base_damage": 40,
+              "base_poise": 15,
+              "base_cost": 12,
+              "base_cooldown": 0.8,
+              "hitbox": "projectile",
+              "label": "Yoğunlaştırma",
+              "damage_mult": 1.35,
+              "hitbox_scale_mult": 0.55,
+              "poise_damage_mult": 1.2,
+              "swap_cancel": true
+            },
+            "prose_mechanic": "Dar, odaklı, yüksek hasar",
+            "prose_feel": "Sert, kararlı, tek noktaya",
+            "prose_visual": "Tek çizgi, beyaz iz"
+          },
+          {
+            "id": "1-2",
+            "name": "Emici Vuruş",
+            "adjective": "Emme",
+            "effect": "Vurur, %30 can çalar",
+            "passive": "7 sn boyunca vuruşlar can çalar",
+            "engine": {
+              "action": "damage",
+              "base_damage": 40,
+              "base_poise": 15,
+              "base_cost": 12,
+              "base_cooldown": 0.8,
+              "hitbox": "projectile",
+              "label": "Emme",
+              "lifesteal": 0.3,
+              "damage_mult": 0.95,
+              "border_mode": "tier_20"
+            },
+            "prose_mechanic": "Vurur, %30 can çalar",
+            "prose_feel": "Aç, emici",
+            "prose_visual": "Kırmızı iz, kan akışı"
+          },
+          {
+            "id": "1-3",
+            "name": "Sıçrayan Vuruş",
+            "adjective": "Sıçrama",
+            "effect": "2. hedefe %50 seker",
+            "passive": "5 sn boyunca vuruşlar seker",
+            "engine": {
+              "action": "damage",
+              "base_damage": 40,
+              "base_poise": 15,
+              "base_cost": 12,
+              "base_cooldown": 0.8,
+              "hitbox": "projectile",
+              "label": "Sıçrama",
+              "bounce_targets": 2,
+              "bounce_damage_mult": 0.5,
+              "hitbox_scale_mult": 1.1
+            },
+            "prose_mechanic": "2. hedefe %50 seker",
+            "prose_feel": "Çevik, kaotik",
+            "prose_visual": "Sarı kıvılcım sekmesi"
+          },
+          {
+            "id": "1-4",
+            "name": "Sabit Vuruş",
+            "adjective": "Sabitleme",
+            "effect": "Poise ×1.5",
+            "passive": "7 sn boyunca yerinde kalırsın, poise kırma ×1.5",
+            "engine": {
+              "action": "damage",
+              "base_damage": 40,
+              "base_poise": 15,
+              "base_cost": 12,
+              "base_cooldown": 0.8,
+              "hitbox": "projectile",
+              "label": "Sabitleme",
+              "poise_damage_mult": 1.5,
+              "lifetime_add": 2.0,
+              "cast_mobility": "rooted",
+              "swap_cancel": true
+            },
+            "prose_mechanic": "Poise ×1.5",
+            "prose_feel": "Ağır, kırıcı",
+            "prose_visual": "Yere çakma, toz"
+          },
+          {
+            "id": "1-6",
+            "name": "Bağlayıcı Vuruş",
+            "adjective": "Bağlama",
+            "effect": "1.5 sn root",
+            "passive": "4 sn boyunca vuruşlar hedefi yavaşlatır",
+            "engine": {
+              "action": "damage",
+              "base_damage": 40,
+              "base_poise": 15,
+              "base_cost": 12,
+              "base_cooldown": 0.8,
+              "hitbox": "projectile",
+              "label": "Bağlama",
+              "apply_root_sec": 1.5,
+              "apply_slow": 0.3
+            },
+            "prose_mechanic": "1.5 sn root",
+            "prose_feel": "Kontrolcü",
+            "prose_visual": "Zincir, bağ izi"
+          },
+          {
+            "id": "1-9",
+            "name": "Odaklı Vuruş",
+            "adjective": "Odaklama",
+            "effect": "Zırh yoksayar",
+            "passive": "5 sn boyunca vuruşlar zırhı yoksayar",
+            "engine": {
+              "action": "damage",
+              "base_damage": 40,
+              "base_poise": 15,
+              "base_cost": 12,
+              "base_cooldown": 0.8,
+              "hitbox": "projectile",
+              "label": "Odaklama",
+              "ignore_armor": true,
+              "damage_mult": 1.15,
+              "max_targets": 1
+            },
+            "prose_mechanic": "Zırh yoksayar",
+            "prose_feel": "Delici, keskin",
+            "prose_visual": "Mavi nokta, delme"
+          }
+        ]
+      },
+      "2": {
+        "skills": [
+          {
+            "id": "2-1",
+            "name": "Yoğun Şifa",
+            "adjective": "Yoğunlaştırma",
+            "effect": "Anlık büyük can",
+            "passive": "5 sn pasif: Yoğunlaştırma",
+            "engine": {
+              "action": "heal",
+              "base_heal": 35,
+              "base_damage": 0,
+              "base_cost": 14,
+              "base_cooldown": 1.0,
+              "hitbox": "self_aura",
+              "label": "Yoğunlaştırma",
+              "damage_mult": 1.35,
+              "hitbox_scale_mult": 0.55,
+              "poise_damage_mult": 1.2
+            },
+            "prose_mechanic": "Anlık büyük can",
+            "prose_feel": "Ani, güçlü",
+            "prose_visual": "Yeşil patlama"
+          },
+          {
+            "id": "2-2",
+            "name": "Emici Şifa",
+            "adjective": "Emme",
+            "effect": "Dren ile verir",
+            "passive": "7 sn pasif: Emme",
+            "engine": {
+              "action": "drain_heal",
+              "base_heal": 35,
+              "base_damage": 0,
+              "base_cost": 14,
+              "base_cooldown": 1.0,
+              "hitbox": "self_aura",
+              "label": "Emme",
+              "lifesteal": 0.35,
+              "damage_mult": 0.95
+            },
+            "prose_mechanic": "Dren ile verir",
+            "prose_feel": "Sömüren",
+            "prose_visual": "Kırmızı→yeşil akış"
+          },
+          {
+            "id": "2-3",
+            "name": "Sıçrayan Şifa",
+            "adjective": "Sıçrama",
+            "effect": "Dosta seker",
+            "passive": "5 sn pasif: Sıçrama",
+            "engine": {
+              "action": "heal",
+              "base_heal": 35,
+              "base_damage": 0,
+              "base_cost": 14,
+              "base_cooldown": 1.0,
+              "hitbox": "self_aura",
+              "label": "Sıçrama",
+              "bounce_targets": 2,
+              "bounce_damage_mult": 0.5,
+              "hitbox_scale_mult": 1.1
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Yeşil sekme"
+          },
+          {
+            "id": "2-4",
+            "name": "Sabit Şifa",
+            "adjective": "Sabitleme",
+            "effect": "Yerleşik şifa alanı",
+            "passive": "7 sn pasif: Sabitleme",
+            "engine": {
+              "action": "heal",
+              "base_heal": 35,
+              "base_damage": 0,
+              "base_cost": 14,
+              "base_cooldown": 1.0,
+              "hitbox": "self_aura",
+              "label": "Sabitleme",
+              "poise_damage_mult": 1.5,
+              "lifetime_add": 2.0,
+              "cast_mobility": "rooted"
+            },
+            "prose_mechanic": "Yerleşik şifa alanı",
+            "prose_feel": "Kalıcı, sabırlı",
+            "prose_visual": "Yeşil halka"
+          },
+          {
+            "id": "2-6",
+            "name": "Bağlayıcı Şifa",
+            "adjective": "Bağlama",
+            "effect": "Dosta bağlanır",
+            "passive": "4 sn pasif: Bağlama",
+            "engine": {
+              "action": "heal",
+              "base_heal": 35,
+              "base_damage": 0,
+              "base_cost": 14,
+              "base_cooldown": 1.0,
+              "hitbox": "self_aura",
+              "label": "Bağlama",
+              "apply_root_sec": 1.5,
+              "apply_slow": 0.3,
+              "portal_op": "hook"
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı, sürekli",
+            "prose_visual": "Yeşil bağ"
+          },
+          {
+            "id": "2-9",
+            "name": "Odaklı Şifa",
+            "adjective": "Odaklama",
+            "effect": "En yaralıyı bulur",
+            "passive": "5 sn pasif: Odaklama",
+            "engine": {
+              "action": "heal",
+              "base_heal": 35,
+              "base_damage": 0,
+              "base_cost": 14,
+              "base_cooldown": 1.0,
+              "hitbox": "self_aura",
+              "label": "Odaklama",
+              "ignore_armor": true,
+              "damage_mult": 1.15,
+              "max_targets": 1
+            },
+            "prose_mechanic": "En yaralıyı bulur",
+            "prose_feel": "Akıllı, odaklı",
+            "prose_visual": "Yeşil ok"
+          }
+        ]
+      },
+      "3": {
+        "skills": [
+          {
+            "id": "3-1",
+            "name": "Yoğun Adım",
+            "adjective": "Yoğunlaştırma",
+            "effect": "Kısa, hızlı dash",
+            "passive": "5 sn pasif: Yoğunlaştırma",
+            "engine": {
+              "action": "dash",
+              "dash_distance_m": 3.0,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 0.9,
+              "hitbox": "dash_line",
+              "label": "Yoğunlaştırma",
+              "damage_mult": 1.35,
+              "hitbox_scale_mult": 0.55,
+              "poise_damage_mult": 1.2
+            },
+            "prose_mechanic": "Kısa, hızlı dash",
+            "prose_feel": "Ani, kısa",
+            "prose_visual": "Beyaz iz"
+          },
+          {
+            "id": "3-2",
+            "name": "Emici Adım",
+            "adjective": "Emme",
+            "effect": "Dash + can çal",
+            "passive": "7 sn pasif: Emme",
+            "engine": {
+              "action": "dash",
+              "dash_distance_m": 3.0,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 0.9,
+              "hitbox": "dash_line",
+              "label": "Emme",
+              "lifesteal": 0.3,
+              "damage_mult": 0.95,
+              "border_mode": "tier_20"
+            },
+            "prose_mechanic": "Dash + can çal",
+            "prose_feel": "Sinsi, emici",
+            "prose_visual": "Kırmızı iz"
+          },
+          {
+            "id": "3-3",
+            "name": "Sıçrayan Adım",
+            "adjective": "Sıçrama",
+            "effect": "Çift dash",
+            "passive": "5 sn pasif: Sıçrama",
+            "engine": {
+              "action": "dash",
+              "dash_distance_m": 3.0,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 0.9,
+              "hitbox": "dash_line",
+              "label": "Sıçrama",
+              "bounce_targets": 2,
+              "bounce_damage_mult": 0.5,
+              "hitbox_scale_mult": 1.1
+            },
+            "prose_mechanic": "Çift dash",
+            "prose_feel": "Çevik, ikiz",
+            "prose_visual": "Çift beyaz"
+          },
+          {
+            "id": "3-4",
+            "name": "Sabit Adım",
+            "adjective": "Sabitleme",
+            "effect": "Dash + armor",
+            "passive": "7 sn pasif: Sabitleme",
+            "engine": {
+              "action": "dash",
+              "dash_distance_m": 3.0,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 0.9,
+              "hitbox": "dash_line",
+              "label": "Sabitleme",
+              "poise_damage_mult": 1.5,
+              "lifetime_add": 2.0,
+              "cast_mobility": "rooted",
+              "armor_add": 25,
+              "buff_duration_sec": 3.0,
+              "portal_op": "anchor_or_recall"
+            },
+            "prose_mechanic": "Dash + armor",
+            "prose_feel": "Güvenli",
+            "prose_visual": "Mavi kalkan"
+          },
+          {
+            "id": "3-6",
+            "name": "Bağlayıcı Adım",
+            "adjective": "Bağlama",
+            "effect": "Dash + root",
+            "passive": "4 sn pasif: Bağlama",
+            "engine": {
+              "action": "dash",
+              "dash_distance_m": 3.0,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 0.9,
+              "hitbox": "dash_line",
+              "label": "Bağlama",
+              "apply_root_sec": 1.5,
+              "apply_slow": 0.3
+            },
+            "prose_mechanic": "Dash + root",
+            "prose_feel": "Kontrolcü",
+            "prose_visual": "Zincir izi"
+          },
+          {
+            "id": "3-9",
+            "name": "Odaklı Adım",
+            "adjective": "Odaklama",
+            "effect": "Dash + kilitlenme",
+            "passive": "5 sn pasif: Odaklama",
+            "engine": {
+              "action": "dash",
+              "dash_distance_m": 3.0,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 0.9,
+              "hitbox": "dash_line",
+              "label": "Odaklama",
+              "ignore_armor": true,
+              "damage_mult": 1.15,
+              "max_targets": 1
+            },
+            "prose_mechanic": "Dash + kilitlenme",
+            "prose_feel": "Kilitli",
+            "prose_visual": "Mavi hedef"
+          }
+        ]
+      },
+      "4": {
+        "skills": [
+          {
+            "id": "4-1",
+            "name": "Yoğun Kalkan",
+            "adjective": "Yoğunlaştırma",
+            "effect": "Dar, güçlü armor",
+            "passive": "5 sn pasif: Yoğunlaştırma",
+            "engine": {
+              "action": "shield",
+              "shield_absorb": 50,
+              "base_damage": 0,
+              "base_cost": 12,
+              "base_cooldown": 1.2,
+              "hitbox": "self",
+              "label": "Yoğunlaştırma",
+              "damage_mult": 1.35,
+              "hitbox_scale_mult": 0.55,
+              "poise_damage_mult": 1.2
+            },
+            "prose_mechanic": "Dar, güçlü armor",
+            "prose_feel": "Sağlam",
+            "prose_visual": "Mavi dar halka"
+          },
+          {
+            "id": "4-2",
+            "name": "Emici Kalkan",
+            "adjective": "Emme",
+            "effect": "Hasar→can",
+            "passive": "7 sn pasif: Emme",
+            "engine": {
+              "action": "shield",
+              "shield_absorb": 50,
+              "base_damage": 0,
+              "base_cost": 12,
+              "base_cooldown": 1.2,
+              "hitbox": "self",
+              "label": "Emme",
+              "lifesteal": 0.3,
+              "damage_mult": 0.95
+            },
+            "prose_mechanic": "Hasar→can",
+            "prose_feel": "Emici",
+            "prose_visual": "Kırmızı→mavi"
+          },
+          {
+            "id": "4-3",
+            "name": "Sıçrayan Kalkan",
+            "adjective": "Sıçrama",
+            "effect": "Dosta seker",
+            "passive": "5 sn pasif: Sıçrama",
+            "engine": {
+              "action": "shield",
+              "shield_absorb": 50,
+              "base_damage": 0,
+              "base_cost": 12,
+              "base_cooldown": 1.2,
+              "hitbox": "self",
+              "label": "Sıçrama",
+              "bounce_targets": 2,
+              "bounce_damage_mult": 0.5,
+              "hitbox_scale_mult": 1.1
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Paylaşımcı",
+            "prose_visual": "Mavi sekme"
+          },
+          {
+            "id": "4-4",
+            "name": "Sabit Kalkan",
+            "adjective": "Sabitleme",
+            "effect": "Uzun armor",
+            "passive": "7 sn pasif: Sabitleme",
+            "engine": {
+              "action": "shield",
+              "shield_absorb": 50,
+              "base_damage": 0,
+              "base_cost": 12,
+              "base_cooldown": 1.2,
+              "hitbox": "self",
+              "label": "Sabitleme",
+              "poise_damage_mult": 1.5,
+              "lifetime_add": 2.0,
+              "cast_mobility": "rooted"
+            },
+            "prose_mechanic": "Uzun armor",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Mavi kubbe"
+          },
+          {
+            "id": "4-6",
+            "name": "Bağlayıcı Kalkan",
+            "adjective": "Bağlama",
+            "effect": "Dosta bağlanır",
+            "passive": "4 sn pasif: Bağlama",
+            "engine": {
+              "action": "shield",
+              "shield_absorb": 50,
+              "base_damage": 0,
+              "base_cost": 12,
+              "base_cooldown": 1.2,
+              "hitbox": "self",
+              "label": "Bağlama",
+              "apply_root_sec": 1.5,
+              "apply_slow": 0.3
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı",
+            "prose_visual": "Mavi bağ"
+          },
+          {
+            "id": "4-9",
+            "name": "Odaklı Kalkan",
+            "adjective": "Odaklama",
+            "effect": "En çok hasarlıyı korur",
+            "passive": "5 sn pasif: Odaklama",
+            "engine": {
+              "action": "shield",
+              "shield_absorb": 50,
+              "base_damage": 0,
+              "base_cost": 12,
+              "base_cooldown": 1.2,
+              "hitbox": "self",
+              "label": "Odaklama",
+              "ignore_armor": true,
+              "damage_mult": 1.15,
+              "max_targets": 1
+            },
+            "prose_mechanic": "En çok hasarlıyı korur",
+            "prose_feel": "Akıllı",
+            "prose_visual": "Mavi hedef"
+          }
+        ]
+      },
+      "6": {
+        "skills": [
+          {
+            "id": "6-1",
+            "name": "Yoğun Bağ",
+            "adjective": "Yoğunlaştırma",
+            "effect": "1.5 sn stun",
+            "passive": "5 sn pasif: Yoğunlaştırma",
+            "engine": {
+              "action": "cc",
+              "cc_kind": "root",
+              "cc_duration_sec": 1.5,
+              "base_damage": 8,
+              "base_cost": 14,
+              "base_cooldown": 1.5,
+              "hitbox": "target",
+              "label": "Yoğunlaştırma",
+              "damage_mult": 1.35,
+              "hitbox_scale_mult": 0.55,
+              "poise_damage_mult": 1.2
+            },
+            "prose_mechanic": "1.5 sn stun",
+            "prose_feel": "Sert, kısa",
+            "prose_visual": "Beyaz dar halka"
+          },
+          {
+            "id": "6-2",
+            "name": "Emici Bağ",
+            "adjective": "Emme",
+            "effect": "CC + can çal",
+            "passive": "7 sn pasif: Emme",
+            "engine": {
+              "action": "cc",
+              "cc_kind": "root",
+              "cc_duration_sec": 1.5,
+              "base_damage": 8,
+              "base_cost": 14,
+              "base_cooldown": 1.5,
+              "hitbox": "target",
+              "label": "Emme",
+              "lifesteal": 0.3,
+              "damage_mult": 0.95
+            },
+            "prose_mechanic": "CC + can çal",
+            "prose_feel": "Sinsi",
+            "prose_visual": "Mor halka"
+          },
+          {
+            "id": "6-3",
+            "name": "Sıçrayan Bağ",
+            "adjective": "Sıçrama",
+            "effect": "2. hedefe seker",
+            "passive": "5 sn pasif: Sıçrama",
+            "engine": {
+              "action": "cc",
+              "cc_kind": "root",
+              "cc_duration_sec": 1.5,
+              "base_damage": 8,
+              "base_cost": 14,
+              "base_cooldown": 1.5,
+              "hitbox": "target",
+              "label": "Sıçrama",
+              "bounce_targets": 2,
+              "bounce_damage_mult": 0.5,
+              "hitbox_scale_mult": 1.1,
+              "swap_cancel": true
+            },
+            "prose_mechanic": "2. hedefe seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Mor sekme"
+          },
+          {
+            "id": "6-4",
+            "name": "Sabit Bağ",
+            "adjective": "Sabitleme",
+            "effect": "1.5 sn root",
+            "passive": "7 sn pasif: Sabitleme",
+            "engine": {
+              "action": "cc",
+              "cc_kind": "root",
+              "cc_duration_sec": 1.5,
+              "base_damage": 8,
+              "base_cost": 14,
+              "base_cooldown": 1.5,
+              "hitbox": "target",
+              "label": "Sabitleme",
+              "poise_damage_mult": 1.5,
+              "lifetime_add": 2.0,
+              "cast_mobility": "rooted"
+            },
+            "prose_mechanic": "1.5 sn root",
+            "prose_feel": "Uzun, sabırlı",
+            "prose_visual": "Kalın zincir"
+          },
+          {
+            "id": "6-6",
+            "name": "Bağlayıcı Bağ",
+            "adjective": "Bağlama",
+            "effect": "Çift CC",
+            "passive": "4 sn pasif: Bağlama",
+            "engine": {
+              "action": "cc",
+              "cc_kind": "root",
+              "cc_duration_sec": 1.5,
+              "base_damage": 8,
+              "base_cost": 14,
+              "base_cooldown": 1.5,
+              "hitbox": "target",
+              "label": "Bağlama",
+              "apply_root_sec": 1.5,
+              "apply_slow": 0.3
+            },
+            "prose_mechanic": "Çift CC",
+            "prose_feel": "İkiz",
+            "prose_visual": "Çift zincir"
+          },
+          {
+            "id": "6-9",
+            "name": "Odaklı Bağ",
+            "adjective": "Odaklama",
+            "effect": "Tek hedefe uzun kilit",
+            "passive": "5 sn pasif: Odaklama",
+            "engine": {
+              "action": "cc",
+              "cc_kind": "root",
+              "cc_duration_sec": 1.5,
+              "base_damage": 8,
+              "base_cost": 14,
+              "base_cooldown": 1.5,
+              "hitbox": "target",
+              "label": "Odaklama",
+              "ignore_armor": true,
+              "damage_mult": 1.15,
+              "max_targets": 1
+            },
+            "prose_mechanic": "Tek hedefe uzun kilit",
+            "prose_feel": "Kilitli",
+            "prose_visual": "Kırmızı hedef"
+          }
+        ]
+      },
+      "9": {
+        "skills": [
+          {
+            "id": "9-1",
+            "name": "Yoğun Arınma",
+            "adjective": "Yoğunlaştırma",
+            "effect": "1 debuff sil",
+            "passive": "5 sn pasif: Yoğunlaştırma",
+            "engine": {
+              "action": "cleanse",
+              "cleanse_count": 1,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 1.0,
+              "hitbox": "self_or_ally",
+              "label": "Yoğunlaştırma",
+              "damage_mult": 1.35,
+              "hitbox_scale_mult": 0.55,
+              "poise_damage_mult": 1.2
+            },
+            "prose_mechanic": "1 debuff sil",
+            "prose_feel": "Ani temizlik",
+            "prose_visual": "Beyaz flaş"
+          },
+          {
+            "id": "9-2",
+            "name": "Emici Arınma",
+            "adjective": "Emme",
+            "effect": "Debuff→can",
+            "passive": "7 sn pasif: Emme",
+            "engine": {
+              "action": "cleanse",
+              "cleanse_count": 1,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 1.0,
+              "hitbox": "self_or_ally",
+              "label": "Emme",
+              "lifesteal": 0.3,
+              "damage_mult": 0.95
+            },
+            "prose_mechanic": "Debuff→can",
+            "prose_feel": "Dönüştürücü",
+            "prose_visual": "Beyaz→yeşil"
+          },
+          {
+            "id": "9-3",
+            "name": "Sıçrayan Arınma",
+            "adjective": "Sıçrama",
+            "effect": "Dosta seker",
+            "passive": "5 sn pasif: Sıçrama",
+            "engine": {
+              "action": "cleanse",
+              "cleanse_count": 1,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 1.0,
+              "hitbox": "self_or_ally",
+              "label": "Sıçrama",
+              "bounce_targets": 2,
+              "bounce_damage_mult": 0.5,
+              "hitbox_scale_mult": 1.1
+            },
+            "prose_mechanic": "Dosta seker",
+            "prose_feel": "Bulaşıcı",
+            "prose_visual": "Beyaz sekme"
+          },
+          {
+            "id": "9-4",
+            "name": "Sabit Arınma",
+            "adjective": "Sabitleme",
+            "effect": "Yerleşik alan (+2 sn)",
+            "passive": "7 sn pasif: Sabitleme",
+            "engine": {
+              "action": "cleanse",
+              "cleanse_count": 1,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 1.0,
+              "hitbox": "self_or_ally",
+              "label": "Sabitleme",
+              "poise_damage_mult": 1.5,
+              "lifetime_add": 2.0,
+              "cast_mobility": "rooted"
+            },
+            "prose_mechanic": "Yerleşik alan (+2 sn)",
+            "prose_feel": "Kalıcı",
+            "prose_visual": "Beyaz halka"
+          },
+          {
+            "id": "9-6",
+            "name": "Bağlayıcı Arınma",
+            "adjective": "Bağlama",
+            "effect": "Dosta bağlanır",
+            "passive": "4 sn pasif: Bağlama",
+            "engine": {
+              "action": "cleanse",
+              "cleanse_count": 1,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 1.0,
+              "hitbox": "self_or_ally",
+              "label": "Bağlama",
+              "apply_root_sec": 1.5,
+              "apply_slow": 0.3
+            },
+            "prose_mechanic": "Dosta bağlanır",
+            "prose_feel": "Bağlı",
+            "prose_visual": "Beyaz bağ"
+          },
+          {
+            "id": "9-9",
+            "name": "Odaklı Arınma",
+            "adjective": "Odaklama",
+            "effect": "En ağırı önce",
+            "passive": "5 sn pasif: Odaklama",
+            "engine": {
+              "action": "cleanse",
+              "cleanse_count": 1,
+              "base_damage": 0,
+              "base_cost": 10,
+              "base_cooldown": 1.0,
+              "hitbox": "self_or_ally",
+              "label": "Odaklama",
+              "ignore_armor": true,
+              "damage_mult": 1.15,
+              "max_targets": 1
+            },
+            "prose_mechanic": "En ağırı önce",
+            "prose_feel": "Akıllı",
+            "prose_visual": "Beyaz hedef"
+          }
+        ]
+      }
+    }
+  },
+  "weapons": [
+    {
+      "id": 2,
+      "name": "Yay",
+      "type": "ranged",
+      "school": "fiziksel",
+      "damage_mult": 0.8,
+      "cast_time_mult": 0.7,
+      "poise_mult": 0.6,
+      "range_mult": 2.353,
+      "mobility_mod": 1,
+      "base_armor": 0,
+      "reach_m": 20,
+      "arc_deg": 0,
+      "hit_shape": "arrow",
+      "born": "saplanan",
+      "effect_travels": true,
+      "cooldown_mult": 1,
+      "identity_passive": "Koşu atışı kritik %25",
+      "compatible_verbs": [
+        1,
+        3,
+        7,
+        9
+      ],
+      "animations_key": "yay",
+      "basic": {
+        "kind": "volley",
+        "reach_m": 20,
+        "shape": "arrow",
+        "interval_sec": 0.5,
+        "hits": 1,
+        "radius_m": 0.12
+      },
+      "passive": {
+        "id": "kosu_atisi",
+        "move_window_sec": 1,
+        "crit_chance": 0.25,
+        "base_crit": 0.05
+      },
+      "swap_bonus": {
+        "id": "zirh_yok",
+        "window_sec": 2,
+        "ignore_armor": true
+      }
+    },
+    {
+      "id": 4,
+      "name": "Kılıç",
+      "type": "medium",
+      "school": "fiziksel",
+      "damage_mult": 1.0,
+      "cast_time_mult": 0.9,
+      "poise_mult": 1.1,
+      "range_mult": 1.0,
+      "mobility_mod": 0,
+      "base_armor": 0,
+      "reach_m": 2.4,
+      "arc_deg": 144,
+      "hit_shape": "arc",
+      "born": "onunde_yay",
+      "effect_travels": true,
+      "cooldown_mult": 1,
+      "identity_passive": "Geniş yay 144 derece",
+      "compatible_verbs": [
+        1,
+        3,
+        5,
+        9
+      ],
+      "animations_key": "kilic",
+      "basic": {
+        "kind": "slash",
+        "reach_m": 2.4,
+        "shape": "arc",
+        "interval_sec": 0.28,
+        "hits": 3,
+        "radius_m": 0.5
+      },
+      "passive": {
+        "id": "genis_yay",
+        "arc_deg": 144
+      },
+      "swap_bonus": {
+        "id": "genis",
+        "window_sec": 2,
+        "arc_deg": 180
+      }
+    }
+  ],
+  "elements": [
+    {
+      "id": 1,
+      "name": "Ateş",
+      "color": "#ff4d1a",
+      "vfx": "alev_köz",
+      "name_prefix": "Ateşli",
+      "status": "burn",
+      "status_effect": "3 hasar/sn",
+      "status_duration": 4
+    }
+  ],
+  "ana_classes_80": {
+    "groups": {
+      "slice": {
+        "classes": [
+          {
+            "id": 1,
+            "name": "Dilim",
+            "runes": [
+              1,
+              2,
+              3,
+              4,
+              6,
+              9
+            ],
+            "category": "slice",
+            "his": "Kılıç + Yay dilim"
+          }
+        ]
+      }
+    }
+  },
+  "state_machine": {
+    "player_states": {
+      "idle": {
+        "can_draw": true,
+        "can_move": true,
+        "can_dodge": true,
+        "can_swap": true
+      },
+      "drawing": {
+        "can_draw": "partial",
+        "can_move": false,
+        "can_dodge": true,
+        "can_swap": false,
+        "note": "Dodge çizimi iptal eder"
+      },
+      "casting": {
+        "can_draw": false,
+        "can_move": "based_on_cast_mobility",
+        "can_dodge": false,
+        "can_swap": false
+      },
+      "recovering": {
+        "can_draw": true,
+        "can_move": "limited",
+        "can_dodge": true,
+        "can_swap": true,
+        "note": "Swap recovery keser"
+      },
+      "dodging": {
+        "can_draw": false,
+        "can_move": "dodge_direction",
+        "i_frames": true,
+        "can_swap": false
+      },
+      "stunned": {
+        "can_draw": false,
+        "can_move": false,
+        "can_dodge": false,
+        "can_swap": false
+      },
+      "rooted": {
+        "can_draw": true,
+        "can_move": false,
+        "can_dodge": true,
+        "can_swap": true
+      },
+      "channeling": {
+        "can_draw": false,
+        "can_move": false,
+        "can_dodge": true,
+        "interruptible": true,
+        "can_swap": false
+      },
+      "dead": {
+        "can_draw": false,
+        "can_move": false,
+        "can_dodge": false,
+        "can_swap": false
+      }
+    },
+    "boss_states": {
+      "idle": {
+        "exits_to": [
+          "approach",
+          "telegraph"
+        ]
+      },
+      "approach": {
+        "exits_to": [
+          "telegraph"
+        ]
+      },
+      "telegraph": {
+        "exits_to": [
+          "active",
+          "interrupted"
+        ]
+      },
+      "active": {
+        "exits_to": [
+          "recovery"
+        ]
+      },
+      "recovery": {
+        "exits_to": [
+          "idle",
+          "telegraph"
+        ]
+      },
+      "staggered": {
+        "duration_sec": 7,
+        "exits_to": [
+          "idle"
+        ]
+      }
+    }
+  },
+  "uyumsuz_cizim": {
+    "description": "Silah compatible_verbs ile uyumsuz çizim davranışı.",
+    "rule": "Her çizim çalışır. Uyumsuz = hafif ceza + pasif yok.",
+    "effects": {
+      "uyumlu": {
+        "damage_mult": 1.0,
+        "cast_time_mult": 1.0,
+        "passive": "çalışır",
+        "ui_color": "yeşil"
+      },
+      "uyumsuz": {
+        "damage_mult": 0.8,
+        "cast_time_mult": 1.2,
+        "passive": "çalışmaz",
+        "ui_color": "sarı"
+      }
+    },
+    "ceza_reason": "Özgürlük + ceza dengesi. Uyumlu = daha güçlü, uyumsuz = hâlâ kullanılabilir.",
+    "degistirilebilir": "Dengeleme aşamasında %20 ayarlanır.",
+    "isim_degismez": true,
+    "ui_etiketi": {
+      "uyumlu": "Uyumlu — [Silah] pasifi aktif",
+      "uyumsuz": "Uyumsuz — %80 etki"
+    },
+    "sifat_uyumsuzlugu": "Yok. Tüm sıfatlar tüm fiillerle çalışır. Sadece fiil-silah uyumsuzluğu var."
+  },
+  "global_rules": {
+    "ally_skill_range_m": 6,
+    "composition_rules": {
+      "damage_zero_cancels_status": "damage_mult = 0.0 ise status UYGULANMAZ",
+      "invulnerability_blocks_harm": "invuln varsa hostile etki UYGULANMAZ",
+      "heal_overrides_damage": "action = heal ise damage_mult sıfır",
+      "target_mode_filter": "target_mode uyumsuz hedefe skill UYGULANMAZ",
+      "status_no_stacking": "Aynı status 2 kez uygulanmaz; ikincisi süreyi uzatır (alpha)"
+    },
+    "resource_system": {
+      "type": "mana",
+      "max_mana": 100,
+      "regen_per_sec": 8,
+      "regen_delay_after_cast_sec": 1.5,
+      "all_values_tunable": true
+    },
+    "cooldown_rules": {
+      "global_cooldown_sec": 0.3,
+      "max_concurrent_casts": 1,
+      "all_values_tunable": true
+    },
+    "player_stats": {
+      "max_hp": 100,
+      "max_mana": 100,
+      "move_speed_mps": 5.0,
+      "dodge_distance_m": 3.8,
+      "dodge_cooldown_sec": 0.42,
+      "i_frame_on_dodge_ms": 260
+    },
+    "boss_stats_default": {
+      "max_hp": 22000,
+      "armor": 100,
+      "armor_hard": 150,
+      "magic_resist": 0.1,
+      "poise_bar": 3500,
+      "stagger_duration_sec": 7
+    }
+  },
+  "crit_system": {
+    "base_crit_chance": 0.05,
+    "crit_multiplier": 2.0,
+    "max_crit_chance": 0.75
+  },
+  "weapon_skill_interaction": {
+    "tier": "B_plus_C_starting",
+    "description": "Çarpan + varyant (animasyon + hitbox). Mekanik değişim C'ye (gelecek) saklı.",
+    "layers": {
+      "multiplier": "silah_tablosundan",
+      "animation": "animations[silah][fiil]",
+      "hitbox": "animasyona_gömülü",
+      "passive": "compatible_verbs_e_göre"
+    },
+    "range_source": "animasyona_gömülü",
+    "name_formula": "{element_prefix} {adjective_prefix} {animation_name}",
+    "name_shortening": {
+      "rule": "İsim 4+ kelime olursa kısalt",
+      "example": "Ateşli Yoğun Sihirli Dürtme → Ateşli Dürtme"
+    },
+    "swap": {
+      "enabled": true,
+      "when": "savaş_içi",
+      "weapons_carried": 2,
+      "recovery_cancel": true,
+      "cooldown_sec": 1.2,
+      "animation_sec": 0.25,
+      "cancels_combo": true,
+      "dodge_cancels_swap": true,
+      "passive_changes": true
+    }
+  },
+  "mobility_cc": {
+    "description": "Cast mobility, i-frame, CC önceliği, poise kuralları.",
+    "fiil_base_mobility": {
+      "1": "free_move",
+      "2": "free_move",
+      "3": "free_move",
+      "4": "slowed_move",
+      "5": "slowed_move",
+      "6": "slowed_move",
+      "7": "free_move",
+      "8": "free_move",
+      "9": "free_move",
+      "10": "rooted",
+      "11": "slowed_move",
+      "12": "rooted"
+    },
+    "sifat_mobility_override": {
+      "1": "bir_seviye_kisitla",
+      "2": "degistirmez",
+      "3": "bir_seviye_serbestle",
+      "4": "rooted_zorla",
+      "5": "bir_seviye_kisitla",
+      "6": "degistirmez",
+      "7": "degistirmez",
+      "8": "bir_seviye_serbestle",
+      "9": "rooted_zorla",
+      "10": "degistirmez",
+      "11": "degistirmez",
+      "12": "bir_seviye_serbestle"
+    },
+    "weapon_mobility_mod": {
+      "1": 1,
+      "2": 2,
+      "3": 0,
+      "4": 0,
+      "5": -1,
+      "6": -1,
+      "7": -1,
+      "8": 0,
+      "9": 1,
+      "10": -1
+    },
+    "mobility_resolution": "final = fiil_base + sifat_override + silah_mod. +1 ve üstü = free, -1 = bir kısıtla, -2 ve altı = rooted.",
+    "i_frame": [
+      {
+        "source": "dodge",
+        "duration_ms": 260,
+        "condition": "her_zaman"
+      },
+      {
+        "source": "3-7",
+        "duration_ms": 400,
+        "condition": "dash_sirasinda"
+      },
+      {
+        "source": "11-10",
+        "duration_ms": 300,
+        "condition": "minion_spawn_aninda"
+      }
+    ],
+    "cc_priority": [
+      {
+        "rank": 1,
+        "cc": "stun",
+        "duration_sec": 2
+      },
+      {
+        "rank": 2,
+        "cc": "root",
+        "duration_sec": 3
+      },
+      {
+        "rank": 3,
+        "cc": "silence",
+        "duration_sec": 3
+      },
+      {
+        "rank": 4,
+        "cc": "knockback",
+        "duration_sec": "anlık"
+      },
+      {
+        "rank": 5,
+        "cc": "slow",
+        "duration_sec": 4
+      },
+      {
+        "rank": 6,
+        "cc": "blind",
+        "duration_sec": 3
+      },
+      {
+        "rank": 7,
+        "cc": "disarm",
+        "duration_sec": 3
+      },
+      {
+        "rank": 8,
+        "cc": "taunt",
+        "duration_sec": 3
+      }
+    ],
+    "cc_stacking": {
+      "same_cc": "süre_uzar",
+      "different_cc": "ikisi_de_uygulanır_ama_bazıları_çakışır"
+    },
+    "cc_priority_table": {
+      "stun_root": "stun (root gizli)",
+      "stun_slow": "stun",
+      "stun_blind": "stun + blind",
+      "root_slow": "root (slow gizli)",
+      "root_silence": "root + silence",
+      "slow_blind": "slow + blind",
+      "silence_blind": "silence + blind",
+      "knockback_stun": "knockback + stun"
+    },
+    "cc_duration_mult": {
+      "base": 1.0,
+      "baglama": 1.5,
+      "sabitleme": 2.0,
+      "yogunlastirma": 0.7,
+      "yayma": 0.8
+    },
+    "cast_time_mobility": {
+      "lt_0_3": "free_move",
+      "0_3_to_0_5": "free_move_vEYA_slowed",
+      "0_5_to_1_0": "slowed_move",
+      "gt_1_0": "rooted"
+    },
+    "interrupt": {
+      "startup": "kesilebilir (dodge)",
+      "active": "kesilemez",
+      "recovery": "kesilebilir (dodge, swap, yeni skill)"
+    },
+    "poise": {
+      "hafif": 10,
+      "orta": 25,
+      "agir": 50,
+      "kesme_esigi": "gelen_hasar > poise ise iptal + 1 sn stun"
+    }
+  },
+  "status_system": {
+    "enabled": false,
+    "enabled_in": "alpha",
+    "statuses": [
+      {
+        "id": "burn",
+        "element": "Ateş",
+        "type": "debuff",
+        "duration_sec": 4,
+        "tick_damage": 3,
+        "max_stacks": 3
+      },
+      {
+        "id": "regen",
+        "element": "Su",
+        "type": "buff",
+        "duration_sec": 3,
+        "tick_heal": 5,
+        "max_stacks": 1
+      },
+      {
+        "id": "haste",
+        "element": "Hava",
+        "type": "buff",
+        "duration_sec": 3,
+        "speed_bonus": 0.2,
+        "max_stacks": 1
+      },
+      {
+        "id": "shield",
+        "element": "Toprak",
+        "type": "buff",
+        "duration_sec": 3,
+        "absorb": 30,
+        "max_stacks": 1
+      },
+      {
+        "id": "cleanse",
+        "element": "Aydınlık",
+        "type": "instant",
+        "removes": 1
+      },
+      {
+        "id": "weaken",
+        "element": "Karanlık",
+        "type": "debuff",
+        "duration_sec": 3,
+        "damage_reduction": 0.15,
+        "max_stacks": 1
+      }
+    ],
+    "interactions": {
+      "enabled": false,
+      "enabled_in": "beta"
+    }
+  },
+  "hitbox_vfx": {
+    "description": "Hitbox şekli + boyut + VFX tablosu.",
+    "fiil_hitbox": {
+      "1": {
+        "shape": "capsule",
+        "base_size": "1.5m × 0.5m",
+        "duration": "anlık",
+        "multi": false
+      },
+      "2": {
+        "shape": "sphere",
+        "base_size": "2m yarıçap",
+        "duration": "anlık",
+        "multi": "dost"
+      },
+      "3": {
+        "shape": "line",
+        "base_size": "3m × 0.8m",
+        "cross_section": "width",
+        "duration": "0.3 sn",
+        "multi": false
+      },
+      "4": {
+        "shape": "sphere",
+        "base_size": "1.5m yarıçap",
+        "duration": "süreli",
+        "multi": false
+      },
+      "5": {
+        "shape": "sphere",
+        "base_size": "3m yarıçap",
+        "duration": "anlık",
+        "multi": true
+      },
+      "6": {
+        "shape": "cone",
+        "base_size": "4m × 60°",
+        "duration": "anlık",
+        "multi": true
+      },
+      "7": {
+        "shape": "capsule",
+        "base_size": "3m × 1m",
+        "cross_section": "width",
+        "duration": "anlık",
+        "multi": false
+      },
+      "8": {
+        "shape": "sphere",
+        "base_size": "2m yarıçap",
+        "duration": "anlık",
+        "multi": "dost"
+      },
+      "9": {
+        "shape": "sphere",
+        "base_size": "2.5m yarıçap",
+        "duration": "anlık",
+        "multi": "dost"
+      },
+      "10": {
+        "shape": "sphere",
+        "base_size": "1.5m yarıçap",
+        "duration": "süreli",
+        "multi": false
+      },
+      "11": {
+        "shape": "point",
+        "base_size": "1m yarıçap",
+        "duration": "anlık",
+        "multi": false
+      },
+      "12": {
+        "shape": "cylinder",
+        "base_size": "4m yarıçap",
+        "duration": "süreli",
+        "multi": true
+      }
+    },
+    "sifat_override": {
+      "1": {
+        "size_mult": 0.4,
+        "damage_mult": 1.3
+      },
+      "2": {
+        "size_mult": 1.0,
+        "damage_mult": 0.8,
+        "lifesteal": 0.3
+      },
+      "3": {
+        "size_mult": 1.0,
+        "chain_count": 2
+      },
+      "4": {
+        "size_mult": 1.0,
+        "duration_mult": 3
+      },
+      "5": {
+        "size_mult": 2.5,
+        "damage_mult": 0.7
+      },
+      "6": {
+        "size_mult": 1.0,
+        "add_cc": "root"
+      },
+      "7": {
+        "size_mult": 1.5,
+        "add_cc": "blind"
+      },
+      "8": {
+        "size_mult": 1.0,
+        "add_buff": 0.2
+      },
+      "9": {
+        "size_mult": 0.5,
+        "single_target": true
+      },
+      "10": {
+        "size_mult": 1.0,
+        "add_reflect": 0.4
+      },
+      "11": {
+        "size_mult": 1.0,
+        "second_trigger": 0.3
+      },
+      "12": {
+        "size_mult": 1.0,
+        "duration_mult": 2
+      }
+    },
+    "weapon_size_mult": {
+      "1": 0.5,
+      "2": 2.353,
+      "3": 1.529,
+      "4": 1.0,
+      "5": 1.176,
+      "6": 1.0,
+      "7": 3.0,
+      "8": 2.5,
+      "9": 2.8,
+      "10": 0.5
+    },
+    "hitbox_formula": "final = base × weapon.range_mult × adjective.size_mult",
+    "vfx_prefab_naming": "VFX_{Element}_{FiilId}_{SifatId}",
+    "vfx_prefab_count": 72,
+    "vfx_prefab_note": "6 element × 12 fiil = 72 ana prefab. Sıfat runtime modifiye eder.",
+    "element_color": {
+      "1": {
+        "primary": "#ff4d1a",
+        "secondary": "#ffaa00",
+        "brightness": 1.2,
+        "saturation": 1.0
+      },
+      "2": {
+        "primary": "#1a8cff",
+        "secondary": "#00d9ff",
+        "brightness": 1.0,
+        "saturation": 0.8
+      },
+      "3": {
+        "primary": "#b3e6ff",
+        "secondary": "#ffffff",
+        "brightness": 1.1,
+        "saturation": 0.6
+      },
+      "4": {
+        "primary": "#8b6f3a",
+        "secondary": "#4d3f1a",
+        "brightness": 0.9,
+        "saturation": 0.9
+      },
+      "5": {
+        "primary": "#ffd94d",
+        "secondary": "#ffffff",
+        "brightness": 1.4,
+        "saturation": 0.7
+      },
+      "6": {
+        "primary": "#4d1a66",
+        "secondary": "#000000",
+        "brightness": 0.7,
+        "saturation": 1.0
+      }
+    },
+    "element_shape_icon": {
+      "1": "triangle_up",
+      "2": "circle",
+      "3": "wave",
+      "4": "square",
+      "5": "star",
+      "6": "triangle_down"
+    },
+    "hit_feel": {
+      "capsule": {
+        "shake": 0.1,
+        "hit_stop": 0.04,
+        "sound": "kisa"
+      },
+      "sphere": {
+        "shake": 0.2,
+        "hit_stop": 0.08,
+        "sound": "orta"
+      },
+      "cone": {
+        "shake": 0.15,
+        "hit_stop": 0.06,
+        "sound": "orta"
+      },
+      "line": {
+        "shake": 0.12,
+        "hit_stop": 0.04,
+        "sound": "kisa"
+      },
+      "cylinder": {
+        "shake": 0.25,
+        "hit_stop": 0.1,
+        "sound": "uzun"
+      }
+    },
+    "crit_multiplier": {
+      "shake": 1.5,
+      "flash": "altin",
+      "duration": 0.1
+    }
+  }
+}

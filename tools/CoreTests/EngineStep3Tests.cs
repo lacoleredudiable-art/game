@@ -86,36 +86,6 @@ public class EngineStep3Tests
     }
 
     [Test]
-    public void YogunZaman_CardSaysThirtyPercent_SpeedStaysSeventy()
-    {
-        SkillResolution card = _motor.Resolve(new[] { 12, 1 });
-        TempoCast cast = TempoCast.From(card);
-        Assert.That(card.Identity.SkillJob, Does.Contain("hızı %30 düşer"));
-        Assert.That(card.Identity.SkillJob, Does.Not.Contain("%70"));
-        Assert.That(cast.EnemySlow, Is.True);
-        Assert.That(cast.SlowStrength, Is.EqualTo(0.7f).Within(0.001f), "boss normal hızın %70'i");
-        Assert.That(1f - cast.SlowStrength, Is.EqualTo(0.3f).Within(0.001f));
-    }
-
-    [Test]
-    public void YukselenZaman_HasteLastsThreeSeconds_AndCardSaysSo()
-    {
-        SkillResolution card = _motor.Resolve(new[] { 12, 8 });
-        TempoCast cast = TempoCast.From(card);
-        Assert.That(card.Identity.SkillJob, Does.Contain("3 sn"));
-        Assert.That(card.Identity.SkillJob, Does.Contain("+%50"));
-        Assert.That(cast.SelfHaste, Is.True);
-        Assert.That(cast.HasteStrength, Is.EqualTo(1.5f).Within(0.001f));
-        Assert.That(cast.DurationMs, Is.EqualTo(3000).Within(0.01));
-        Assert.That(
-            card.Engine.Field("buff_duration_sec").AsFloat(0f),
-            Is.EqualTo(3f).Within(0.001f));
-        Assert.That(
-            card.Engine.Field("tempo_duration_sec").AsFloat(0f),
-            Is.EqualTo(3f).Within(0.001f));
-    }
-
-    [Test]
     public void SlowAndHasteCards_PercentMatchesTheSpeedTheyApply()
     {
         var mismatches = new System.Text.StringBuilder();
@@ -170,10 +140,7 @@ public class EngineStep3Tests
 
     static string JsonPath()
     {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..",
-            "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json"));
+        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
         Assert.That(File.Exists(path), Is.True, path);
         return path;
     }

@@ -14,7 +14,6 @@ using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Platform;
 using Dovus.Game.Skills.Execution;
-using Dovus.Game.Skills.Motion;
 using Dovus.Game.Skills.State;
 using Dovus.Game.Skills.Weapons;
 using Dovus.Game.Skills;
@@ -27,9 +26,9 @@ public sealed class MdWeaponServicesHost
         : IOrbControllerHost,
             ICannonBlastHost
     {
-        readonly ManifestationDirector _md;
+        readonly RuleEngineV4SentenceHost _md;
 
-        internal MdWeaponServicesHost(ManifestationDirector md) => _md = md;
+        internal MdWeaponServicesHost(RuleEngineV4SentenceHost md) => _md = md;
 
         public CastSessionState Cast => _md.CastSession;
 
@@ -84,20 +83,9 @@ public sealed class MdWeaponServicesHost
             set => _md.CastSession.LastHitZ = value;
         }
 
-        public bool RecoilInTemplate
-        {
-            get
-            {
-                _md.EnsureMotionServices();
-                return _md._motionDriver.RecoilInTemplate;
-            }
-        }
+        public bool RecoilInTemplate => _md.RecoilInTemplate;
 
-        public void SetRecoilInTemplate(bool value)
-        {
-            _md.EnsureMotionServices();
-            _md._motionDriver.SetRecoilInTemplate(value);
-        }
+        public void SetRecoilInTemplate(bool value) => _md.SetRecoilInTemplate(value);
 
         public Vector3 FlatBodyForward()
         {
@@ -136,7 +124,5 @@ public sealed class MdWeaponServicesHost
         public System.Collections.Generic.IReadOnlyList<TargetableHost> LiveTargetables =>
             _md._liveTargetables != null ? _md._liveTargetables.Live : System.Array.Empty<TargetableHost>();
 
-        public System.Collections.Generic.IReadOnlyList<SummonExecutor> LiveSummonExecutors =>
-            _md._liveSummons != null ? _md._liveSummons.Live : System.Array.Empty<SummonExecutor>();
     }
 }

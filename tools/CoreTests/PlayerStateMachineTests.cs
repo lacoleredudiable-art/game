@@ -20,20 +20,7 @@ namespace CoreTests;
 [TestFixture]
 public class PlayerStateMachineTests
 {
-    static SkillMotor LoadFull()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        if (!File.Exists(path))
-        {
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        }
-        Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
-        return SkillMotor.FromJson(File.ReadAllText(path));
-    }
+    static SkillMotor LoadFull() => SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
 
     static PlayerStateNode Require(PlayerStateMachine sm, string id)
     {

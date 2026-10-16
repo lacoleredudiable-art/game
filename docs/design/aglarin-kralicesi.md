@@ -2,7 +2,7 @@
 
 **Tasarım:** ONAYLANDI (2026-10-02). **Uygulama:** aktif boss sahnede `aglarin_kralicesi` (`Prototype.unity` `ActiveBossId`); saldırı seçimi `App/Boss/BossAttackSelector`, yürütme `BossDirector` + `App/Boss/BossMechanicStatusMap` (FireCone etkileri JSON/`MechanicStatusMap` — sabit `BossDirector` L820 değil).
 Kaynak şema: `unity/Assets/Resources/Bosses/aglarin-kralicesi.json`, `BossAttackKind`, `BossAttack`, `BossAttackControl`.
-Sayı kuralı: JSON `vitals.total_hp` / `player_hp` (120/22) **okunmuyor**; oyun canı `element-sistemi.json` `global_rules` × `CombatScale` (400.000 / 88.000.000). Faz `%` aralıkları boss JSON `phases` ile uygulanır.
+Sayı kuralı: JSON `vitals.total_hp` / `player_hp` (120/22) **okunmuyor**; oyun canı dilim grameri `global_rules` × `CombatScale` (400.000 / 88.000.000). Faz `%` aralıkları boss JSON `phases` ile uygulanır.
 
 ## 1. Kimlik
 

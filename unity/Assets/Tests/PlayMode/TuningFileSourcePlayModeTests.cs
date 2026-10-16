@@ -59,7 +59,7 @@ namespace Dovus.Tests.PlayMode
         readonly List<string> _logs = new();
         readonly Dictionary<string, byte[]> _guarded = new();
         GameBootstrapHost _host;
-        ManifestationDirector _md;
+        RuleEngineV4SentenceHost _md;
 
         static string TuningPath => TuningConfig.FilePath;
         static string StaleBackup => TuningConfig.StaleBackupPath(TuningSchema.Version - 1);
@@ -306,8 +306,8 @@ namespace Dovus.Tests.PlayMode
             RuleEngineV4WorldPhysicsPlayModeTests.DisableGozcu();
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
-            _md = Object.FindAnyObjectByType<ManifestationDirector>();
-            Assert.That(_md, Is.Not.Null, "ManifestationDirector");
+            _md = Object.FindAnyObjectByType<RuleEngineV4SentenceHost>();
+            Assert.That(_md, Is.Not.Null, "RuleEngineV4SentenceHost");
             if (BuildSelectHud.IsOpen)
                 Object.FindAnyObjectByType<BuildSelectHud>().SweepClose();
             if (_md.MechanicsBossDirector != null)

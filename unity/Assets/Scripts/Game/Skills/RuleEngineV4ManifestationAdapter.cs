@@ -2,10 +2,10 @@ using Dovus.Game.Skills.RuleEngineV4;
 
 namespace Dovus.Game.Skills
 {
-    /// <summary>ManifestationDirector → v4 combat bağlamı (yalnız eski motor tarafında).</summary>
+    /// <summary>RuleEngineV4SentenceHost → v4 combat bağlamı (yalnız eski motor tarafında).</summary>
     public static class RuleEngineV4ManifestationAdapter
     {
-        public static RuleEngineV4CombatContext Bind(ManifestationDirector md)
+        public static RuleEngineV4CombatContext Bind(RuleEngineV4SentenceHost md)
         {
             if (md == null)
                 return null;

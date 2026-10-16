@@ -19,7 +19,7 @@ namespace Dovus.Game.Hud
         SentenceEngine _engine;
         SkillMotor _motor;
         SkillFactory _factory;
-        ManifestationDirector _manifestation;
+        RuleEngineV4SentenceHost _manifestation;
         GameTuning _tuning;
         HudTheme _theme;
         UiJuiceRuntime _uiJuice;
@@ -41,7 +41,7 @@ namespace Dovus.Game.Hud
             SentenceEngine engine,
             SkillMotor motor,
             SkillFactory factory,
-            ManifestationDirector manifestation,
+            RuleEngineV4SentenceHost manifestation,
             GameTuning tuning,
             Transform canvasRoot)
         {

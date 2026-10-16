@@ -38,9 +38,9 @@ public sealed class MdSkillServicesHost
             IWeaponLoadoutCycleHost,
             ISentenceManifestationHost
     {
-        readonly ManifestationDirector _md;
+        readonly RuleEngineV4SentenceHost _md;
 
-        internal MdSkillServicesHost(ManifestationDirector md) => _md = md;
+        internal MdSkillServicesHost(RuleEngineV4SentenceHost md) => _md = md;
 
         public Transform Player => _md._player;
         public PlayerTargetingController Targeting => _md._targeting;
@@ -56,7 +56,6 @@ public sealed class MdSkillServicesHost
             get => _md._equippedWeapon;
             set => _md._equippedWeapon = value;
         }
-        public SkillExecutorRouter SkillExecutorRouter => _md._skillExecutorRouter;
         public bool PerformingAttack => _md.PerformingAttack;
         public bool IsEnemyBody(Transform body) => _md.IsEnemyBody(body);
         public float PlayerBodyRadiusM() => _md.PlayerBodyRadiusM();
@@ -65,22 +64,6 @@ public sealed class MdSkillServicesHost
 
         public void EnsurePresentationCatalog() => _md.EnsurePresentationCatalog();
         public PresentationCatalog PresentationCatalog => _md.PresentationCatalog;
-        public MechanicPlan MechanicPlanFor(SkillResolution skill) => _md.MechanicPlanFor(skill);
-        public SkillExecutorRoute ApplyMechanicWorldRoute(MechanicPlan plan, SkillExecutorRoute route) =>
-            _md.ApplyMechanicWorldRoute(plan, route);
-
-        public void ApplyVerbHitboxSizing(
-            SkillExecutorKind kind,
-            in SkillResolution skill,
-            ManifestationTuning tuning,
-            float rangeMult,
-            bool burst,
-            ref float radius,
-            ref float range,
-            ref float durationSec,
-            ref int spawnCount) =>
-            _md.ApplyVerbHitboxSizing(
-                kind, skill, tuning, rangeMult, burst, ref radius, ref range, ref durationSec, ref spawnCount);
 
         public Transform DirectorTransform => _md.transform;
         public SentenceEngine Engine => _md._engine;

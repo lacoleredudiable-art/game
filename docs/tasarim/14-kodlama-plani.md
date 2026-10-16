@@ -81,9 +81,7 @@ Kaynak: AGENTS.md "taşıma bitince silinecek", `11` Adım 4, envanter C3, C4. M
    Gözcü ile gösterilir. Yalnız eski motorda çalışan hücre (ör. 6-x, 9-x, x-6, x-4) bulunursa PR'a yazılır ve
    silmeden önce Mustafa'ya sorulur.
 4. Bayrak kalkar: `RuleEngineV4Feature` silinir, v4 tek yol olur; bayrak kapalı dalları gider.
-5. Silme: `MechanicGrammar`, `SkillExecutorRouter`, eski executor'lar, 24 el ayarı, `element-sistemi.json`; ona bağlı
-   `Core` dosyaları tek tek ayrılır (eski motora ait olan silinir, v4'ün kullandığı kalır). `[Category("EskiMotor")]`
-   testleri, CI'daki haftalık EskiMotor + SweepV2 işi ve AGENTS.md'deki "DONDURULDU" maddesi kaldırılır.
+5. **[K]** Silme: eski motor (`MechanicGrammar`, executor yolu, `element-sistemi.json`, SweepV2/AtomSim/EskiMotor testleri) kaldırıldı; dilim `slice-sentence-grammar.json` + `RuleEngineV4SentenceHost`.
 
 **Telefonda göreceğin:** 3 dk Kılıç + Yay ile dövüş bugünkü gibi çalışıyor (dodge, düz vuruş, dilimdeki skiller,
 boss); logcat'te `[V4-FALLBACK]` satırı 0; bağımlılık haritasında eski motor dosyası 0.

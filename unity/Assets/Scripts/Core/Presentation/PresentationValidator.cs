@@ -5,7 +5,7 @@ namespace Dovus.Core.Presentation
 {
     /// <summary>
     /// SkillResolution → prezentasyon katmanı köprüsü (hitbox + animation).
-    /// Trajectory eşleştirmesi yapmaz (Görev 16); ManifestationDirector'a bağlanmaz (Faz 6).
+    /// Trajectory eşleştirmesi yapmaz (Görev 16); RuleEngineV4SentenceHost'a bağlanmaz (Faz 6).
     /// Eşleşmeyen id sessizce "yok" döner — çağıran docs/durum.md'ye yazar.
     /// </summary>
     public sealed class PresentationValidator

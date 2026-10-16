@@ -78,7 +78,7 @@ namespace Dovus.Tests.PlayMode
 
         /// <summary>
         /// Gerçek yol: ilk adım yükleme (Kılıç birincil, Yay yedek), sonraki adımlar takas düğmesine PointerRouter
-        /// dokunuşu → ManifestationDirector takası → ActorView.SetWeapon. Bekleme ve yürüyüş (MoveInputController
+        /// dokunuşu → RuleEngineV4SentenceHost takası → ActorView.SetWeapon. Bekleme ve yürüyüş (MoveInputController
         /// çubuğu) sırasında her karede Animator'ın 0. katmanında ağırlığı yüksek klipler okunur.
         /// </summary>
         IEnumerator RunWeaponSwapLocomotion(System.Action<WeaponLocoRun> done)

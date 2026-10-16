@@ -143,7 +143,7 @@ public class DocsTruthTests
         Assert.That(i1, Is.GreaterThan(i0));
         string gen = text.Substring(i0 + begin.Length, i1 - i0 - begin.Length);
 
-        string jsonPath = Path.Combine(root, "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json");
+        string jsonPath = SliceGrammarTestPaths.SliceGrammarJsonPath();
         string json = File.ReadAllText(jsonPath);
         JsonValue rootJson = MiniJson.Parse(json);
         int combo = rootJson["combo_system"]["current_max_length"].AsInt(-1);

@@ -30,7 +30,6 @@ namespace Dovus.Game.Skills.Closing
         PassiveFlowRunner PassiveFlows { get; }
         int SlotQueryCastId { get; }
         GameClockHost Clock { get; }
-        MechanicGrammar MechanicEngine { get; }
         BossVitals BossVitals { get; }
         Transform Boss { get; }
         DamageNumberHud DamageHud { get; }

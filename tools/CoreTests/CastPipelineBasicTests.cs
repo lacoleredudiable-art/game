@@ -8,7 +8,7 @@ namespace CoreTests;
 [TestFixture]
 public class CastPipelineBasicTests
 {
-    /// <summary>ManifestationDirector.FireClosing düz vuruş dalı (2.4b öncesi) çağrı sırası — isabet yolu.</summary>
+    /// <summary>RuleEngineV4SentenceHost.FireClosing düz vuruş dalı (2.4b öncesi) çağrı sırası — isabet yolu.</summary>
     static readonly string[] ExpectedBasicHitOrder =
     {
         nameof(IBasicStrikePort<object>.ResolveImpactTarget),
@@ -154,7 +154,7 @@ public class CastPipelineBasicTests
     }
 
     [Test]
-    public void RunBasic_HitPath_MatchesManifestationDirectorCallOrder()
+    public void RunBasic_HitPath_MatchesRuleEngineV4SentenceHostCallOrder()
     {
         var port = new RecordingBasicPort { StrikeConnects = true };
         var outcome = new CastPipeline().RunBasic(0, port);

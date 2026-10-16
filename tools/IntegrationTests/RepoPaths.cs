@@ -30,6 +30,9 @@ static class RepoPaths
 
     public static string UnityGame => Path.Combine(UnityAssets, "Scripts", "Game");
 
-    public static string ResourcesElementSystem =>
-        Path.Combine(UnityAssets, "Resources", "ElementSystem");
+    public static string SliceSentenceGrammarJson =>
+        Path.Combine(UnityAssets, "Resources", "RuleEngineV4", "slice-sentence-grammar.json");
+
+    public static string RuleEngineV4Json =>
+        Path.Combine(UnityAssets, "Resources", "RuleEngineV4", "kural-motoru-v4.json");
 }

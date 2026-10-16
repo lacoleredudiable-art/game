@@ -94,12 +94,12 @@ namespace Dovus.Game.Composition.Builders
         public SkillMotor Skills;
         public RuneManager RuneManager;
         public RuneLoadout RuneLoadout;
-        public ElementSystemDesign ElementDesign;
+        public EquipmentCatalog SliceEquipment;
         public ElementSystemAssetCatalog AssetCatalog;
         public SkillFactory SkillFactory;
         public EquipmentItem EquippedWeapon;
         public EquipmentBonusResolver EquipmentBonus;
-        public ManifestationDirector ManifestationDirector;
+        public RuleEngineV4SentenceHost RuleEngineV4SentenceHost;
         public RuleEngineV4CombatContext RuleEngineV4Combat;
         public BossDirector BossDirector;
         public CombatFeelDirector CombatFeelDirector;

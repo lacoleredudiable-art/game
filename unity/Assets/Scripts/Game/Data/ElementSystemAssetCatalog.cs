@@ -31,13 +31,16 @@ namespace Dovus.Game.Data
         public IReadOnlyList<WeaponSO> Weapons => _weapons;
         public IReadOnlyList<ElementSO> Elements => _elements;
 
-        public static ElementSystemAssetCatalog CreateRuntime(ElementSystemDesign design)
+        /// <summary>Dilim grameri: 6 rün, 2 silah (Yay/Kılıç), ≥1 element boyası.</summary>
+        public static ElementSystemAssetCatalog CreateSliceRuntime(SkillMotor motor, EquipmentCatalog equipment)
         {
-            if (design == null)
-                throw new ArgumentNullException(nameof(design));
-            var catalog = new ElementSystemAssetCatalog(design.Version);
+            if (motor == null)
+                throw new ArgumentNullException(nameof(motor));
+            if (equipment == null)
+                throw new ArgumentNullException(nameof(equipment));
+            var catalog = new ElementSystemAssetCatalog(motor.Version);
 
-            foreach (RuneDefinition source in design.SkillMotor.RuneDefinitions)
+            foreach (RuneDefinition source in motor.RuneDefinitions)
             {
                 RuneSO asset = ScriptableObject.CreateInstance<RuneSO>();
                 asset.hideFlags = HideFlags.DontSave;
@@ -46,7 +49,7 @@ namespace Dovus.Game.Data
                 catalog._runeById[asset.Id] = asset;
             }
 
-            foreach (EquipmentItem source in design.Equipment.Items)
+            foreach (EquipmentItem source in equipment.Items)
             {
                 if (source.Slot != EquipmentSlot.Weapon)
                     continue;
@@ -57,7 +60,7 @@ namespace Dovus.Game.Data
                 catalog._weaponById[asset.Id] = asset;
             }
 
-            foreach (ElementPaintNode source in design.SkillMotor.ElementPaints)
+            foreach (ElementPaintNode source in motor.ElementPaints)
             {
                 ElementSO asset = ScriptableObject.CreateInstance<ElementSO>();
                 asset.hideFlags = HideFlags.DontSave;
@@ -66,11 +69,6 @@ namespace Dovus.Game.Data
                 catalog._elementById[asset.Id] = asset;
             }
 
-            if (catalog._runes.Count != 12 || catalog._weapons.Count != 10
-                || catalog._elements.Count != 6)
-            {
-                throw new InvalidOperationException("Runtime SO catalog 12 rune / 10 weapon / 6 element üretmelidir.");
-            }
             return catalog;
         }
 

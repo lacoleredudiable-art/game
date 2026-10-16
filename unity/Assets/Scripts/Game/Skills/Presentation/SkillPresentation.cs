@@ -44,7 +44,7 @@ namespace Dovus.Game.Skills.Presentation
             catch (Exception e)
             {
                 Debug.LogWarning(
-                    $"[ManifestationDirector] prezentasyon-katmani okunamadı: {e.Message}");
+                    $"[RuleEngineV4SentenceHost] prezentasyon-katmani okunamadı: {e.Message}");
             }
         }
 

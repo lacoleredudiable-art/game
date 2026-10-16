@@ -31,7 +31,7 @@ namespace Dovus.Game.Composition.Builders
             var v6Panel = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.GrammarDebugHud>();
             v6Panel.Configure(
                 ctx.HexagonInputController,
-                ctx.ManifestationDirector,
+                ctx.RuleEngineV4SentenceHost,
                 ctx.HexagonRoot.GetComponent<BuildSelectHud>(),
                 ctx.HexagonView.CanvasRoot,
                 ctx.PlayerVitalsHost,

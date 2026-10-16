@@ -60,9 +60,9 @@ namespace Dovus.Game.Team
         // MonoBehaviour ctor'unda Resources.Load yasak (UnityException) → op tabloları Awake'te JSON'dan bağlanır.
         void Awake()
         {
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+            _skillMotor = SkillMotorLoader.Load();
+            if (_skillMotor != null && _skillMotor.IsV61)
             {
-                _skillMotor = design.SkillMotor;
                 _portal.UseOps(PortalOpTable.FromMotor(_skillMotor));
                 _team.UseOps(TeamOpTable.FromMotor(_skillMotor));
             }

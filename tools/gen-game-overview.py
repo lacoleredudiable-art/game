@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ELEMENT_JSON = ROOT / "unity" / "Assets" / "Resources" / "ElementSystem" / "element-sistemi.json"
+SLICE_GRAMMAR_JSON = ROOT / "unity" / "Assets" / "Resources" / "RuleEngineV4" / "slice-sentence-grammar.json"
 SCENE_UNITY = ROOT / "unity" / "Assets" / "Scenes" / "Prototype.unity"
 OUT_MD = ROOT / "docs" / "OYUN.md"
 
@@ -71,9 +71,12 @@ def attack_kind_label(kind: str) -> str:
 
 
 def build_generated_section() -> str:
-    element = json.loads(_read_text(ELEMENT_JSON))
+    element = json.loads(_read_text(SLICE_GRAMMAR_JSON))
     combo_max = element["combo_system"]["current_max_length"]
-    combo_source = "`element-sistemi.json` → `combo_system.current_max_length` → `SkillMotor` / `HexagonInputController`"
+    combo_source = (
+        "`slice-sentence-grammar.json` → `combo_system.current_max_length` → "
+        "`SkillMotor` / `HexagonInputController`"
+    )
 
     combat_scale_cs = _read_text(ROOT / "unity/Assets/Scripts/Core/Damage/CombatScale.cs")
     scale = _regex_float(combat_scale_cs, r"public const float DamageAndHp = ([0-9.]+f?)")
@@ -141,7 +144,7 @@ def build_generated_section() -> str:
         "|------|-------|--------|",
         f"| Kombo üst sınırı (rün) | **{combo_max}** (fiil + {combo_max - 1} sıfat) | {combo_source} |",
         f"| Hasar/can ölçeği | ×{int(scale)} (`CombatScale.DamageAndHp`) | `global_rules.*.max_hp` ham → oyun canı |",
-        f"| Oyuncu max can | **{player_hp:,}** (ham {player_raw} × {int(scale)}) | `BossCombatProfile` / `element-sistemi.json` |",
+        f"| Oyuncu max can | **{player_hp:,}** (ham {player_raw} × {int(scale)}) | `BossCombatProfile` / dilim grameri |",
         f"| Boss max can | **{boss_hp:,}** (ham {boss_raw} × {int(scale)}) | aynı |",
         f"| Arena yarıçapı | **{arena_half:g} m** (çap {arena_half * 2:g} m) | `Prototype.unity` `ArenaHalfSizeM` (kod yedeği 25 m) |",
         f"| Dodge hakları | **{dodge_charges}** | `DodgeTuning.MaxCharges` |",
@@ -189,7 +192,7 @@ def wrap_manual(manual: str, generated: str) -> str:
         "Sayılar aşağıdaki üretilmiş blokta; elle yazılan kısım yalnız akış.\n\n"
         "## Bir dövüş nasıl akar\n\n"
         "Sol joystick hareket. Sağ altıgende ilk nokta fiil, ikinci nokta (en fazla bir) sıfat; "
-        "cümle tamamlanınca `CastPipeline` skill'i çözer ve `ManifestationDirector` yürütür. "
+        "cümle tamamlanınca `CastPipeline` skill'i çözer ve `RuleEngineV4SentenceHost` v4 yolunu yürütür. "
         "Merkeze kısa dokunuş düz vuruş. Dodge ayrı düğme: iki hak, 6 sn dolum; çift basış birleşik kaçış. "
         "Mükemmel dodge yalnız **görsel donma** (dünya/boss/CD akmaya devam). Boss saldırıları `BossBrain` + `BossDirector`; "
         "oyuncu canı `PlayerHealth`, ölçek `CombatScale`.\n\n"

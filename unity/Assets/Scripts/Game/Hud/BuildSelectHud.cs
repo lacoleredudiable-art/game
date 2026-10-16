@@ -38,7 +38,7 @@ namespace Dovus.Game.Hud
         HexagonInputController _input;
         HexagonView _view;
         GameClockHost _clock;
-        ManifestationDirector _manifestation;
+        RuleEngineV4SentenceHost _manifestation;
         Sprite _circle;
         readonly List<EquipmentItem> _weapons = new();
         readonly Dictionary<string, Image> _weaponChipImages = new();
@@ -74,7 +74,7 @@ namespace Dovus.Game.Hud
             HexagonInputController input,
             HexagonView view,
             GameClockHost clock,
-            ManifestationDirector manifestation,
+            RuleEngineV4SentenceHost manifestation,
             bool openNow)
         {
             _skills = skills;

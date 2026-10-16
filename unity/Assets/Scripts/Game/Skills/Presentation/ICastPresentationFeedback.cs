@@ -6,7 +6,7 @@ using Dovus.Core.Grammar;
 
 namespace Dovus.Game.Skills.Presentation
 {
-    /// <summary>CastPipeline sunum olaylarının Game katmanı tüketicisi (ManifestationDirector dışında bağlanır).</summary>
+    /// <summary>CastPipeline sunum olaylarının Game katmanı tüketicisi (RuleEngineV4SentenceHost dışında bağlanır).</summary>
     public interface ICastPresentationFeedback
     {
         void OnCastDenial(CastDenialRequested e);

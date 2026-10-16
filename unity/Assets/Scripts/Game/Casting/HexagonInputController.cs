@@ -155,7 +155,7 @@ namespace Dovus.Game.Casting
 
         /// <summary>
         /// v6 ladder smoke path: aynı SentenceEngine event zincirinden iki rün cast eder.
-        /// ManifestationDirector normal cast gibi alır; ayrı hasar/skill yolu yoktur.
+        /// RuleEngineV4SentenceHost normal cast gibi alır; ayrı hasar/skill yolu yoktur.
         /// </summary>
         public bool TryDebugCastSkill(int verbRuneId, int adjectiveRuneId)
         {

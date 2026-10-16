@@ -5,16 +5,16 @@ Sayılar aşağıdaki üretilmiş blokta; elle yazılan kısım yalnız akış.
 
 ## Bir dövüş nasıl akar
 
-Sol joystick hareket. Sağ altıgende ilk nokta fiil, ikinci nokta (en fazla bir) sıfat; cümle tamamlanınca `CastPipeline` skill'i çözer ve `ManifestationDirector` yürütür. Merkeze kısa dokunuş düz vuruş. Dodge ayrı düğme: iki hak, 6 sn dolum; çift basış birleşik kaçış. Mükemmel dodge yalnız **görsel donma** (dünya/boss/CD akmaya devam). Boss saldırıları `BossBrain` + `BossDirector`; oyuncu canı `PlayerHealth`, ölçek `CombatScale`.
+Sol joystick hareket. Sağ altıgende ilk nokta fiil, ikinci nokta (en fazla bir) sıfat; cümle tamamlanınca `CastPipeline` skill'i çözer ve `RuleEngineV4SentenceHost` v4 yolunu yürütür. Merkeze kısa dokunuş düz vuruş. Dodge ayrı düğme: iki hak, 6 sn dolum; çift basış birleşik kaçış. Mükemmel dodge yalnız **görsel donma** (dünya/boss/CD akmaya devam). Boss saldırıları `BossBrain` + `BossDirector`; oyuncu canı `PlayerHealth`, ölçek `CombatScale`.
 
 <!-- gen:begin -->
 ## Sayılar ve veri (üretilmiş)
 
 | Konu | Değer | Kaynak |
 |------|-------|--------|
-| Kombo üst sınırı (rün) | **2** (fiil + 1 sıfat) | `element-sistemi.json` → `combo_system.current_max_length` → `SkillMotor` / `HexagonInputController` |
+| Kombo üst sınırı (rün) | **2** (fiil + 1 sıfat) | `slice-sentence-grammar.json` → `combo_system.current_max_length` → `SkillMotor` / `HexagonInputController` |
 | Hasar/can ölçeği | ×4000 (`CombatScale.DamageAndHp`) | `global_rules.*.max_hp` ham → oyun canı |
-| Oyuncu max can | **400,000** (ham 100 × 4000) | `BossCombatProfile` / `element-sistemi.json` |
+| Oyuncu max can | **400,000** (ham 100 × 4000) | `BossCombatProfile` / dilim grameri |
 | Boss max can | **88,000,000** (ham 22000 × 4000) | aynı |
 | Arena yarıçapı | **50 m** (çap 100 m) | `Prototype.unity` `ArenaHalfSizeM` (kod yedeği 25 m) |
 | Dodge hakları | **2** | `DodgeTuning.MaxCharges` |
@@ -39,17 +39,17 @@ Sahne `ActiveBossId`; saldırı türleri `BossAttackKind` ile eşlenir.
 - Faz 1 (Örücü): can %100→%50 — `leg_slam`, `web_spit`, `web_field`
 - Faz 2 (Avcı): can %50→%0 — `leg_slam`, `web_spit`, `web_field`, `poison_breath`, `pounce`
 
-### Rünler (12)
+### Rünler (6)
 
-**Saldırı**, **İyileştirme**, **Hareket**, **Savunma**, **Patlama**, **Kontrol**, **Zayıflatma**, **Güçlendirme**, **Arındırma**, **Yansıma**, **Çağırma**, **Zaman**
+**Saldırı**, **İyileştirme**, **Hareket**, **Savunma**, **Kontrol**, **Arındırma**
 
-### Silahlar (10)
+### Silahlar (2)
 
-**Yumruk**, **Yay**, **Büyü Kitabı**, **Kılıç**, **Küre**, **Çekiç**, **Top**, **Asa**, **Tılsım**, **Kalkan**
+**Yay**, **Kılıç**
 
-### Elementler (6)
+### Elementler (1)
 
-**Ateş**, **Su**, **Hava**, **Toprak**, **Aydınlık**, **Karanlık**
+**Ateş**
  (oynanış çarpanı `element_mult` = 1.0; ağırlıklı VFX/boya)
 
 ### Okunmayan boss JSON alanları

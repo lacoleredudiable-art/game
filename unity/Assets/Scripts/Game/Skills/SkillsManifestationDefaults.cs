@@ -1,6 +1,6 @@
 namespace Dovus.Game.Skills
 {
-    /// <summary>ManifestationDirector partial'ları tek kaynak (PLAN 2B.11d).</summary>
+    /// <summary>RuleEngineV4SentenceHost partial'ları tek kaynak (PLAN 2B.11d).</summary>
     public static class SkillsManifestationDefaults
     {
         public const float ArmorBuffMinDurationSec = 0.05f;

@@ -29,7 +29,7 @@ namespace Dovus.Game.Casting
             public void OnPointerExit(PointerEventData e) => Drag?.Invoke(e.position);
         }
 
-        ManifestationDirector _director;
+        RuleEngineV4SentenceHost _director;
         IReadOnlyList<ElementPaintNode> _elements;
         ActorStatusHost _playerStatus;
         RectTransform _root;
@@ -57,7 +57,7 @@ namespace Dovus.Game.Casting
         public void BindTheme(HudTheme theme) => _theme = theme;
 
         public void Configure(
-            ManifestationDirector director,
+            RuleEngineV4SentenceHost director,
             SkillMotor skills,
             ActorStatusHost playerStatus,
             GameTuning tuning,

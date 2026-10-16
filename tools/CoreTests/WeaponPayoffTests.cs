@@ -93,24 +93,4 @@ public class WeaponPayoffTests
         Assert.That(tracker.Mana, Is.EqualTo(80f));
     }
 
-    [Test]
-    public void CannonAndOrb_ReadTheDocNumbers()
-    {
-        string path = System.IO.Path.GetFullPath(System.IO.Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        if (!System.IO.File.Exists(path))
-            path = System.IO.Path.GetFullPath(System.IO.Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        string json = System.IO.File.ReadAllText(path);
-        var catalog = EquipmentCatalog.FromJson(json);
-        EquipmentItem cannon = catalog.FindWeapon(7);
-        EquipmentItem orb = catalog.FindWeapon(5);
-        Assert.That(cannon.Profile.BasicRadiusM, Is.EqualTo(3f));
-        Assert.That(cannon.Profile.BossPushM, Is.EqualTo(0.5f));
-        Assert.That(cannon.Profile.RecoilM, Is.EqualTo(0.5f));
-        Assert.That(orb.Profile.OrbHoldSec, Is.EqualTo(0.4f));
-        Assert.That(orb.Profile.OrbDoubleTapSec, Is.EqualTo(0.3f));
-    }
 }

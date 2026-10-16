@@ -10,8 +10,8 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - Ölçü, kamera, dodge veya arena işinde `10-olculer.md`'deki madde kimliğini (ör. O-7.2) PR'a ve test adına yaz.
 - Belgede olmayan davranışı ya da ölçüyü uydurma, sor.
 - Sayılar `kural-motoru-v4.json`'dadır. Belgeler çelişirse `00-OKU-BENI.md`'deki öncelik sırası geçerlidir.
-- `element-sistemi.json` (v6.1.1) ve eski skill motoru (MechanicGrammar, SkillExecutorRouter, eski executor'lar,
-  24 el ayarı) DONDURULDU: düzeltilmez, genişletilmez, yeni kod onlara bağlanmaz. Taşıma bitince silinecek.
+- Dilim cümle grameri: `unity/Assets/Resources/RuleEngineV4/slice-sentence-grammar.json`; kural sayıları:
+  `unity/Assets/Resources/RuleEngineV4/kural-motoru-v4.json`.
 
 ## Tasarım konuşması kuralları
 Kullanıcı tasarım konuşuyorsa (fikir, kıyas, "hangisi daha iyi") bu bölüm geçerlidir; kod konuşuyorsa aşağısı.
@@ -58,8 +58,6 @@ tasarım sorusu olarak döner.
   ve Gözcü satırlarının sayısını raporlar. Resim PR açıklamasına eklenir, repoya kaydedilmez.
 - Fonksiyonu doğrudan çağırıp geçen test, oynanış hatasının kanıtı sayılmaz.
 - Testler gevşetilmez; bir test kırılırsa nedeni PR'da yazılır.
-- Eski motor testleri (`[Category("EskiMotor")]`) dondurulmuştur: bakımı yapılmaz, gevşetilmez, yenisi eklenmez.
-  Eski motor silinince onlarla birlikte silinir.
 - Yerelde yalnız değiştirdiğin alana ait testleri çalıştır (`dotnet test --filter`); tam set CI'ın işi.
 - Görevin adlandırmadığı dosyalara dokunma; repoyu baştan tarama.
 
@@ -90,7 +88,5 @@ tasarım sorusu olarak döner.
   -gozcuOut <klasör>`
 
 ## CI
-Her PR ve master push, hepsi engelleyici: OYUN.md kontrolü → CoreTests (`--filter "TestCategory!=EskiMotor"`)
+Her PR ve master push, hepsi engelleyici: OYUN.md kontrolü → CoreTests
 → IntegrationTests → GameCompile.
-Haftalık (schedule) ve elle (workflow_dispatch), engellemez: EskiMotor testleri → SweepV2 hash kapısı;
-sonuç job summary'de. Eski motoru korur; taşıma bitince kaldırılacak.

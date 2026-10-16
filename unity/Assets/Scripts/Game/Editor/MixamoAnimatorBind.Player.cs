@@ -48,7 +48,7 @@ namespace Dovus.Game.Editor
 
             var ac = LoadOrCreate(PlayerCtrl);
             EnsureParam(ac, "Speed", AnimatorControllerParameterType.Float);
-            // O-anim(c): CastChannel/CastGuard döngü (hold) sinyali — ManifestationDirector.TickCastHold
+            // O-anim(c): CastChannel/CastGuard döngü (hold) sinyali — RuleEngineV4SentenceHost.TickCastHold
             // her kare bu bool'ları yazar, binder'daki dönüş geçişi bunlar false olmadan tetiklenmez.
             EnsureParam(ac, ActorView.ParamChannelHold, AnimatorControllerParameterType.Bool);
             EnsureParam(ac, ActorView.ParamGuardHold, AnimatorControllerParameterType.Bool);

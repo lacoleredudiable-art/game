@@ -163,10 +163,21 @@ namespace Dovus.Core.Grammar
 
             ParseStateMachine(root, motor._playerStates, motor._bossStates);
 
-            if (motor._runes.Count != 12)
-                throw new InvalidOperationException("element-sistemi v6: 12 rün beklenir.");
-            if (motor._v61Skills.Count != GrammarDefaults.ExpectedV61SkillCount)
-                throw new InvalidOperationException("element-sistemi v6: 144 skill beklenir.");
+            bool sliceGrammar = motor._version.Contains("slice", StringComparison.OrdinalIgnoreCase);
+            int expectedRunes = sliceGrammar ? GrammarDefaults.ExpectedSliceRuneCount : 12;
+            int expectedSkills = sliceGrammar
+                ? GrammarDefaults.ExpectedSliceSkillCount
+                : GrammarDefaults.ExpectedV61SkillCount;
+            if (motor._runes.Count != expectedRunes)
+                throw new InvalidOperationException(
+                    sliceGrammar
+                        ? "dilim grameri: 6 rün beklenir."
+                        : "element-sistemi v6: 12 rün beklenir.");
+            if (motor._v61Skills.Count != expectedSkills)
+                throw new InvalidOperationException(
+                    sliceGrammar
+                        ? "dilim grameri: 36 skill beklenir."
+                        : "element-sistemi v6: 144 skill beklenir.");
             if (motor._maxComboLength != 2)
                 throw new InvalidOperationException("element-sistemi v6: mevcut kombo uzunluğu 2 olmalıdır.");
         }

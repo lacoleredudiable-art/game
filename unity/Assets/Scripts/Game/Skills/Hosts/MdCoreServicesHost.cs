@@ -35,9 +35,9 @@ public sealed class MdCoreServicesHost
             IBossDeathSequenceHost,
             ISentenceSyncHost
     {
-        readonly ManifestationDirector _md;
+        readonly RuleEngineV4SentenceHost _md;
 
-        internal MdCoreServicesHost(ManifestationDirector md) => _md = md;
+        internal MdCoreServicesHost(RuleEngineV4SentenceHost md) => _md = md;
 
         public GameTuning Colors => _md._colors;
         public SkillMotor Skills => _md._skills;
@@ -103,7 +103,7 @@ public sealed class MdCoreServicesHost
         public ReactionReadoutHud Readout => _md._readout;
         public PassiveHud PassiveHud => _md._passiveHud;
 
-        public bool IsHealSkill(SkillResolution skill) => ManifestationDirector.IsHealSkill(skill);
+        public bool IsHealSkill(SkillResolution skill) => RuleEngineV4SentenceHost.IsHealSkill(skill);
 
         public void ApplyClosingHeal(ClosingHit closing, SkillResolution skill, float power, float chain) =>
             _md.ApplyClosingHeal(closing, skill, power, chain);

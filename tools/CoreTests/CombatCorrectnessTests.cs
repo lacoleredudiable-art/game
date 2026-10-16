@@ -116,7 +116,7 @@ public class CombatCorrectnessTests
     [Test]
     public void K1_DeathSequence_StartsOnlyFromTheDiedHook()
     {
-        string md = Game("Skills/ManifestationDirector.cs");
+        string md = Game("Skills/RuleEngineV4SentenceHost.cs");
         string all = string.Concat(Directory.GetFiles(GameDir(), "*.cs", SearchOption.AllDirectories)
             .Select(File.ReadAllText));
         int calls = Regex.Matches(all, @"BeginBossDeathSequence\(").Count;
@@ -154,7 +154,7 @@ public class CombatCorrectnessTests
     [Test]
     public void O7_CritSystem_ReadsDesignJson()
     {
-        CritSystem crit = CritSystem.FromJson(Dovus.Core.Shared.MiniJson.Parse(File.ReadAllText(Docs("element-sistemi.json"))));
+        CritSystem crit = CritSystem.FromJson(Dovus.Core.Shared.MiniJson.Parse(SliceGrammarTestPaths.ReadSliceGrammarJson()));
         Assert.That(crit.BaseChance, Is.EqualTo(0.05f).Within(1e-5f));
         Assert.That(crit.Multiplier, Is.EqualTo(2f).Within(1e-5f));
         Assert.That(crit.MaxChance, Is.EqualTo(0.75f).Within(1e-5f));
@@ -225,14 +225,12 @@ public class CombatCorrectnessTests
     [Test]
     public void O7_GameUsesOneSeededRng_NotSequentialSeeds()
     {
-        string dmg = Game("Skills/ManifestationDirector.Damage.cs");
-        string verb = Game("Skills/ManifestationDirector.VerbExecution.cs");
+        string dmg = Game("Skills/RuleEngineV4SentenceHost.Damage.cs");
+        string verb = Game("Skills/RuleEngineV4SentenceHost.VerbExecution.cs");
         Assert.That(dmg + verb, Does.Not.Contain("_damageRoll"));
         Assert.That(dmg + verb, Does.Not.Contain("VarianceSeed"));
         Assert.That(dmg, Does.Contain("CombatRng.SessionSeed()"));
         Assert.That(Regex.Matches(dmg + verb, @"CritRoll01 = _combatRng\.NextRoll01\(\)").Count, Is.EqualTo(2));
-        Assert.That(Game(Path.Combine("Editor", "Sweep", "PlaySweep.Setup.cs")), Does.Contain("ReseedCombatRng(CombatRng.SweepSeed)"));
-        Assert.That(Game(Path.Combine("Editor", "Sweep", "PlaySweep.cs")), Does.Contain("[InitializeOnLoad]"), "PlaySweep static ctor must hook playModeStateChanged on editor load");
     }
 
     // ── O8: ignore_armor %100, Yay bonusu yalnız kullanılınca tükenir ───────
@@ -249,7 +247,7 @@ public class CombatCorrectnessTests
         });
         Assert.That(hit.Amount, Is.EqualTo(200f).Within(0.01f));
 
-        string dmg = Game("Skills/ManifestationDirector.Damage.cs");
+        string dmg = Game("Skills/RuleEngineV4SentenceHost.Damage.cs");
         Assert.That(dmg, Does.Contain("bool weaponArmorBonus = WeaponIgnoresArmor && !skillIgnoresArmor;"));
         Assert.That(dmg, Does.Contain("if (outcome.Amount > 0f && weaponArmorBonus)"));
     }
@@ -281,7 +279,7 @@ public class CombatCorrectnessTests
         string status = Game("Actors/ActorStatusHost.cs");
         Assert.That(status, Does.Contain("ApplyDamage(payload, dodgeable: false, pierceArmor: true, overTime: true)"));
         Assert.That(status, Does.Contain("DamageOverTimeDealt?.Invoke(LastAppliedDamage)"));
-        Assert.That(Game("Skills/ManifestationDirector.cs"), Does.Contain("DamageOverTimeDealt += OnBossDamageOverTime"));
+        Assert.That(Game("Skills/RuleEngineV4SentenceHost.cs"), Does.Contain("DamageOverTimeDealt += OnBossDamageOverTime"));
     }
 
     // ── S6: kalkanın emdiği vuruş cümleyi kesmez ────────────────────────────
@@ -318,14 +316,14 @@ public class CombatCorrectnessTests
     [Test]
     public void S8_MinionCrit_IsShown()
     {
-        Assert.That(Game("Skills/ManifestationDirector.VerbExecution.cs"),
+        Assert.That(Game("Skills/RuleEngineV4SentenceHost.VerbExecution.cs"),
             Does.Contain("ShowDamage(damage, dealt.WasCrit, BossHitPoint(), DamageTint(), victimIsBoss: true)"));
     }
 
     [Test]
     public void S16_EventsUnsubscribedOnDestroy_AndBlockedIsNotALambda()
     {
-        string md = Game("Skills/ManifestationDirector.cs");
+        string md = Game("Skills/RuleEngineV4SentenceHost.cs");
         Assert.That(md, Does.Not.Contain("DamageBlocked += _ =>"));
         string destroy = Body(md, "void OnDestroy()");
         foreach (string unsub in new[]

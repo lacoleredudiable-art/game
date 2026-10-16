@@ -96,7 +96,7 @@ public sealed class DeadCodeGuardTests
     }
 
     [Test]
-    public void ManifestationDirector_HasNo_RemovedDelegatingWrappers()
+    public void RuleEngineV4SentenceHost_HasNo_RemovedDelegatingWrappers()
     {
         string skillsDir = Path.Combine(ScriptsRoot(), "Game", "Skills");
         var patterns = new[]
@@ -108,7 +108,7 @@ public sealed class DeadCodeGuardTests
             @"\bvoid ApplySkillMotionIframe\s*\(",
             @"\bvoid AnnotateMotion\s*\(",
         };
-        foreach (string file in Directory.EnumerateFiles(skillsDir, "ManifestationDirector*.cs"))
+        foreach (string file in Directory.EnumerateFiles(skillsDir, "RuleEngineV4SentenceHost*.cs"))
         {
             string text = File.ReadAllText(file);
             string rel = Path.GetRelativePath(ScriptsRoot(), file).Replace('\\', '/');

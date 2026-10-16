@@ -28,8 +28,7 @@ public class TouchDodgeSwapTests
     static string Game(string rel) =>
         File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", rel));
 
-    static string ElementJson() =>
-        File.ReadAllText(Path.Combine(Root(), "docs", "element-sistemi.json"));
+    static string ElementJson() => SliceGrammarTestPaths.ReadSliceGrammarJson();
 
     // --- O1 / K3: düğme kuralları ---
 
@@ -167,9 +166,9 @@ public class TouchDodgeSwapTests
     [Test]
     public void Director_WiresSustainedLock()
     {
-        Assert.That(Game("Game/Skills/ManifestationDirector.WeaponSwap.cs"), Does.Contain("bool holding = SustainedSkillActive(worldMs);"));
+        Assert.That(Game("Game/Skills/RuleEngineV4SentenceHost.WeaponSwap.cs"), Does.Contain("bool holding = SustainedSkillActive(worldMs);"));
         Assert.That(Game("Game/Skills/Hosts/MdCastPort.cs"), Does.Contain("NoteSustainedCast(skill)"));
-        Assert.That(Game("Game/Skills/Motion/MotionTemplateDriver.cs"), Does.Contain("_host.SustainedCast.Clear();"));
+        Assert.That(Game("Game/Skills/RuleEngineV4SentenceHost.zMotionStubs.cs"), Does.Not.Contain("MotionTemplateDriver"));
         Assert.That(Game("Game/Skills/Weapons/OrbController.cs"), Does.Not.Contain("OnWeaponHudButton"));
         Assert.That(Game("Game/Skills/Weapons/OrbController.cs"), Does.Contain("SwapButtonHoldSec"));
     }

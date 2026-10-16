@@ -16,20 +16,7 @@ public class StatusBoardTests
 {
     StatusTuning Tuning() => new();
 
-    static SkillMotor LoadV6Motor()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        if (!File.Exists(path))
-        {
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        }
-        Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
-        return SkillMotor.FromJson(File.ReadAllText(path));
-    }
+    static SkillMotor LoadV6Motor() => SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
 
     [Test]
     public void Stun_BlocksMoveAndCast()

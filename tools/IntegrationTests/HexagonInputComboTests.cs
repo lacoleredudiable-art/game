@@ -29,12 +29,7 @@ public class HexagonInputComboTests
         _clockGo = null;
     }
 
-    static string LoadElementJson()
-    {
-        string path = RepoPaths.Docs("element-sistemi.json");
-        Assert.That(File.Exists(path), Is.True);
-        return File.ReadAllText(path);
-    }
+    static string LoadElementJson() => File.ReadAllText(RepoPaths.SliceSentenceGrammarJson);
 
     (HexagonInputSession session, StrokeCaster stroke, GameClockHost clock) CreateHarness(
         SkillMotor skills,

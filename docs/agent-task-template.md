@@ -10,7 +10,7 @@ Kopyala, `<...>` alanlarını doldur, gereksiz bölümü sil.
 - `AGENTS.md` (kök) + `<klasör>/AGENTS.md`
 - `docs/MAP.md` → yalnız "<konu>" satırı
 - `<yol/Dosya.cs>:<satır–satır>` — <neden>
-- (gerekirse) `docs/element-sistemi.json` yalnız `<anahtar>` bölümü
+- (gerekirse) `unity/Assets/Resources/RuleEngineV4/slice-sentence-grammar.json` yalnız `<anahtar>` bölümü
 
 ## Yapılacak
 1. <somut adım; dosya + metot adı>

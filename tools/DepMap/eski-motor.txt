@@ -9,5 +9,6 @@
 (^|/)SummonExecutor[^/]*\.cs$
 (^|/)MechanicField[^/]*\.cs$
 (^|/)MechanicWall[^/]*\.cs$
-(^|/)MotionTemplateRunner[^/]*\.cs$
+(^|/)MechanicWorldRuntime[^/]*\.cs$
+(^|/)JsonEffectRuntime[^/]*\.cs$
 (^|/)MotionTemplateDriver[^/]*\.cs$

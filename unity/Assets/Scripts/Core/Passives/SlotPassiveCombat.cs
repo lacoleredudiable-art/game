@@ -7,7 +7,7 @@ using Dovus.Core.Shared;
 namespace Dovus.Core.Passives
 {
     /// <summary>
-    /// Pasif yuva sayılarının saf hesabı. ManifestationDirector bunları uygular.
+    /// Pasif yuva sayılarının saf hesabı. RuleEngineV4SentenceHost bunları uygular.
     /// </summary>
     public static class SlotPassiveCombat
     {
