@@ -31,7 +31,6 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Dodge.CombinedDurationMult, Is.EqualTo(1.4f));
             Assert.That(t.Dodge.PerfectWindowMs, Is.EqualTo(150));
             Assert.That(t.Dodge.PerfectNextHitMult, Is.EqualTo(1.3f));
-            Assert.That(t.Dodge.PerfectChargeRefund, Is.EqualTo(1f));
             Assert.That(t.Dodge.CurveExp, Is.EqualTo(3.6f));
             Assert.That(t.Dodge.GlideTailMs, Is.EqualTo(400));
         });

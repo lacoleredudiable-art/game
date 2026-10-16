@@ -223,19 +223,4 @@ public class DodgeChainTests
         Assert.That(dodge.IsCombined, Is.False);
         Assert.That(dodge.IsInvulnerable(259), Is.True);
     }
-
-    [Test]
-    public void PerfectRefund_OncePerCombinedDodgePress()
-    {
-        var tuning = Tuning();
-        var bank = new DodgeChargeBank(tuning);
-        bank.TrySpend(0);
-        bank.TrySpend(0);
-        Assert.That(bank.Ready, Is.EqualTo(0));
-
-        bank.Refund(tuning.PerfectChargeRefund);
-        Assert.That(bank.Ready, Is.EqualTo(1));
-        bank.Refund(tuning.PerfectChargeRefund);
-        Assert.That(bank.Ready, Is.EqualTo(2));
-    }
 }

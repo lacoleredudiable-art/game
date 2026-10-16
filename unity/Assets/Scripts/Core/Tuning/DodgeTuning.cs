@@ -34,7 +34,6 @@ namespace Dovus.Core.Tuning
         public float PerfectNextHitMult = 1.3f;
         /// <summary>S1: mükemmel sıyırmanın ×PerfectNextHitMult bonusu bu süre içinde vurulmazsa düşer (his varsayılanı; spec'te yok).</summary>
         public int PerfectNextHitWindowMs = 2000;
-        public float PerfectChargeRefund = 1f;
         public float PerfectFeelSec = 0.2f;
         public float EdgeGapM = 0.15f;
         public int TelegraphLeadMs = 700;
@@ -76,7 +75,6 @@ namespace Dovus.Core.Tuning
             PerfectWindowMs = other.PerfectWindowMs;
             PerfectNextHitMult = other.PerfectNextHitMult;
             PerfectNextHitWindowMs = other.PerfectNextHitWindowMs;
-            PerfectChargeRefund = other.PerfectChargeRefund;
             PerfectFeelSec = other.PerfectFeelSec;
             EdgeGapM = other.EdgeGapM;
             TelegraphLeadMs = other.TelegraphLeadMs;

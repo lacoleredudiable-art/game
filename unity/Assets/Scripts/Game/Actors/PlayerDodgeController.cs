@@ -170,7 +170,6 @@ namespace Dovus.Game.Actors
             if (bank != null)
             {
                 bank.RechargeMult = _input.Dodge != null ? _input.Dodge.CooldownMult : 1f;
-                bank.Refund(tuning.PerfectChargeRefund);
             }
 
             _nextHit.Arm(tuning.PerfectNextHitMult, WorldMs(), tuning.PerfectNextHitWindowMs);
