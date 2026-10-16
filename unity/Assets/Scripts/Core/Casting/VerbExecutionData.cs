@@ -55,9 +55,9 @@ namespace Dovus.Core.Casting
         }
 
         public static VerbExecutionData FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static VerbExecutionData FromDocument(ElementSystemDocument doc) =>
+        public static VerbExecutionData FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static VerbExecutionData FromJsonRoot(JsonValue root)

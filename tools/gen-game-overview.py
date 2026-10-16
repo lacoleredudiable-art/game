@@ -9,8 +9,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SLICE_GRAMMAR_JSON = ROOT / "unity" / "Assets" / "Resources" / "RuleEngineV4" / "slice-sentence-grammar.json"
 SCENE_UNITY = ROOT / "unity" / "Assets" / "Scenes" / "Prototype.unity"
+
+from slice_grammar_doc import load_slice_grammar_document  # noqa: E402
 OUT_MD = ROOT / "docs" / "OYUN.md"
 
 GEN_BEGIN = "<!-- gen:begin -->"
@@ -71,11 +72,11 @@ def attack_kind_label(kind: str) -> str:
 
 
 def build_generated_section() -> str:
-    element = json.loads(_read_text(SLICE_GRAMMAR_JSON))
+    element = load_slice_grammar_document()
     combo_max = element["combo_system"]["current_max_length"]
     combo_source = (
-        "`slice-sentence-grammar.json` → `combo_system.current_max_length` → "
-        "`SkillMotor` / `HexagonInputController`"
+        "`kural-motoru-v4.json` + `SliceGrammarDefaults` → "
+        "`combo_system.current_max_length` → `SkillMotor` / `HexagonInputController`"
     )
 
     combat_scale_cs = _read_text(ROOT / "unity/Assets/Scripts/Core/Damage/CombatScale.cs")

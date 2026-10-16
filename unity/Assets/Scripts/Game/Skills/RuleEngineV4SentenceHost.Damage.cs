@@ -39,7 +39,7 @@ namespace Dovus.Game.Skills
                 {
                     string json = SliceCombatBootstrap.GrammarJson;
                     _critSystem = !string.IsNullOrWhiteSpace(json)
-                        ? CritSystem.FromDocument(ElementSystemDocument.Parse(json))
+                        ? CritSystem.FromDocument(GrammarJsonDocument.Parse(json))
                         : CritSystem.Default;
                 }
                 return _critSystem.Value;
@@ -48,7 +48,7 @@ namespace Dovus.Game.Skills
 
         internal void RefreshDefenderArmor()
         {
-            if (_weaponArmor == null && TrySliceDocument(out ElementSystemDocument doc))
+            if (_weaponArmor == null && TrySliceDocument(out GrammarJsonDocument doc))
                 _weaponArmor = WeaponArmorCatalog.FromDocument(doc);
             if (_playerStatus == null)
                 return;
@@ -62,19 +62,19 @@ namespace Dovus.Game.Skills
         {
             if (_bossStatus == null)
                 return;
-            if (!TrySliceDocument(out ElementSystemDocument doc))
+            if (!TrySliceDocument(out GrammarJsonDocument doc))
                 return;
             _bossStatus.Armor.Base = BossCombatProfile.FromDocument(doc).Armor;
             _weaponArmor ??= WeaponArmorCatalog.FromDocument(doc);
         }
 
-        static bool TrySliceDocument(out ElementSystemDocument doc)
+        static bool TrySliceDocument(out GrammarJsonDocument doc)
         {
             doc = null;
             string json = SliceCombatBootstrap.GrammarJson;
             if (string.IsNullOrWhiteSpace(json))
                 return false;
-            doc = ElementSystemDocument.Parse(json);
+            doc = GrammarJsonDocument.Parse(json);
             return true;
         }
 

@@ -8,11 +8,8 @@ using UnityEngine;
 
 namespace Dovus.Game.Data
 {
-    /// <summary>
-    /// Binding sıra adım 2 runtime fallback: canonical JSON parse'ından 12/10/6 SO üretir.
-    /// Editor importer aynı Import metotlarıyla kalıcı .asset dosyaları oluşturabilir.
-    /// </summary>
-    public sealed class ElementSystemAssetCatalog
+    /// <summary>Dilim: SkillMotor + EquipmentCatalog → runtime RuneSO / WeaponSO / ElementSO.</summary>
+    public sealed class SliceRuntimeAssetCatalog
     {
         readonly List<RuneSO> _runes = new();
         readonly List<WeaponSO> _weapons = new();
@@ -21,7 +18,7 @@ namespace Dovus.Game.Data
         readonly Dictionary<int, WeaponSO> _weaponById = new();
         readonly Dictionary<int, ElementSO> _elementById = new();
 
-        ElementSystemAssetCatalog(string version)
+        SliceRuntimeAssetCatalog(string version)
         {
             Version = version ?? string.Empty;
         }
@@ -31,14 +28,13 @@ namespace Dovus.Game.Data
         public IReadOnlyList<WeaponSO> Weapons => _weapons;
         public IReadOnlyList<ElementSO> Elements => _elements;
 
-        /// <summary>Dilim grameri: 6 rün, 2 silah (Yay/Kılıç), ≥1 element boyası.</summary>
-        public static ElementSystemAssetCatalog CreateSliceRuntime(SkillMotor motor, EquipmentCatalog equipment)
+        public static SliceRuntimeAssetCatalog CreateSliceRuntime(SkillMotor motor, EquipmentCatalog equipment)
         {
             if (motor == null)
                 throw new ArgumentNullException(nameof(motor));
             if (equipment == null)
                 throw new ArgumentNullException(nameof(equipment));
-            var catalog = new ElementSystemAssetCatalog(motor.Version);
+            var catalog = new SliceRuntimeAssetCatalog(motor.Version);
 
             foreach (RuneDefinition source in motor.RuneDefinitions)
             {

@@ -258,9 +258,9 @@ public class DamagePipelineTests
     [Test]
     public void BossProfile_ScalesHp_AndLeavesArmorUnscaled()
     {
-        var profile = BossCombatProfile.FromJson(File.ReadAllText(ElementPath()));
-        Assert.That(profile.PlayerMaxHp, Is.EqualTo(100f * CombatScale.DamageAndHp).Within(0.1f));
-        Assert.That(profile.BossMaxHp, Is.EqualTo(22000f * CombatScale.DamageAndHp).Within(0.1f));
+        var profile = BossCombatProfile.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
+        Assert.That(profile.PlayerMaxHp, Is.EqualTo(1000f * CombatScale.DamageAndHp).Within(0.1f));
+        Assert.That(profile.BossMaxHp, Is.EqualTo(15000f * CombatScale.DamageAndHp).Within(0.1f));
         Assert.That(profile.Armor, Is.EqualTo(100f).Within(0.0001f));
         Assert.That(profile.ArmorHard, Is.EqualTo(150f).Within(0.0001f));
         Assert.That(profile.BossMaxHpHard, Is.EqualTo(profile.BossMaxHp).Within(0.1f));
@@ -293,7 +293,7 @@ public class DamagePipelineTests
     [Test]
     public void WeaponArmor_DefaultsToZero_AndReadsBaseArmorWhenPresent()
     {
-        var empty = WeaponArmorCatalog.FromJson(File.ReadAllText(ElementPath()));
+        var empty = WeaponArmorCatalog.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
         Assert.That(empty.ArmorOf("1"), Is.EqualTo(0f));
         var catalog = WeaponArmorCatalog.FromJson(@"{""weapons"":[{""id"":1,""base_armor"":12},{""id"":2}]}");
         Assert.That(catalog.ArmorOf("1"), Is.EqualTo(12f));
@@ -305,7 +305,7 @@ public class DamagePipelineTests
     public void Zafiyet_ShredsArmor_FromEngineValue()
     {
         DesignWarnings.ResetForTests();
-        var motor = SkillMotor.FromJson(File.ReadAllText(ElementPath()));
+        var motor = SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
         SkillResolution nine = motor.Resolve(new[] { 1, 9 });
         Assert.That(nine.Engine.Field("ignore_armor").AsBool(false), Is.True);
 
@@ -343,7 +343,7 @@ public class DamagePipelineTests
         Assert.That(SlotPassiveCombat.IgnoreArmorPierce, Is.EqualTo(1f).Within(0.0001f));
 
         DesignWarnings.ResetForTests();
-        var motor = SkillMotor.FromJson(File.ReadAllText(ElementPath()));
+        var motor = SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
         SkillResolution strike = motor.Resolve(new[] { 1, 9 });
         SkillResolution plain = motor.Resolve(new[] { 1, 1 });
         Assert.That(strike.Engine.Field("ignore_armor").AsBool(false), Is.True);
@@ -366,7 +366,7 @@ public class DamagePipelineTests
     [Test]
     public void WeaponBaseArmor_ReadsTheRoster()
     {
-        var catalog = WeaponArmorCatalog.FromJson(File.ReadAllText(ElementPath()));
+        var catalog = WeaponArmorCatalog.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
         Assert.That(catalog.ArmorOf("weapon:2"), Is.EqualTo(0f));
         Assert.That(catalog.ArmorOf("weapon:4"), Is.EqualTo(0f));
     }
@@ -443,10 +443,4 @@ public class DamagePipelineTests
         return hit.Amount;
     }
 
-    static string ElementPath()
-    {
-        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        Assert.That(File.Exists(path), Is.True, path);
-        return path;
-    }
 }

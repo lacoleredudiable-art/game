@@ -33,7 +33,7 @@ public class WeaponPassiveKindTests
     [Test]
     public void DocWeapons_PassiveIdsResolveToKind()
     {
-        string json = File.ReadAllText(ElementPath());
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         EquipmentCatalog catalog = EquipmentCatalog.FromJson(json);
         Assert.That(catalog.Items.Count, Is.EqualTo(2));
         foreach (EquipmentItem item in catalog.Items)
@@ -44,11 +44,4 @@ public class WeaponPassiveKindTests
         }
     }
 
-    static string ElementPath()
-    {
-        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        if (!File.Exists(path))
-            path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        return path;
-    }
 }

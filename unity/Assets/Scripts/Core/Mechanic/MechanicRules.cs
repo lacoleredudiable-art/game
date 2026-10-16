@@ -54,9 +54,9 @@ namespace Dovus.Core.Mechanic
         }
 
         public static MechanicRules FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static MechanicRules FromDocument(ElementSystemDocument doc) =>
+        public static MechanicRules FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static MechanicRules FromJsonRoot(JsonValue root) => new MechanicRules(root);

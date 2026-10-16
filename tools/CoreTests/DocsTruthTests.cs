@@ -140,8 +140,7 @@ public class DocsTruthTests
         Assert.That(i1, Is.GreaterThan(i0));
         string gen = text.Substring(i0 + begin.Length, i1 - i0 - begin.Length);
 
-        string jsonPath = SliceGrammarTestPaths.SliceGrammarJsonPath();
-        string json = File.ReadAllText(jsonPath);
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         JsonValue rootJson = MiniJson.Parse(json);
         int combo = rootJson["combo_system"]["current_max_length"].AsInt(-1);
         Assert.That(gen, Does.Contain($"**{combo}**"));
@@ -150,10 +149,10 @@ public class DocsTruthTests
         float bossRaw = rootJson["global_rules"]["boss_stats_default"]["max_hp"].AsFloat(BossDefaults.FallbackBossMaxHp);
         int playerHp = CombatScale.MagnitudeInt(playerRaw);
         int bossHp = CombatScale.MagnitudeInt(bossRaw);
-        Assert.That(gen, Does.Contain("400,000"));
-        Assert.That(gen, Does.Contain("88,000,000"));
-        Assert.That(playerHp, Is.EqualTo(400_000));
-        Assert.That(bossHp, Is.EqualTo(88_000_000));
+        Assert.That(gen, Does.Contain("4,000,000"));
+        Assert.That(gen, Does.Contain("60,000,000"));
+        Assert.That(playerHp, Is.EqualTo(4_000_000));
+        Assert.That(bossHp, Is.EqualTo(60_000_000));
 
         var dodge = new DodgeTuning();
         Assert.That(gen, Does.Contain(dodge.MaxCharges.ToString()));

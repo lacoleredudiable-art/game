@@ -10,7 +10,7 @@ Ağların Kraliçesi) telefonda doğru çalışsın.
 - Ölçü, kamera, dodge veya arena işinde `10-olculer.md`'deki madde kimliğini (ör. O-7.2) PR'a ve test adına yaz.
 - Belgede olmayan davranışı ya da ölçüyü uydurma, sor.
 - Sayılar `kural-motoru-v4.json`'dadır. Belgeler çelişirse `00-OKU-BENI.md`'deki öncelik sırası geçerlidir.
-- Dilim cümle grameri: `unity/Assets/Resources/RuleEngineV4/slice-sentence-grammar.json`; kural sayıları:
+- Dilim: tek JSON `kural-motoru-v4.json`; SkillMotor gramer gövdesi `SliceGrammarDefaults` (bellek). Kural sayıları:
   `unity/Assets/Resources/RuleEngineV4/kural-motoru-v4.json`.
 
 ## Tasarım konuşması kuralları

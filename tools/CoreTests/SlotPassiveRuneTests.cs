@@ -22,7 +22,7 @@ public class SlotPassiveRuneTests
     [SetUp]
     public void SetUp()
     {
-        _json = File.ReadAllText(ElementPath());
+        _json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         _motor = SkillMotor.FromJson(_json);
     }
 
@@ -191,14 +191,4 @@ public class SlotPassiveRuneTests
         return director;
     }
 
-    static string ElementPath()
-    {
-        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        if (!File.Exists(path))
-        {
-            path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        }
-        Assert.That(File.Exists(path), Is.True, path);
-        return path;
-    }
 }

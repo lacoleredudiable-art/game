@@ -14,9 +14,9 @@ namespace Dovus.Core.Equipment
         readonly Dictionary<string, float> _byId = new(StringComparer.Ordinal);
 
         public static WeaponArmorCatalog FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static WeaponArmorCatalog FromDocument(ElementSystemDocument doc) =>
+        public static WeaponArmorCatalog FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static WeaponArmorCatalog FromJsonRoot(JsonValue root)

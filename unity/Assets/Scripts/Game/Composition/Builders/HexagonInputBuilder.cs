@@ -47,9 +47,9 @@ namespace Dovus.Game.Composition.Builders
             AttachOverlayToMain(mainCam, overlay.Cam);
 
             SkillMotor skills = SkillMotorLoader.Load();
-            ElementSystemAssetCatalog assetCatalog = null;
+            SliceRuntimeAssetCatalog assetCatalog = null;
             if (SliceCombatBootstrap.TryLoad(out SkillMotor _, out EquipmentCatalog equipment, out _))
-                assetCatalog = ElementSystemAssetCatalog.CreateSliceRuntime(skills, equipment);
+                assetCatalog = SliceRuntimeAssetCatalog.CreateSliceRuntime(skills, equipment);
             ctx.SliceEquipment = equipment;
             ctx.AssetCatalog = assetCatalog;
             ctx.Skills = skills;

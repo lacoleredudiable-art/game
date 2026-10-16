@@ -66,10 +66,10 @@ namespace Dovus.Core.Grammar
         {
             if (string.IsNullOrWhiteSpace(json))
                 throw new ArgumentException("JSON boş.", nameof(json));
-            return FromDocument(ElementSystemDocument.Parse(json));
+            return FromDocument(GrammarJsonDocument.Parse(json));
         }
 
-        public static SkillMotor FromDocument(ElementSystemDocument doc) =>
+        public static SkillMotor FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static SkillMotor FromJsonRoot(JsonValue root)

@@ -2,21 +2,21 @@
 
 **Nasıl kullanılır:** Görevde bir konu adı geçiyorsa bu tabloda bul; yalnız listelenen dosyayı aç. Giriş noktası, okumaya başlayacağın tip ve metot. Kök `AGENTS.md` sert kurallar; iş sırası `docs/PLAN.md`; mimari `docs/ARCHITECTURE.md`; oyun özeti `docs/OYUN.md`. Doğrulama: `tools/verify.ps1`.
 
-**Büyük dosya uyarısı:** `ManifestationDirector` (partial toplamı `ClassSizeRatchetTests` ≤3411; `Game/Skills/State/*`, `Game/Skills/Hosts/*`), `HexagonInputController`, `BossDirector`, `GameTuning` — tam dosya okuma; önce giriş noktası, `Select-String` ile daralt. Kurulum `Game/Composition/Builders/*`.
+**Büyük dosya uyarısı:** `RuleEngineV4SentenceHost` (partial'lar), `HexagonInputController`, `BossDirector`, `GameTuning` — tam dosya okuma; önce giriş noktası, `Select-String` ile daralt. Kurulum `Game/Composition/Builders/*`.
 
 | Konu | Dosya(lar) | Giriş noktası |
 |------|------------|---------------|
 | Skill atma — girdi | `Game/Casting/HexagonInputController.cs` (orkestratör), `Game/Casting/Input/` (`PointerRouter`, `StrokeCaster`, `CastGate`, `DodgeTrigger`, `CastFeedback`), `Game/Casting/MoveInputController.cs`, `Game/Casting/JoystickView.cs` | `HexagonInputController.Update` |
 | Skill atma — cümle | `Core/Grammar/SentenceEngine.cs`, `Core/Grammar/SentenceState.cs` | `SentenceEngine.OnDotTouched`, `SentenceEngine.Commit`, `SentenceEngine.Tick` |
-| Skill atma — çözüm | `Core/Grammar/SkillMotor.cs`, `Game/Data/SkillMotorLoader.cs`, `Game/Data/ElementSystemJsonLoader.cs` | `SkillMotor.Resolve`, `SkillMotor.ResolveWords`, `SkillMotorLoader.Load` |
-| Skill atma — yürütme | `App/Casting/CastPipeline.cs`, `Game/Skills/ManifestationDirector.cs`, `Game/Skills/ManifestationDirector.VerbExecution.cs`, `Core/Casting/SkillExecutorRouter.cs`, `Game/Skills/Execution/ISkillExecutor.cs` | `CastPipeline.RunSkill`, `CastPipeline.RunBasic`, `ManifestationDirector.OnSentenceCompleted`, `SkillExecutorRouter.Route` |
-| Skill atma — görsel/VFX | `Game/Skills/ManifestationDirector.CastPresentation.cs`, `Game/Skills/Motion/MotionTemplateDriver.cs`, `Game/Skills/Motion/MotionHitResolver.cs`, `Game/Vfx/FeelVfx.cs`, `Game/Vfx/PresentationFxView.cs` | `MotionTemplateDriver.TryBeginMotionTemplate`, `ManifestationDirector.Update` |
-| Silah pasifleri / küre / top | `Game/Skills/Weapons/WeaponPassiveRuntime.cs`, `Game/Skills/Weapons/OrbController.cs`, `Game/Skills/Weapons/CannonBlast.cs`, `Game/Skills/ManifestationDirector.zWeaponServices.cs` | `WeaponPassiveRuntime.HitMods`, `OrbController.TryPlace`, `CannonBlast.TryCannonBlast` |
-| Kalıp teslim kuyruğu | `Game/Skills/Motion/TemplateDeliveryRuntime.cs`, `Game/Skills/ManifestationDirector.zMotionServices.cs` | `TemplateDeliveryRuntime.ArmTemplateDelivery` |
-| Mermi silme | `Game/Skills/Projectiles/ProjectileEraser.cs`, `Game/Skills/ManifestationDirector.Projectiles.cs` | `ProjectileEraser.TickProjectileErase`, `ManifestationDirector.BindProjectiles` |
+| Skill atma — çözüm | `Core/Grammar/SkillMotor.cs`, `Game/Data/SkillMotorLoader.cs`, `Game/Data/SliceGrammarLoader.cs` | `SkillMotor.Resolve`, `SkillMotor.ResolveWords`, `SkillMotorLoader.Load` |
+| Skill atma — yürütme | `App/Casting/CastPipeline.cs`, `Game/Skills/RuleEngineV4SentenceHost.cs` (partial'lar), `Game/Skills/RuleEngineV4/RuleEngineV4CastHost.cs` | `CastPipeline.RunSkill`, `CastPipeline.RunBasic`, `RuleEngineV4SentenceHost.OnSentenceCompleted` |
+| Skill atma — görsel/VFX | `Game/Skills/Presentation/SkillPresentation.cs`, `Game/Skills/RuleEngineV4/RuleEngineV4SkillAnimBridge.cs`, `Game/Actors/MotionTemplateBodyHost.cs`, `Game/Vfx/FeelVfx.cs` | `SkillPresentation`, `RuleEngineV4SkillAnimBridge`, `MotionTemplateBodyHost.TickMotion` |
+| Silah pasifleri / küre / top | `Game/Skills/Weapons/WeaponPassiveRuntime.cs`, `Game/Skills/Weapons/OrbController.cs`, `Game/Skills/Weapons/CannonBlast.cs` | `WeaponPassiveRuntime.HitMods`, `OrbController.TryPlace`, `CannonBlast.TryCannonBlast` |
+| Kalıp teslim kuyruğu | `Game/Skills/Motion/TemplateDeliveryRuntime.cs`, `Game/Actors/MotionTemplateBodyHost.cs` | `TemplateDeliveryRuntime.ArmTemplateDelivery` |
+| Mermi silme | `Game/Skills/Projectiles/ProjectileEraser.cs`, `Game/Skills/RuleEngineV4/RuleEngineV4CastHost.cs` | `ProjectileEraser.TickProjectileErase` |
 | Rün / cümle grameri | `Core/Element/Rune.cs`, `Core/Element/RuneLoadout.cs`, `Core/Grammar/RuneManager.cs`, `Core/Input/HexagonLayout.cs`, `Core/Input/JumpKind.cs` | `RuneManager.TrySelect`, `SentenceEngine` |
-| Skill verisi (JSON) | `unity/Assets/Resources/RuleEngineV4/slice-sentence-grammar.json`, `Core/Data/ElementSystemDocument.cs` | `ElementSystemDocument.Parse`, `SkillMotor.FromDocument`, `SliceCombatBootstrap` |
-| JSON mapper'lar | `Core/Boss/BossEncounterMapper.cs`, `Core/Data/VfxBindingMapper.cs`, `Core/Data/ElementSystemHeader.cs`, `Core/Data/ElementSystemDocument.cs`, `Core/Grammar/SkillEngineModifiers.cs` | `BossEncounterMapper.TryParseHud`, `VfxBindingMapper.TryParse`, `ElementSystemHeader.TryParse`, `ElementSystemDocument.Parse` |
+| Skill verisi | `unity/Assets/Resources/RuleEngineV4/kural-motoru-v4.json`, `Core/RuleEngineV4/SliceGrammarDefaults.cs`, `Core/Data/GrammarJsonDocument.cs` | `SliceGrammarDefaults.BuildGrammarJson`, `SkillMotor.FromJson`, `SliceCombatBootstrap` |
+| JSON mapper'lar | `Core/Boss/BossEncounterMapper.cs`, `Core/Data/VfxBindingMapper.cs`, `Core/Data/GrammarJsonDocument.cs`, `Core/Grammar/SkillEngineModifiers.cs` | `BossEncounterMapper.TryParseHud`, `VfxBindingMapper.TryParse`, `GrammarJsonDocument.Parse` |
 | Hareket kalıbı — Core | `Core/Motion/MotionTemplateRunner.cs`, `Core/Motion/MotionTemplateCatalog.cs`, `Core/Motion/PositionOwnership.cs` | `MotionTemplateRunner.Tick`, `PositionOwnership.Prepare` |
 | Hareket kalıbı — Game | `Game/Actors/MotionTemplateBodyHost.cs`, `docs/motion-templates.json` (üretim: `tools/build-motion-templates.py`) | `MotionTemplateBodyHost.TickMotion` |
 | Hasar / kritik | `Core/Damage/DamagePipeline.cs`, `Core/Damage/CritSystem.cs`, `Core/Damage/ClosingDamageMath.cs` | `DamagePipeline.Resolve` |

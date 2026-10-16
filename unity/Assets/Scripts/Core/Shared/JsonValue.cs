@@ -57,6 +57,16 @@ namespace Dovus.Core.Shared
 
         public bool Has(string field) => Kind == JsonKind.Object && _obj.ContainsKey(field);
 
+        /// <summary>Nesne kökünde alan yaz (parse edilmiş ağaçta yerinde güncelleme).</summary>
+        public void SetField(string field, JsonValue value)
+        {
+            if (Kind != JsonKind.Object)
+                throw new InvalidOperationException("JsonValue.SetField yalnızca nesne kökünde.");
+            _obj[field] = value ?? Null;
+        }
+
+        public static JsonValue Number(double n) => Of(n);
+
         /// <summary>
         /// target_behaviors gibi alanlar sürümden sürüme şekil değiştiriyor: bazen
         /// düz string ("kendine_topla"), bazen {"read_as": "Kendine topla"} nesnesi.

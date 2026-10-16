@@ -107,7 +107,7 @@ namespace Dovus.Game.Skills
             motorForStates?.BindPlayerStates(_playerStates);
             _slotPassives = new SlotPassiveDirector();
             _slotPassiveNeedsWeapon = false;
-            if (TrySliceDocument(out ElementSystemDocument slotDoc))
+            if (TrySliceDocument(out GrammarJsonDocument slotDoc))
                 _slotPassiveNeedsWeapon = PassiveSlotPolicy.RequiresWeaponCompatibility(slotDoc);
             CastSession.ClosingChainBonus = 1f;
             if (_playerStatus != null)

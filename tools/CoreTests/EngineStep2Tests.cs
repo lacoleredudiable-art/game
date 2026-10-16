@@ -25,7 +25,7 @@ public class EngineStep2Tests
     public void Load()
     {
         DesignWarnings.ResetForTests();
-        _json = File.ReadAllText(JsonPath());
+        _json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         _motor = SkillMotor.FromJson(_json);
     }
 
@@ -199,10 +199,4 @@ public class EngineStep2Tests
         }
     }
 
-    static string JsonPath()
-    {
-        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        Assert.That(File.Exists(path), Is.True, path);
-        return path;
-    }
 }

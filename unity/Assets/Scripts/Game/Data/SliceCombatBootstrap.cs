@@ -1,12 +1,14 @@
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Presentation;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Assets;
+using Dovus.Game.Skills.RuleEngineV4;
 using UnityEngine;
 
 namespace Dovus.Game.Data
 {
-    /// <summary>Dilim: cümle grameri + silahlar; element-sistemi.json kullanılmaz.</summary>
+    /// <summary>Dilim: gramer bellekten; tek dış JSON kural-motoru-v4.json.</summary>
     public static class SliceCombatBootstrap
     {
         static string _json;
@@ -17,8 +19,13 @@ namespace Dovus.Game.Data
             {
                 if (_json != null)
                     return _json;
-                TextAsset asset = AssetLoader.Load<TextAsset>(SliceSentenceGrammarLoader.ResourcePath, null);
-                _json = asset != null ? asset.text : string.Empty;
+                TextAsset v4 = AssetLoader.Load<TextAsset>(RuleEngineV4CatalogAccess.JsonResource, null);
+                if (v4 == null || string.IsNullOrWhiteSpace(v4.text))
+                {
+                    _json = string.Empty;
+                    return _json;
+                }
+                _json = SliceGrammarDefaults.BuildGrammarJson(v4.text);
                 return _json;
             }
         }
@@ -31,13 +38,9 @@ namespace Dovus.Game.Data
             motor = null;
             equipment = null;
             animations = new AnimationDatabase();
-            string json = GrammarJson;
-            if (string.IsNullOrWhiteSpace(json))
+            if (!SliceGrammarLoader.TryLoad(out motor))
                 return false;
-            motor = SkillMotor.FromJson(json);
-            if (!motor.IsV61)
-                return false;
-            equipment = EquipmentCatalog.FromJson(json);
+            equipment = EquipmentCatalog.FromJson(GrammarJson);
             return true;
         }
     }

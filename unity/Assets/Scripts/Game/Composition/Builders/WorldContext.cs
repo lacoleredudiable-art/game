@@ -95,7 +95,7 @@ namespace Dovus.Game.Composition.Builders
         public RuneManager RuneManager;
         public RuneLoadout RuneLoadout;
         public EquipmentCatalog SliceEquipment;
-        public ElementSystemAssetCatalog AssetCatalog;
+        public SliceRuntimeAssetCatalog AssetCatalog;
         public SkillFactory SkillFactory;
         public EquipmentItem EquippedWeapon;
         public EquipmentBonusResolver EquipmentBonus;

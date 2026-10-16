@@ -4,14 +4,12 @@ using UnityEngine;
 
 namespace Dovus.Game.Data
 {
-    /// <summary>
-    /// Resources/RuleEngineV4/slice-sentence-grammar.json → Core SkillMotor (dilim rünleri).
-    /// </summary>
+    /// <summary>kural-motoru-v4.json + SliceGrammarDefaults → Core SkillMotor.</summary>
     public static class SkillMotorLoader
     {
         public static SkillMotor Load()
         {
-            if (SliceSentenceGrammarLoader.TryLoad(out SkillMotor motor))
+            if (SliceGrammarLoader.TryLoad(out SkillMotor motor))
             {
                 DebugConfig.DevLog(
                     $"[JSONLoader] v{motor.Version}: "
@@ -21,8 +19,8 @@ namespace Dovus.Game.Data
             }
 
             Debug.LogError(
-                $"[JSONLoader] Resources/{SliceSentenceGrammarLoader.ResourcePath}.json "
-                + "yok veya geçersiz; skill'ler devre dışı (boş motor).");
+                "[JSONLoader] kural-motoru-v4.json veya dilim grameri yok/geçersiz; "
+                + "skill'ler devre dışı (boş motor).");
             return SkillMotor.CreateEmpty();
         }
     }

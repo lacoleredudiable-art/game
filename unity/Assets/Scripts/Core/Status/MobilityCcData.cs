@@ -29,9 +29,9 @@ namespace Dovus.Core.Status
         public int PoiseStunMs { get; private set; } = 1000;
 
         public static MobilityCcData FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static MobilityCcData FromDocument(ElementSystemDocument doc) =>
+        public static MobilityCcData FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static MobilityCcData FromJsonRoot(JsonValue root)

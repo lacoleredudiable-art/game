@@ -118,7 +118,7 @@ Sürüm ve sayı adları (`V611`, `Weapons10`, `Cw3`) tip adlarından kalkar; s�
 3. BossDirector (1.154): boss AI Unity tarafında
 4. PrototypeBootstrap (922): 77 sınıfa bağlı
 5. PrototypeTuning: 243 ayar, 39 dosya bağımlı
-6. (eski) element-sistemi.json kaldırıldı; dilim grameri tek kaynak
+6. element-sistemi.json ve slice-sentence-grammar.json kaldırıldı; sayılar `kural-motoru-v4.json`, dilim prose/skills `SliceGrammarDefaults` (bellek)
 ### Katman / izolasyon
 7. Game katmansız: 132 dosya tek klasör/namespace; 120 sınıftan 54'ü döngüsel
 8. Core içi döngüler: Combat↔Status, Equipment↔Grammar
@@ -193,7 +193,7 @@ Tek kavram haritası: JSON katalog → çözülmüş cast → yürütme planı. 
 
 ```mermaid
 flowchart LR
-  JSON["slice-sentence-grammar.json"]
+  JSON["kural-motoru-v4.json\n+ SliceGrammarDefaults"]
   Catalog["SkillCatalogEntry\n(skills.by_verb satırı)"]
   Motor["SkillMotor.Resolve"]
   Resolution["SkillResolution\n(bir cast'in çözülmüş hali)"]

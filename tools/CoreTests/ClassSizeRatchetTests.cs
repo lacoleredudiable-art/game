@@ -28,6 +28,7 @@ public sealed class ClassSizeRatchetTests
         ["ActorView"] = 658,
         ["LivingEffectView"] = 671,
         ["StatusBoard"] = 632,
+        ["SliceGrammarDefaults"] = 1871,
     };
 
     static Dictionary<string, int> MeasureTotals()

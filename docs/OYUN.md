@@ -12,10 +12,10 @@ Sol joystick hareket. Sağ altıgende ilk nokta fiil, ikinci nokta (en fazla bir
 
 | Konu | Değer | Kaynak |
 |------|-------|--------|
-| Kombo üst sınırı (rün) | **2** (fiil + 1 sıfat) | `slice-sentence-grammar.json` → `combo_system.current_max_length` → `SkillMotor` / `HexagonInputController` |
+| Kombo üst sınırı (rün) | **2** (fiil + 1 sıfat) | `kural-motoru-v4.json` + `SliceGrammarDefaults` → `combo_system.current_max_length` → `SkillMotor` / `HexagonInputController` |
 | Hasar/can ölçeği | ×4000 (`CombatScale.DamageAndHp`) | `global_rules.*.max_hp` ham → oyun canı |
-| Oyuncu max can | **400,000** (ham 100 × 4000) | `BossCombatProfile` / dilim grameri |
-| Boss max can | **88,000,000** (ham 22000 × 4000) | aynı |
+| Oyuncu max can | **4,000,000** (ham 1000 × 4000) | `BossCombatProfile` / dilim grameri |
+| Boss max can | **60,000,000** (ham 15000 × 4000) | aynı |
 | Arena yarıçapı | **50 m** (çap 100 m) | `Prototype.unity` `ArenaHalfSizeM` (kod yedeği 25 m) |
 | Dodge hakları | **2** | `DodgeTuning.MaxCharges` |
 | Dodge dolum | **6 sn**/hak | `DodgeTuning.ChargeRechargeMs` |

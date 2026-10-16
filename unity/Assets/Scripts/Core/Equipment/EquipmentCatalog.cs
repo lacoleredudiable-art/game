@@ -31,10 +31,10 @@ namespace Dovus.Core.Equipment
         {
             if (string.IsNullOrWhiteSpace(json))
                 throw new ArgumentException("JSON boş.", nameof(json));
-            return FromDocument(ElementSystemDocument.Parse(json));
+            return FromDocument(GrammarJsonDocument.Parse(json));
         }
 
-        public static EquipmentCatalog FromDocument(ElementSystemDocument doc) =>
+        public static EquipmentCatalog FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static EquipmentCatalog FromJsonRoot(JsonValue root)

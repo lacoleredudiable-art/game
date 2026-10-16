@@ -285,7 +285,7 @@ namespace Dovus.Game.Composition.Builders
 
         static void VerifyBindingPipeline(
             EquipmentCatalog equipment,
-            ElementSystemAssetCatalog assets,
+            SliceRuntimeAssetCatalog assets,
             RuneManager runes,
             SkillFactory factory,
             EquipmentItem weapon)

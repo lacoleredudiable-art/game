@@ -64,9 +64,7 @@ public class RootAndSkillNumberTests
     [Test]
     public void SkillNumbers_ComeFromCanonicalJson()
     {
-        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        Assert.That(File.Exists(path), Is.True, path);
-        string json = File.ReadAllText(path);
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         JsonValue root = MiniJson.Parse(json);
         var catalog = SkillNumberCatalog.FromJson(json);
 

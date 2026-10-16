@@ -22,7 +22,7 @@ public class AttackFacingAndRangeTests
     [Test]
     public void BasicStrikeRange_ComesFromVerbHitbox_NotTheOldFallback()
     {
-        string json = File.ReadAllText(JsonPath());
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         var catalog = SkillNumberCatalog.FromJson(json);
         var boxes = VerbExecutionData.FromJson(json);
         Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec spec), Is.True);
@@ -56,7 +56,7 @@ public class AttackFacingAndRangeTests
     [Test]
     public void Verb3And7_WrittenSizeIsWidth_GameplayRadiusIsHalf()
     {
-        var boxes = VerbExecutionData.FromJson(File.ReadAllText(JsonPath()));
+        var boxes = VerbExecutionData.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
         Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec jab), Is.True);
         Assert.That(jab.SizeBIsWidth, Is.False, "fiil 1 Play'de yarıçap olarak doğrulandı");
         Assert.That(HitboxSizing.Resolve(jab, 1f, 1f).RadiusM, Is.EqualTo(0.5f).Within(0.001f));
@@ -96,10 +96,4 @@ public class AttackFacingAndRangeTests
             "dash seçili hedefe yapışmaz");
     }
 
-    static string JsonPath()
-    {
-        string path = Path.GetFullPath(SliceGrammarTestPaths.SliceGrammarJsonPath());
-        Assert.That(File.Exists(path), Is.True, path);
-        return path;
-    }
 }

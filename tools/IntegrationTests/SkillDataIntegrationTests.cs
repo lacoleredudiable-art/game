@@ -11,14 +11,14 @@ namespace IntegrationTests;
 [TestFixture]
 public class SkillDataIntegrationTests
 {
-    static string LoadSliceJson() => File.ReadAllText(RepoPaths.SliceSentenceGrammarJson);
+    static string LoadSliceJson() => RepoPaths.BuildSliceGrammarJson();
 
     static readonly int[] SliceRunes = { 1, 2, 3, 4, 6, 9 };
 
     [Test]
     public void SliceGrammar_ResourcesCopy_IsReadable()
     {
-        Assert.That(File.Exists(RepoPaths.SliceSentenceGrammarJson), Is.True);
+        Assert.That(File.Exists(RepoPaths.RuleEngineV4Json), Is.True);
         SkillMotor motor = SkillMotor.FromJson(LoadSliceJson());
         Assert.That(motor.IsV61, Is.True);
         Assert.That(motor.RuneCount, Is.EqualTo(SliceRunes.Length));
@@ -28,7 +28,7 @@ public class SkillDataIntegrationTests
     public void SliceSkills_ResolveWithJsonDefinedStringFields()
     {
         SkillMotor motor = SkillMotor.FromJson(LoadSliceJson());
-        JsonLexicon lex = JsonLexicon.FromFile(RepoPaths.SliceSentenceGrammarJson);
+        JsonLexicon lex = JsonLexicon.FromJson(LoadSliceJson());
 
         var skillIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (int verb in SliceRunes)
@@ -84,9 +84,16 @@ public class SkillDataIntegrationTests
             "hitbox", "action", "cast_mobility", "family", "target_mode", "damage_type"
         };
 
-        public static JsonLexicon FromFile(string path)
+        public static JsonLexicon FromJson(string json)
         {
-            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            using var doc = JsonDocument.Parse(json);
+            return FromDocument(doc);
+        }
+
+        public static JsonLexicon FromFile(string path) => FromJson(File.ReadAllText(path));
+
+        static JsonLexicon FromDocument(JsonDocument doc)
+        {
             Walk(doc.RootElement);
             foreach (int id in SliceRunes)
             {
