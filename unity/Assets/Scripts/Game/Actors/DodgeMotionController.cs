@@ -38,6 +38,7 @@ namespace Dovus.Game.Actors
 
         Vector3 _startPos;
         Vector3 _dir;
+        Vector3 _hitNormal;
         Vector3 _glideExtra;
         int _pressMs = int.MinValue;
         int _promotedMs = int.MinValue;
@@ -134,9 +135,10 @@ namespace Dovus.Game.Actors
             {
                 StepSlide(worldMs, distanceM);
                 LastAppliedRatio = ratio;
-                // Kayma bütçesi bitip karakter durduysa konum sahipliği bırakılır: yürüme hemen açılır
-                // (i-frame pencere sonuna dek sürer). Eskiden 0,66 s boyunca donuyordu.
-                IsDisplacing = _slide.Active;
+                // Kayma bütçesi bitip karakter durduysa, çubuk engelden uzağa bakınca konum sahipliği bırakılır:
+                // yürüme hemen açılır (i-frame pencere sonuna dek sürer; eskiden 0,66 s donuyordu). Çubuk engele
+                // bakarken sahiplik sürer: yürüme EdgeGapM payını yiyip yüzeye yapışmaz (O-4.9).
+                IsDisplacing = _slide.Active || !StickLeavesObstacle();
                 MaybeEmitAfterimage(ratio);
                 return;
             }
@@ -156,7 +158,7 @@ namespace Dovus.Game.Actors
             if (_dir.sqrMagnitude > 0.0001f)
                 transform.rotation = Quaternion.LookRotation(_dir, Vector3.up);
 
-            IsDisplacing = !_slideMode || _slide.Active;
+            IsDisplacing = !_slideMode || _slide.Active || !StickLeavesObstacle();
             MaybeEmitAfterimage(ratio);
         }
 
@@ -208,26 +210,37 @@ namespace Dovus.Game.Actors
 
         Vector3 ResolveDirection(Vector3 face)
         {
-            Vector3 stick = Vector3.zero;
-            if (_input != null)
-            {
-                Vector2 move = _input.MoveDirection;
-                if (move.sqrMagnitude > DodgeMotionControllerDefaults.PlanarMoveEpsilonSqr)
-                {
-                    stick = new Vector3(move.x, 0f, move.y);
-                    if (_follow != null)
-                        stick = Quaternion.Euler(0f, _follow.MovementYawDeg, 0f) * stick;
-                }
-            }
-
+            Vector3 stick = StickWorld();
             DodgeDirection.Resolve(stick.x, stick.z, face.x, face.z, out float x, out float z);
             return new Vector3(x, 0f, z);
+        }
+
+        /// <summary>Çubuğun dünya düzlemindeki yönü (kamera yaw'ıyla); çubuk boşsa sıfır.</summary>
+        Vector3 StickWorld()
+        {
+            if (_input == null)
+                return Vector3.zero;
+            Vector2 move = _input.MoveDirection;
+            if (move.sqrMagnitude <= DodgeMotionControllerDefaults.PlanarMoveEpsilonSqr)
+                return Vector3.zero;
+            Vector3 stick = new Vector3(move.x, 0f, move.y);
+            return _follow != null ? Quaternion.Euler(0f, _follow.MovementYawDeg, 0f) * stick : stick;
+        }
+
+        /// <summary>Engelde duran dodge'da çubuk engelden uzağa (ya da yüzeye teğet) bakıyor mu.</summary>
+        bool StickLeavesObstacle()
+        {
+            if (_hitNormal.sqrMagnitude < DodgeMotionControllerDefaults.PlanarMoveEpsilonSqr)
+                return false;
+            Vector3 stick = StickWorld();
+            return stick.sqrMagnitude > 0f && Vector3.Dot(stick, _hitNormal) >= 0f;
         }
 
         void ResetSlide()
         {
             _slide.Reset();
             _slideMode = false;
+            _hitNormal = Vector3.zero;
         }
 
         Vector3 Place(Vector3 pos) => Place(pos, out _, out _);

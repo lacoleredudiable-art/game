@@ -21,6 +21,7 @@ namespace Dovus.Game.Actors
                 _dir.x, _dir.z, normal.x, normal.z, at.x, at.z, remaining, _tuning, PointFull);
             // Başlamasa da serbest yola dönülmez: yol engelde bitti (hak yine yanar, i-frame sürer; iade yok: Mustafa 2026-10-16 Q16).
             _slideMode = true;
+            _hitNormal = new Vector3(normal.x, 0f, normal.z).normalized;
             _simMs = worldMs;
             _pathM = distanceM * (ratio - _rollRatioBase);
             // Motor engelde kısa bir payla (MoveStopInsetM) durdurur; kayma EdgeGapM payıyla başlar.
@@ -29,6 +30,7 @@ namespace Dovus.Game.Actors
                 transform.position = new Vector3(cx, transform.position.y, cz);
                 at = transform.position;
                 _slide.Rebase(cnx, cnz);
+                _hitNormal = new Vector3(cnx, 0f, cnz).normalized;
             }
 
             if (started)
