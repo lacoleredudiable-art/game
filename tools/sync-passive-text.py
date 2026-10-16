@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dilim gramerindeki pasif metinlerini doğrular (SliceGrammarPayload + kural-motoru-v4)."""
+"""Dilim gramerindeki pasif metinlerini doğrular (slice-grammar-catalog + kural-motoru-v4)."""
 from __future__ import annotations
 
 import sys

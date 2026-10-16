@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import base64
-import gzip
 import json
 import re
 import sys
@@ -13,8 +11,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCENE_UNITY = ROOT / "unity" / "Assets" / "Scenes" / "Prototype.unity"
 RULE_V4 = ROOT / "unity" / "Assets" / "Resources" / "RuleEngineV4" / "kural-motoru-v4.json"
-SCAFFOLD_B64 = ROOT / "tools" / "slice-grammar-scaffold.b64"
 COMBO_MAX = 2
+
+sys.path.insert(0, str(ROOT / "tools"))
+from slice_grammar_doc import load_slice_grammar_document  # noqa: E402
 OUT_MD = ROOT / "docs" / "OYUN.md"
 
 GEN_BEGIN = "<!-- gen:begin -->"
@@ -61,29 +61,6 @@ def load_scene_fields(text: str) -> tuple[str, float]:
 
 def scaled_hp(raw: float, scale: float) -> int:
     return int(round(raw * scale))
-
-
-def _load_scaffold() -> dict:
-    raw = gzip.decompress(base64.b64decode(_read_text(SCAFFOLD_B64).strip()))
-    return json.loads(raw.decode("utf-8"))
-
-
-def load_slice_grammar_document() -> dict:
-    """SliceGrammarMotorScaffold + kural-motoru-v4 scale (SliceGrammarDefaults ile aynı bağlama)."""
-    motor = json.loads(json.dumps(_load_scaffold()))
-    v4 = json.loads(_read_text(RULE_V4))
-    scale = v4["scale"]
-    motor["combo_system"]["current_max_length"] = COMBO_MAX
-    gr = motor["global_rules"]
-    gr["player_stats"]["max_hp"] = scale["player_max_hp"]
-    gr["player_stats"]["max_mana"] = scale["mana_pool"]
-    gr["boss_stats_default"]["max_hp"] = scale["boss_max_hp"]
-    gr["boss_stats_default"]["poise_bar"] = scale["boss_poise_bar"]
-    gr["resource_system"]["max_mana"] = scale["mana_pool"]
-    gr["resource_system"]["regen_per_sec"] = scale["mana_regen_per_sec"]
-    gr["cooldown_rules"]["global_cooldown_sec"] = scale["cooldown_sec"]
-    motor["system"]["version"] = "v4-slice-inmemory"
-    return motor
 
 
 def attack_kind_label(kind: str) -> str:
