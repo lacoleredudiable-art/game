@@ -11,12 +11,14 @@ namespace Dovus.Core.Casting
 {
     public static class SkillNumberParser
     {
-        public static SkillNumberCatalog Parse(JsonValue root)
+        public static SkillNumberCatalog Parse(JsonValue root) =>
+            ParseSlice(root, VerbExecutionData.FromJsonRoot(root), MobilityCcData.FromJsonRoot(root));
+
+        public static SkillNumberCatalog ParseSlice(
+            JsonValue root, VerbExecutionData hitboxes, MobilityCcData mobility)
         {
             var catalog = new SkillNumberCatalog();
             JsonValue verbs = root["verb_base"];
-            VerbExecutionData hitboxes = VerbExecutionData.FromJsonRoot(root);
-            MobilityCcData mobility = MobilityCcData.FromJsonRoot(root);
             catalog.RootImmunityMs = mobility.RootImmunityMs;
             catalog.AllySkillRangeM = NeedFloat(
                 root["global_rules"],
@@ -83,29 +85,15 @@ namespace Dovus.Core.Casting
                     radius);
             }
 
-            catalog.ImportCcDurations(ReadCcDurations(root["mobility_cc"]["cc_priority"]));
+            catalog.ImportCcDurations(ReadCcDurations(mobility));
             return catalog;
         }
 
-        static Dictionary<StatusKind, int> ReadCcDurations(JsonValue rows)
+        static Dictionary<StatusKind, int> ReadCcDurations(MobilityCcData mobility)
         {
             var map = new Dictionary<StatusKind, int>();
-            foreach (JsonValue row in rows.AsArray())
-            {
-                if (!StatusKindUtil.TryParse(row["cc"].AsString(), out StatusKind kind)
-                    || kind == StatusKind.None)
-                    continue;
-                if (row["duration_sec"].Kind != JsonKind.Number)
-                {
-                    DesignWarnings.Once(
-                        "mobility_cc.cc_priority." + kind,
-                        "element-sistemi.json CC süresi yok (" + kind + "); StatusTuning yedeği kalır.");
-                    continue;
-                }
-
-                map[kind] = (int)Math.Round(row["duration_sec"].AsFloat(0f) * Units.SecToMs);
-            }
-
+            foreach (KeyValuePair<StatusKind, int> kv in mobility.CcDurationsMs)
+                map[kv.Key] = kv.Value;
             return map;
         }
 

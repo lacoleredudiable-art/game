@@ -1,7 +1,6 @@
 using Dovus.App.Casting;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
@@ -18,14 +17,6 @@ namespace Dovus.Game.Skills
 
         internal int FriendlyTargetCap(in SkillResolution skill) => 1;
 
-        void ApplyJsonSelfCast(MechanicPlan plan, float reflectRatio, float windowSec, double now)
-        {
-        }
-
-        void CaptureBuffOverflow(MechanicPlan plan, double now)
-        {
-        }
-
         float ConsumeOverflowBonus(bool isBasicStrike) => 0f;
 
         internal void OnJsonShieldBlocked()
@@ -36,27 +27,11 @@ namespace Dovus.Game.Skills
         {
         }
 
-        void ApplyStolenArmor(MechanicEffect e, List<string> applied)
-        {
-        }
-
-        void ApplyStatusAdd(MechanicEffect e, List<string> applied)
-        {
-        }
-
-        void LiftBoss(List<string> applied)
-        {
-        }
-
         internal void ApplyPurgePower(in SkillResolution skill, int removed)
         {
         }
 
         internal int JsonCleanseCount(SkillResolution skill) => 0;
-
-        internal MechanicPlan MechanicPlanFor(SkillResolution skill) => default;
-
-        static bool HasSelfReflect(MechanicPlan plan) => false;
 
         internal void ShareFriendlyStatuses(in SkillResolution skill, StatusBoard applied)
         {

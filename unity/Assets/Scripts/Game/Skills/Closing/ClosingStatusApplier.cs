@@ -8,7 +8,6 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;

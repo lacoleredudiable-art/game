@@ -1,7 +1,6 @@
 using Dovus.Core.Equipment;
 using Dovus.Core.Tuning;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
@@ -30,7 +29,6 @@ namespace Dovus.Game.Skills.Presentation
         ISentenceDebugSink DebugHud { get; }
         ElementPaintNode? SelectedElementPaint { get; }
         Skill LastFactorySkill { get; }
-        MechanicPlan LastMechanicPlan { get; }
         HashSet<string> MissingAnimationBindings { get; }
 
         string LastAnimationTypeId { set; }

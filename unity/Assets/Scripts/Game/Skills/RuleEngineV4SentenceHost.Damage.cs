@@ -9,7 +9,6 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Data;
-using Dovus.Core.Mechanic;
 using Dovus.Game.Actors;
 using Dovus.Game.Data;
 using Dovus.Game.Team;
@@ -166,10 +165,10 @@ namespace Dovus.Game.Skills
                 taken = _bossStatus.Board.IncomingDamageMult * TeamHub.BossIncomingMult;
                 shield = _bossStatus.Board.ShieldRemaining;
             }
-            if (!skill.IsEmpty && JsonEffectRules.PiercesDefenses(MechanicPlanFor(skill)?.Body))
+            if (skillIgnoresArmor)
             {
-                shield = 0f;                  // delici: boss kalkanını deler
-                taken = Mathf.Max(taken, 1f); // ve hasar azaltmasını yok sayar
+                shield = 0f;
+                taken = Mathf.Max(taken, 1f);
             }
 
             float poise = 0f;

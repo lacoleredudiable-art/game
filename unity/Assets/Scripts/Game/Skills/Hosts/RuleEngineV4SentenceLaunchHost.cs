@@ -6,7 +6,6 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Hud;
 using Dovus.Core.Input;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -53,7 +52,6 @@ namespace Dovus.Game.Skills.Hosts
         public VerbExecutionData VerbData => _md._verbData;
         public ElementPaintNode? SelectedElementPaint => _md.SelectedElementPaint;
         public Skill LastFactorySkill { get => _md.LastFactorySkill; set => _md.LastFactorySkill = value; }
-        public MechanicPlan LastMechanicPlan => default;
         public ISentenceDebugSink DebugHud => _md._debugHud;
 
         public bool TryTakeFreeMana() => _md.TryTakeFreeMana();

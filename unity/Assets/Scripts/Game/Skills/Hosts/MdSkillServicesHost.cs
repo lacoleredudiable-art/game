@@ -7,7 +7,6 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Hud;
 using Dovus.Core.Input;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Core.Passives;
 using Dovus.Core.Presentation;

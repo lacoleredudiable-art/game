@@ -9,7 +9,6 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Shared;
 
 namespace Dovus.App.Casting
@@ -57,7 +56,7 @@ namespace Dovus.App.Casting
                 if (port.HasLivingLogic(ctx))
                     port.ApplyBossClosingBasic(ctx);
                 basicDealt = port.ApplyBasicStrikeDamage(
-                    ctx, JsonEffectRules.BasicSubHitScale(basicHits));
+                    ctx, BasicStrikeRules.SubHitScale(basicHits));
                 port.ScheduleBasicSubHits(ctx, basicHits, basicReach);
                 port.ApplyBasicExtras(basicDealt, basicHits);
                 port.TryLandWeaponStunBasic();

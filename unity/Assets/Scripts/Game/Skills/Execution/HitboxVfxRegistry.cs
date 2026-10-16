@@ -1,4 +1,3 @@
-using Dovus.Core.Mechanic;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,7 +9,7 @@ namespace Dovus.Game.Skills.Execution
     /// <summary>
     /// hitbox_vfx.vfx_prefab_naming registry. Art prefabı yoksa geometriyi element rengiyle
     /// görünür kılan collider'sız, hafif primitive üretir. Primitive'in üstüne gramer planından
-    /// doğan reçete oynatılır (<see cref="ComposedSkillVfxView"/>); fiil maddesi bağlı değilse teslim
+    /// Fiil maddesi bağlı değilse teslim
     /// yolu giydirmesine düşer (<c>Delivery/{executor}/{şekil}</c> → <c>Delivery/{executor}</c>
     /// → <c>Delivery/{şekil}</c>). Giydirme varsa primitive yalnız hitbox/collider taşıyıcısı kalır.
     /// </summary>

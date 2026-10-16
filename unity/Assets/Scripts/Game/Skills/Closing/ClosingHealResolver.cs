@@ -10,7 +10,7 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Game.Actors;
 using Dovus.Game.Data;
-using Dovus.Core.Mechanic;
+using Dovus.App.Casting;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.Closing
@@ -104,7 +104,7 @@ namespace Dovus.Game.Skills.Closing
                 return;
             }
 
-            JsonEffectRules.SelectHealTargets(
+            ClosingHealRules.SelectHealTargets(
                 allyNeeds,
                 selfNeeds,
                 allyNeeds ? _host.Ally.Ratio : 1f,

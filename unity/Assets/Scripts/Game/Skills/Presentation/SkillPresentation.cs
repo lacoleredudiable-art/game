@@ -1,7 +1,6 @@
 using Dovus.Core.Grammar;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Game.Actors;
 using Dovus.Game.Audio;
@@ -66,12 +65,6 @@ namespace Dovus.Game.Skills.Presentation
             string bangNote = string.IsNullOrEmpty(adj)
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
-            MechanicPlan mechanic = _host.LastMechanicPlan;
-            if (mechanic != null && string.Equals(mechanic.SkillId, skill.Identity.Id, StringComparison.Ordinal))
-            {
-                string title = MechanicDescriber.ShortTitle(mechanic);
-                bangNote = string.IsNullOrEmpty(bangNote) ? title : title + " | " + bangNote;
-            }
             _host.DebugHud?.NoteSkillBang(paintedName, bangNote);
             SkillFeel.CameraKick(skill.Presentation.VerbFamily, _host.Camera, _host.Combat?.Feel);
             _host.SyncVisualDelivery();

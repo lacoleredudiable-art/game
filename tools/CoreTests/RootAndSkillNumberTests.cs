@@ -66,7 +66,7 @@ public class RootAndSkillNumberTests
     {
         string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         JsonValue root = MiniJson.Parse(json);
-        var catalog = SkillNumberCatalog.FromJson(json);
+        var catalog = SliceGrammarTestPaths.SliceSkillNumbers();
 
         float damage = root["verb_base"]["1"]["base_damage"].AsFloat(0f);
         float cooldown = root["verb_base"]["6"]["base_cooldown"].AsFloat(0f);
@@ -91,7 +91,8 @@ public class RootAndSkillNumberTests
         var tuning = new StatusTuning();
         int oldRoot = tuning.RootMs;
         SkillNumberTuningApplier.ApplyCcDurations(catalog, tuning);
-        int jsonRootMs = (int)System.Math.Round(root["mobility_cc"]["cc_priority"].AsArray()[1]["duration_sec"].AsFloat(0f) * 1000.0);
+        MobilityCcData mobility = SliceGrammarTestPaths.SliceMobilityCc();
+        int jsonRootMs = mobility.CcDurationsMs[StatusKind.Root];
         Assert.That(tuning.RootMs, Is.EqualTo(jsonRootMs));
         Assert.That(tuning.RootMs, Is.Not.EqualTo(oldRoot));
 

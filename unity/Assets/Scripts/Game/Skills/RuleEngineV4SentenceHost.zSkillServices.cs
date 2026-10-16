@@ -11,7 +11,6 @@ using Dovus.Core.Shared;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;

@@ -17,8 +17,6 @@ namespace Dovus.Core.RuleEngineV4
             root.SetField("adjective_mods", BuildAdjectiveMods(catalog, sliceRunes));
             root.SetField("weapons", BuildWeapons(catalog, sliceRunes));
             root.SetField("skills", BuildSkills(catalog, sliceRunes));
-            root.SetField("hitbox_vfx", BuildHitboxVfx(catalog, sliceRunes));
-            root.SetField("mobility_cc", BuildMobilityCc(catalog, sliceRunes));
             SliceGrammarScaffold.BindMainClass(root, sliceRunes);
             SliceGrammarDefaults.BindScale(root, catalog.Scale);
             return root;
@@ -96,7 +94,7 @@ namespace Dovus.Core.RuleEngineV4
             return JsonValue.Of(map);
         }
 
-        static JsonValue BuildAdjectiveMods(RuleEngineV4Catalog catalog, IReadOnlyList<int> sliceRunes)
+        internal static JsonValue BuildAdjectiveMods(RuleEngineV4Catalog catalog, IReadOnlyList<int> sliceRunes)
         {
             RuleEngineV4Globals g = catalog.Globals;
             var map = new Dictionary<string, JsonValue>(StringComparer.Ordinal);
@@ -303,7 +301,7 @@ namespace Dovus.Core.RuleEngineV4
             return JsonValue.Of(merged);
         }
 
-        static JsonValue BuildHitboxVfx(RuleEngineV4Catalog catalog, IReadOnlyList<int> sliceRunes)
+        internal static JsonValue BuildHitboxVfx(RuleEngineV4Catalog catalog, IReadOnlyList<int> sliceRunes)
         {
             var fiil = new Dictionary<string, JsonValue>(StringComparer.Ordinal);
             var sifat = new Dictionary<string, JsonValue>(StringComparer.Ordinal);
@@ -354,7 +352,7 @@ namespace Dovus.Core.RuleEngineV4
             });
         }
 
-        static JsonValue BuildMobilityCc(RuleEngineV4Catalog catalog, IReadOnlyList<int> sliceRunes)
+        internal static JsonValue BuildMobilityCc(RuleEngineV4Catalog catalog, IReadOnlyList<int> sliceRunes)
         {
             var fiilMob = new Dictionary<string, JsonValue>(StringComparer.Ordinal);
             var sifatMob = new Dictionary<string, JsonValue>(StringComparer.Ordinal);

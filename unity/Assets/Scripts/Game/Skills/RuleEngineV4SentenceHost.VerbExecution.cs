@@ -12,7 +12,6 @@ using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Shared;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
@@ -127,10 +126,7 @@ namespace Dovus.Game.Skills
             float buff = engine.BuffDamage(0f) + engine.SelfDamageBuff(0f);
             buff = WeaponPassiveRules.ScaleFriendlyMagnitude(buff, friendly);
             float buffSec = engine.BuffDurationSec(0f);
-            MechanicPlan mechanicPlan = MechanicPlanFor(skill);
-            CaptureBuffOverflow(mechanicPlan, now);
-            // 8-9 hasar_buff koruyucu tetiktedir; kalıp/cast anında bir daha yazılmaz.
-            if (buff > 0f && buffSec > 0f && GuardTriggerDelivery.AllowImmediate(mechanicPlan, "hasar_buff"))
+            if (buff > 0f && buffSec > 0f)
             {
                 SkillWorld.SelfDamageBuff = buff;
                 SkillWorld.SelfDamageBuffUntilMs = now + (buffSec + lifetimeAdd) * Units.SecToMs;
@@ -139,16 +135,8 @@ namespace Dovus.Game.Skills
             float reflect = engine.ReflectRatio(0f);
             reflect = WeaponPassiveRules.ScaleFriendlyMagnitude(reflect, friendly);
             float reflectSec = engine.ReflectDurationSec(0f);
-            if (reflect > 0f && reflectSec > 0f && _playerStatus != null && HasSelfReflect(mechanicPlan))
+            if (reflect > 0f && reflectSec > 0f && _playerStatus != null)
                 _playerStatus.GrantReflect(reflect, now + (reflectSec + lifetimeAdd) * Units.SecToMs);
-
-            MechanicEffect absorb = mechanicPlan?.Effects.Find(e => e.Stat == "em");
-            if (absorb != null && absorb.Amount > 0)
-            {
-                _emHealRatio = (float)absorb.Amount;
-                _emHealUntilMs = now + Mathf.Max(SkillsManifestationDefaults.EmHealMinWindowSec, reflectSec + lifetimeAdd) * Units.SecToMs;
-            }
-            ApplyJsonSelfCast(mechanicPlan, reflect, reflectSec + lifetimeAdd, now);
         }
 
         /// <summary>

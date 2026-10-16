@@ -56,7 +56,7 @@ public class EngineStep2Tests
     public void SlowScalesBossPhasesLikeMovement_AndStunHidesRoot()
     {
         var board = new StatusBoard();
-        board.ConfigureMobilityCc(MobilityCcData.FromJson(_json));
+        board.ConfigureMobilityCc(SliceGrammarTestPaths.SliceMobilityCc());
         board.Apply(StatusKind.Slow, 2000, 0.4f);
         BossAttackGate slowed = BossAttackControl.Evaluate(board, BossAttackMotion.Standing);
         Assert.That(slowed.CanStart, Is.True);
@@ -73,7 +73,7 @@ public class EngineStep2Tests
     public void BossStunDoesNotStackForever_ThenImmunityBlocksReapply()
     {
         var board = new StatusBoard();
-        board.ConfigureMobilityCc(MobilityCcData.FromJson(_json));
+        board.ConfigureMobilityCc(SliceGrammarTestPaths.SliceMobilityCc());
         board.EnableAttackLockImmunity();
         var tuning = new StatusTuning();
         board.Apply(StatusKind.Stun, 1000, 1f);
@@ -186,7 +186,7 @@ public class EngineStep2Tests
         foreach (StatusKind kind in kinds)
         {
             var board = new StatusBoard();
-            board.ConfigureMobilityCc(MobilityCcData.FromJson(_json));
+            board.ConfigureMobilityCc(SliceGrammarTestPaths.SliceMobilityCc());
             float magnitude = kind == StatusKind.Shield ? 10f : 0.5f;
             board.Apply(kind, 1000, magnitude);
             board.Tick(250, tuning);

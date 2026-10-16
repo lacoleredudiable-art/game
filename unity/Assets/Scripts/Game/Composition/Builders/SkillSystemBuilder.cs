@@ -11,6 +11,7 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 using Dovus.Core.Status;
 using Dovus.Game.Assets;
@@ -241,18 +242,20 @@ namespace Dovus.Game.Composition.Builders
                 webFields.RegisterAlly(ctx.AllyDummyController);
             director.ConfigureWeaponCycle(sliceEquipment?.Items);
             string sliceJson = SliceCombatBootstrap.GrammarJson;
-            if (!string.IsNullOrWhiteSpace(sliceJson))
+            TextAsset v4Asset = AssetLoader.Load<TextAsset>(RuleEngineV4CatalogAccess.JsonResource, null);
+            if (!string.IsNullOrWhiteSpace(sliceJson) && v4Asset != null && !string.IsNullOrWhiteSpace(v4Asset.text))
             {
-                SkillNumberCatalog numbers = SkillNumberCatalog.FromJson(sliceJson);
+                RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(v4Asset.text);
+                GrammarJsonDocument grammar = GrammarJsonDocument.Parse(sliceJson);
+                SkillNumberCatalog numbers = SliceCastingFromV4.SkillNumbers(catalog, grammar.Root);
                 SkillNumberTuningApplier.ApplyCcDurations(numbers, combat.Status);
                 SkillNumberTuningApplier.ApplyBasicStrikeRange(numbers, combat.Manifestation);
                 director.ConfigureSkillNumbers(numbers);
                 resource.Bind(numbers.MaxMana, numbers.ManaRegenPerSec, numbers.ManaRegenDelaySec);
                 cooldown.Bind(numbers.GlobalCooldownSec, numbers.MaxConcurrentCasts);
                 director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(sliceJson));
-                director.ConfigureVerbExecution(VerbExecutionData.FromJson(sliceJson));
-                MobilityCcData mobilityCc = MobilityCcData.FromJson(sliceJson);
-                director.ConfigureMobilityCc(mobilityCc);
+                director.ConfigureVerbExecution(SliceCastingFromV4.VerbExecution(catalog));
+                director.ConfigureMobilityCc(SliceCastingFromV4.MobilityCc(catalog));
             }
             view.BindWeaponSwap(director, ctx.Clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();

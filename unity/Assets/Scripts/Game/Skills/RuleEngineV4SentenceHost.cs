@@ -11,7 +11,6 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Core.Portal;
 using Dovus.Core.Presentation;

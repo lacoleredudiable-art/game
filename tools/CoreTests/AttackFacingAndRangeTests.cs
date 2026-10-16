@@ -22,9 +22,8 @@ public class AttackFacingAndRangeTests
     [Test]
     public void BasicStrikeRange_ComesFromVerbHitbox_NotTheOldFallback()
     {
-        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
-        var catalog = SkillNumberCatalog.FromJson(json);
-        var boxes = VerbExecutionData.FromJson(json);
+        var catalog = SliceGrammarTestPaths.SliceSkillNumbers();
+        var boxes = SliceGrammarTestPaths.SliceVerbExecution();
         Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec spec), Is.True);
         float reach = HitboxSizing.Resolve(spec, 1f, 1f).ReachM;
 
@@ -56,7 +55,7 @@ public class AttackFacingAndRangeTests
     [Test]
     public void Verb3_DashLine_WrittenSizeIsWidth_GameplayRadiusIsHalf()
     {
-        var boxes = VerbExecutionData.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
+        var boxes = SliceGrammarTestPaths.SliceVerbExecution();
         Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec jab), Is.True);
         Assert.That(jab.SizeBIsWidth, Is.False, "fiil 1 Play'de yarıçap olarak doğrulandı");
         Assert.That(HitboxSizing.Resolve(jab, 1f, 1f).RadiusM, Is.EqualTo(0.5f).Within(0.001f));
