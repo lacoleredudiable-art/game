@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Dovus.Game.Vfx
 {
     /// <summary>
-    /// Yol bağımsız VFX girişleri: eski MotionTemplateDriver ve (birleşince) kural_motoru_v4
+    /// Yol bağımsız VFX girişleri: kural_motoru_v4 komutları ve sunum katmanı.
     /// aynı API'yi çağırır. Bayrak/path bilmez — yalnız çözülmüş skill + teslim olayları.
     /// </summary>
     public static class RuleDrivenVfxSink

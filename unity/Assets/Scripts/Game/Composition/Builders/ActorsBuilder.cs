@@ -95,7 +95,7 @@ namespace Dovus.Game.Composition.Builders
                 CompositionConstants.BossRadiusM,
                 CompositionConstants.BossHeightM,
                 tuning.Visuals.BossColor);
-            // SkillExecutorController overlap/projectile yolu için gerçek fizik hedefi.
+            // v4 mermi/çarpışma yolu için gerçek fizik hedefi.
             var bossHitCollider = ctx.Boss.AddComponent<CapsuleCollider>();
             bossHitCollider.isTrigger = true;
             VisualAttach.Attach(
