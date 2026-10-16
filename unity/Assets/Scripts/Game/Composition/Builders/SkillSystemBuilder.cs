@@ -144,7 +144,7 @@ namespace Dovus.Game.Composition.Builders
                     alive: () => !ctx.AllyDummyController.IsDown,
                     stealthed: () => ctx.AllyDummyController.Board != null && ctx.AllyDummyController.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
-                        ctx.ManifestationDirector,
+                        RuleEngineV4ManifestationAdapter.Ensure(ctx),
                         ctx.AllyDummyController.transform,
                         raw,
                         ctx.AllyDummyController.ApplyBossDamage));
@@ -159,7 +159,7 @@ namespace Dovus.Game.Composition.Builders
                     alive: () => !ctx.AllyDummy2Controller.IsDown,
                     stealthed: () => ctx.AllyDummy2Controller.Board != null && ctx.AllyDummy2Controller.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
-                        ctx.ManifestationDirector,
+                        RuleEngineV4ManifestationAdapter.Ensure(ctx),
                         ctx.AllyDummy2Controller.transform,
                         raw,
                         ctx.AllyDummy2Controller.ApplyBossDamage));
@@ -227,6 +227,7 @@ namespace Dovus.Game.Composition.Builders
             director.BindSceneRuntime(runtime);
             director.BindLiveRegistries(runtime.Targetables, runtime.SummonExecutors);
             ctx.ManifestationDirector = director;
+            ctx.RuleEngineV4Combat = RuleEngineV4ManifestationAdapter.Bind(director);
             TextAsset motionTemplates = AssetLoader.Load<TextAsset>("ElementSystem/motion-templates", null);
             if (motionTemplates != null && !string.IsNullOrWhiteSpace(motionTemplates.text))
                 director.ConfigureMotionTemplates(MotionTemplateCatalog.FromJson(motionTemplates.text));

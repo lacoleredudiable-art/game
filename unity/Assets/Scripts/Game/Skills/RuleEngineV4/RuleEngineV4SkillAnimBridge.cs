@@ -1,7 +1,6 @@
 using Dovus.Core.Presentation;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
-using Dovus.Game.Skills;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -10,21 +9,21 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// <summary>CommandPlan → klip + animasyon olay maskesi → AnimationBridge + efekt köprüsü.</summary>
     public static class RuleEngineV4SkillAnimBridge
     {
-        public static void PlayForPlan(ManifestationDirector director, in CommandPlan plan, RuleEngineV4SkillAnimCatalog catalog)
+        public static void PlayForPlan(RuleEngineV4CombatContext combat, in CommandPlan plan, RuleEngineV4SkillAnimCatalog catalog)
         {
-            if (director == null || !plan.IsValid || catalog == null)
+            if (combat == null || !plan.IsValid || catalog == null)
                 return;
 
             RuleEngineV4SkillAnimBinding binding = RuleEngineV4SkillAnimResolver.Resolve(plan, catalog);
             if (binding.IsEmpty)
                 return;
 
-            ActorView view = director._visual;
+            ActorView view = combat.Visual;
             if (view == null || view.Animator == null)
                 return;
 
-            director.EnsureLaunchServices();
-            AnimationBridge anim = director._animationBridge;
+            combat.EnsureAnimationReady?.Invoke();
+            AnimationBridge anim = combat.AnimationBridge;
             anim.PlaySkillClip(
                 binding.Clip,
                 binding.FallbackAnimatorState,
@@ -52,36 +51,34 @@ namespace Dovus.Game.Skills.RuleEngineV4
         /// (Kılıç → Kilic_VUR, Yay → Yay_VUR); eski yumruk/döngü state'ine düşmez.
         /// Klip skill ile aynı olsa da Trail_On / Trail_Off dinlenmez (kor izi yok).
         /// </summary>
-        public static bool PlayBasicStrike(ManifestationDirector director, int slotRune)
+        public static bool PlayBasicStrike(RuleEngineV4CombatContext combat, int slotRune)
         {
-            if (director == null)
-                return BasicStrikeFallback("director yok", null, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
+            if (combat == null)
+                return BasicStrikeFallback("combat yok", null, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
             if (!RuleEngineV4Feature.Enabled)
-                return BasicStrikeFallback("v4 bayrağı kapalı", director, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
-            RuleEngineV4DirectorBridge bridge = director._castPort?.RuleEngineV4Bridge;
-            if (bridge == null || bridge.CastHost == null)
-                return BasicStrikeFallback(
-                    bridge == null ? "v4 köprüsü yok" : "v4 CastHost yok",
-                    director, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
-            int weaponId = director.EquippedWeaponNumber();
+                return BasicStrikeFallback("v4 bayrağı kapalı", combat, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
+            RuleEngineV4CastHost castHost = combat.CastHost;
+            if (castHost == null)
+                return BasicStrikeFallback("v4 CastHost yok", combat, slotRune, 0, RuleEngineV4SkillAnimBinding.Empty, null);
+            int weaponId = combat.EquippedWeaponNumber();
             if (!RuleEngineV4Slice.IsSliceWeapon(weaponId))
-                return BasicStrikeFallback("silah dilimde değil", director, slotRune, weaponId, RuleEngineV4SkillAnimBinding.Empty, null);
-            RuleEngineV4SkillAnimBinding binding = bridge.CastHost.CatalogAccess.Catalog.SkillAnim.Resolve(slotRune, 0, weaponId);
-            ActorView view = director._visual;
+                return BasicStrikeFallback("silah dilimde değil", combat, slotRune, weaponId, RuleEngineV4SkillAnimBinding.Empty, null);
+            RuleEngineV4SkillAnimBinding binding = castHost.CatalogAccess.Catalog.SkillAnim.Resolve(slotRune, 0, weaponId);
+            ActorView view = combat.Visual;
             if (binding.IsEmpty || view == null || view.Animator == null)
                 return BasicStrikeFallback(
                     binding.IsEmpty ? "skill_anim bağlaması boş" : view == null ? "ActorView yok" : "Animator yok",
-                    director, slotRune, weaponId, binding, view != null ? view.Animator : null);
+                    combat, slotRune, weaponId, binding, view != null ? view.Animator : null);
 
-            director.EnsureLaunchServices();
-            AnimationBridge anim = director._animationBridge;
+            combat.EnsureAnimationReady?.Invoke();
+            AnimationBridge anim = combat.AnimationBridge;
             anim.PlaySkillClip(binding.Clip, binding.FallbackAnimatorState, view.Animator);
             if (!anim.LastPlayApplied)
-                return BasicStrikeFallback("klip oynatılamadı", director, slotRune, weaponId, binding, view.Animator);
+                return BasicStrikeFallback("klip oynatılamadı", combat, slotRune, weaponId, binding, view.Animator);
             if (anim.LastUsedFallbackState)
                 return BasicStrikeFallback(
                     $"tam klip oynamadı, yedek durum '{binding.FallbackAnimatorState}' oynadı",
-                    director, slotRune, weaponId, binding, view.Animator);
+                    combat, slotRune, weaponId, binding, view.Animator);
             string state = anim.LastExactClipFound ? anim.LastClipName : binding.FallbackAnimatorState;
             view.SkillClip.Hold(state);
             SkillAnimVfxEventHost relay = EnsureRelay(view.Animator.gameObject, out _);
@@ -96,14 +93,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
         /// <summary>Dilimde düz vuruş yedeği yok (K3): düşen koşul ve değerleri LogError'a yazılır.</summary>
         static bool BasicStrikeFallback(
             string condition,
-            ManifestationDirector director,
+            RuleEngineV4CombatContext combat,
             int slotRune,
             int weaponId,
             in RuleEngineV4SkillAnimBinding binding,
             Animator animator)
         {
             LastBasicStrikeClip = string.Empty;
-            string weaponRaw = director != null ? director._equippedWeapon?.Id ?? "null" : "-";
+            string weaponRaw = combat?.EquippedWeapon?.Id ?? "null";
             Debug.LogError(
                 $"[V4-FALLBACK] düz vuruş: {condition} silah={weaponId} (kimlik '{weaponRaw}') rün={slotRune} " +
                 $"bağlama=klip '{binding.Clip}' yedek '{binding.FallbackAnimatorState}' animator={DescribeAnimator(animator, binding.Clip)}");

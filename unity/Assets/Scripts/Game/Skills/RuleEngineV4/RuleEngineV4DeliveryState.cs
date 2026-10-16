@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Dovus.Core.RuleEngineV4;
-using Dovus.Game.Skills;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
@@ -26,11 +25,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
         public void SetAreaHits(List<Transform> hits) => _areaHits = hits;
 
         public void Refresh(
-            ManifestationDirector director,
+            RuleEngineV4CombatContext combat,
             CommandPlan plan,
             Transform focus,
             RuleEngineV4DeliveryEvaluator evaluator) =>
-            _ok = evaluator.EvaluateDelivery(director, plan, focus);
+            _ok = evaluator.EvaluateDelivery(combat, plan, focus);
 
         public bool HitAllowed(Transform victim, Transform primaryFocus)
         {

@@ -28,7 +28,7 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
         float _lastCastDealt;
         RuleEngineV4DirectorBridge _ruleEngineV4;
         internal RuleEngineV4DirectorBridge RuleEngineV4Bridge =>
-            _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(_md);
+            _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(RuleEngineV4ManifestationAdapter.Bind(_md));
 
         /// <summary>FireClosing başında yakalanan logic (eski koddaki yerel değişkenle aynı örnek).</summary>
         internal void BeginClosing(LivingEffect logic) => _closingLogic = logic;

@@ -15,7 +15,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// </summary>
     public sealed class RuleEngineV4HeldCast
     {
-        readonly ManifestationDirector _director;
+        readonly RuleEngineV4CombatContext _combat;
         readonly RuleEngineV4CastHost _cast;
         CompletedSentence _held;
         double _heldSinceRealMs;
@@ -23,9 +23,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
         HexagonInputController _hookedInput;
         RuleEngineV4TargetPickRingView _ring;
 
-        public RuleEngineV4HeldCast(ManifestationDirector director, RuleEngineV4CastHost cast)
+        public RuleEngineV4HeldCast(RuleEngineV4CombatContext combat, RuleEngineV4CastHost cast)
         {
-            _director = director;
+            _combat = combat;
             _cast = cast;
         }
 
@@ -41,7 +41,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         /// <summary>Kapanış öncesi: parmak hâlâ basılıysa v4 komboyu tutar (true = kapanış ertelendi).</summary>
         public bool TryHold(CompletedSentence sentence)
         {
-            HexagonInputController input = _director._input;
+            HexagonInputController input = _combat.Input;
             if (_releasing
                 || !RuleEngineV4Feature.Enabled
                 || sentence == null
@@ -52,7 +52,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 || input == null
                 || !input.SkillFingerHeld)
                 return false;
-            SkillResolution skill = _director.ResolveSkillWords(sentence.Words);
+            SkillResolution skill = _combat.ResolveSkillWords?.Invoke(sentence.Words) ?? SkillResolution.Empty;
             if (!_cast.OwnsSkill(skill))
                 return false;
             if (_held != null)
@@ -62,7 +62,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             _held = sentence;
             _heldSinceRealMs = HexagonPointerHits.NowRealMs();
             LastRelease = null;
-            RuleDrivenVfxSink.FlashRunes(Actor(), skill, _director._equippedWeapon);
+            RuleDrivenVfxSink.FlashRunes(Actor(), skill, _combat.EquippedWeapon);
             return true;
         }
 
@@ -95,7 +95,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 _ring.Hide();
                 return;
             }
-            HexagonInputController input = _director._input;
+            HexagonInputController input = _combat.Input;
             if (input == null || !input.SkillFingerHeld)
             {
                 Cancel();
@@ -125,8 +125,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (decision == RuleEngineV4HeldRelease.Cancel)
                 {
                     RuleDrivenVfxSink.ClearRunePreflash(Actor());
-                    _director._skillAim?.ClearArmedTarget();
-                    _director._closingQueue.OnSentenceCompleted(
+                    _combat.SkillAim?.ClearArmedTarget();
+                    _combat.ClosingQueue?.OnSentenceCompleted(
                         new CompletedSentence(sentence.Verb, sentence.Words, SentencePhase.Aborted, null));
                     return;
                 }
@@ -139,7 +139,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     RuleEngineV4HeldRelease.LaunchAuto => new RuleEngineV4HeldTarget(RuleEngineV4HeldTarget.Kind.Auto),
                     _ => default,
                 };
-                _director._closingQueue.OnSentenceCompleted(sentence);
+                _combat.ClosingQueue?.OnSentenceCompleted(sentence);
             }
             finally
             {
@@ -152,7 +152,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             target = null;
             surface = default;
-            PlayerTargetingController targeting = _director._targeting;
+            PlayerTargetingController targeting = _combat.Targeting;
             if (targeting == null || !targeting.TryPickWorld(screen, out target, out RaycastHit solid))
                 return false;
             if (target != null)
@@ -162,7 +162,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 : null;
             if (markSurface == null)
                 return false;
-            Transform player = _director.MechanicsPlayer;
+            Transform player = _combat.Player;
             float distanceM = player != null ? Vector3.Distance(player.position, solid.point) : 0;
             surface = new RuleEngineV4SurfaceAim(markSurface, solid.point, solid.normal, distanceM);
             return true;
@@ -191,11 +191,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return;
             EjderVfxBatchHost batch = RuleDrivenVfxSink.Resolve(Actor())?.Batch;
             _ring = RuleEngineV4TargetPickRingView.Create(batch, _cast.OwnerColor, Tick);
-            _ring.transform.SetParent(_director.transform, true);
+            _ring.transform.SetParent(_combat.HostTransform, true);
         }
 
         double HeldSec() => (HexagonPointerHits.NowRealMs() - _heldSinceRealMs) / Dovus.Core.Shared.Units.SecToMs;
 
-        Transform Actor() => _director._visual != null ? _director._visual.transform : null;
+        Transform Actor() => _combat.Visual != null ? _combat.Visual.transform : null;
     }
 }

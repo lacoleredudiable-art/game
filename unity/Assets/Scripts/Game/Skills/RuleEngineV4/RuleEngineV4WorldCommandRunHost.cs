@@ -5,7 +5,6 @@ using Dovus.Core.Motion;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 using Dovus.Game.Actors;
-using Dovus.Game.Skills;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -14,23 +13,22 @@ namespace Dovus.Game.Skills.RuleEngineV4
     /// <summary>OnSure bekler; hareket MotionTemplateRunner üzerinden.</summary>
     public sealed class RuleEngineV4WorldCommandRunHost
     {
-        readonly ManifestationDirector _director;
-        readonly RuleEngineV4WorldSession _session;
+        readonly RuleEngineV4CombatContext _combat;
         readonly RuleEngineV4PhysicsServices _physics;
         readonly RuleEngineV4DeliveryEvaluator _delivery;
         Coroutine _active;
 
         public RuleEngineV4WorldCommandRunHost(
-            ManifestationDirector director,
-            RuleEngineV4WorldSession session,
+            RuleEngineV4CombatContext combat,
             RuleEngineV4PhysicsServices physics,
             RuleEngineV4DeliveryEvaluator delivery)
         {
-            _director = director;
-            _session = session;
+            _combat = combat;
             _physics = physics;
             _delivery = delivery;
         }
+
+        RuleEngineV4WorldSession Session => _combat.Session;
 
         public bool IsRunning => _active != null;
 
@@ -42,8 +40,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
             System.Action<RuleEngineV4CastOutcome> onOutcome = null)
         {
             if (_active != null)
-                _director.StopCoroutine(_active);
-            _active = _director.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim, onOutcome));
+                _combat.CoroutineHost.StopCoroutine(_active);
+            _active = _combat.CoroutineHost.StartCoroutine(CoRun(plan, focus, onComplete, surfaceAim, onOutcome));
         }
 
         /// <summary>onOutcome: menzil sonuna kadar kimseye değmeyen mermi ıskadır (boşa gitme değil).</summary>
@@ -55,7 +53,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             System.Action<RuleEngineV4CastOutcome> onOutcome)
         {
             float dealt = 0;
-            Transform caster = _director.MechanicsPlayer;
+            Transform caster = _combat.Player;
             OnSureCommand timing = null;
             Transform missileHit = null;
             bool missileFired = false;
@@ -68,21 +66,21 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     timing = onSure;
                     if (onSure.PrefireSec > 0)
                         yield return CoWaitWorld(onSure.PrefireSec);
-                    delivery.Refresh(_director, plan, focus, _delivery);
+                    delivery.Refresh(_combat, plan, focus, _delivery);
                     continue;
                 }
 
                 if (RuleEngineV4CommandAccess.TryMenzile(cmd, out float menzil))
                 {
                     yield return CoMenzile(caster, focus, menzil);
-                    delivery.Refresh(_director, plan, focus, _delivery);
+                    delivery.Refresh(_combat, plan, focus, _delivery);
                     continue;
                 }
 
                 if (RuleEngineV4CommandAccess.TryDash(cmd, out KendiniTasiCommand dash))
                 {
                     yield return CoDash(caster, focus, dash);
-                    delivery.Refresh(_director, plan, focus, _delivery);
+                    delivery.Refresh(_combat, plan, focus, _delivery);
                     continue;
                 }
 
@@ -107,20 +105,20 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 if (RuleEngineV4CommandAccess.TryPush(cmd, out float pushM))
                 {
                     double nowMs = WorldMs();
-                    float scaled = _session.ApplyDiminishNonDamage(focus, pushM, nowMs);
+                    float scaled = Session.ApplyDiminishNonDamage(focus, pushM, nowMs);
                     ApplyPush(caster, focus, scaled);
                     continue;
                 }
 
                 if (RuleEngineV4CommandAccess.TryPoise(cmd, out float poise))
-                    RuleEngineV4WorldHost.ApplyPoise(_director, focus, poise);
+                    RuleEngineV4WorldHost.ApplyPoise(_combat, focus, poise);
 
                 if (RuleEngineV4CommandAccess.TryGuard(cmd, out float guardSec, out float blockRatio))
                 {
                     if (caster != null)
                     {
                         double ms = WorldMs();
-                        _session.ArmGuard(caster, guardSec, blockRatio, ms);
+                        Session.ArmGuard(caster, guardSec, blockRatio, ms);
                     }
                     continue;
                 }
@@ -133,7 +131,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
                 if (RuleEngineV4CommandAccess.TryStructure(cmd, out float lifeSec))
                 {
-                    if (_session.Structures.TryPlace(0))
+                    if (Session.Structures.TryPlace(0))
                         SpawnStructure(caster, lifeSec);
                     continue;
                 }
@@ -144,7 +142,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     {
                         if (!delivery.HitAllowed(victim, focus))
                             continue;
-                        dealt += RuleEngineV4WorldHost.ApplyDamage(_director, victim, dmg * dmgMult);
+                        dealt += RuleEngineV4WorldHost.ApplyDamage(_combat, victim, dmg * dmgMult);
                     }
                     continue;
                 }
@@ -153,16 +151,16 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 {
                     Transform healFocus = focus == null ? caster : focus;
                     if (delivery.HitAllowed(healFocus, focus) || healFocus == caster)
-                        RuleEngineV4WorldHost.ApplyHeal(_director, healFocus, heal * healMult);
+                        RuleEngineV4WorldHost.ApplyHeal(_combat, healFocus, heal * healMult);
                     continue;
                 }
 
                 if (RuleEngineV4CommandAccess.TryMark(cmd, out float markLife))
                 {
                     if (surfaceAim.IsValid)
-                        _director._castPort?.RuleEngineV4Bridge.PlaceSurfaceMark(surfaceAim, markLife);
+                        _combat.PlaceSurfaceMark?.Invoke(surfaceAim, markLife);
                     else
-                        _director._castPort?.RuleEngineV4Bridge.PlaceMark(focus, markLife);
+                        _combat.PlaceMark?.Invoke(focus, markLife);
                 }
             }
 
@@ -370,7 +368,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (!RuleEngineV4WeightRules.CanDisplace(src, dst))
             {
                 if (RuleEngineV4WeightRules.IsImmovable(dst))
-                    RuleEngineV4WorldHost.ApplyPoise(_director, pushed, distanceM);
+                    RuleEngineV4WorldHost.ApplyPoise(_combat, pushed, distanceM);
                 return;
             }
             Vector3 dir = pushed.position - caster.position;
@@ -403,7 +401,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 {
                     if (!RuleEngineV4CommandAccess.TryDamage(cmd, out float dmg, out float mult))
                         continue;
-                    dealt += RuleEngineV4WorldHost.ApplyDamage(_director, current, dmg * mult * bounce.BounceMult);
+                    dealt += RuleEngineV4WorldHost.ApplyDamage(_combat, current, dmg * mult * bounce.BounceMult);
                 }
                 current = _physics.FindBounceTarget(
                     current.position, caster.forward, bounce.SearchRadiusM, visited);
@@ -431,7 +429,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             var body = wall.AddComponent<RuleEngineV4PhysicsBodyHost>();
             body.WeightTier = RuleEngineV4WeightTier.Anchored;
             body.BodyRadiusM = r;
-            _director.StartCoroutine(CoExpireStructure(wall, lifeSec));
+            _combat.CoroutineHost.StartCoroutine(CoExpireStructure(wall, lifeSec));
         }
 
         IEnumerator CoExpireStructure(GameObject wall, float lifeSec)
@@ -439,10 +437,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
             yield return CoWaitWorld(lifeSec);
             if (wall != null)
                 UnityEngine.Object.Destroy(wall);
-            _session.Structures.Release(0);
+            Session.Structures.Release(0);
         }
 
-        double WorldMs() =>
-            _director.MechanicsClock != null ? _director.MechanicsClock.Director.WorldTimeMs : 0d;
+        double WorldMs() => _combat.WorldTimeMs;
     }
 }

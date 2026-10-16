@@ -4,7 +4,6 @@ using Dovus.Core.Grammar;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Diagnostics;
-using Dovus.Game.Skills;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -12,10 +11,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
 {
     public sealed class RuleEngineV4CastHost
     {
-        readonly ManifestationDirector _director;
+        readonly RuleEngineV4CombatContext _combat;
         readonly RuleEngineV4TeamMarkRegistry _marks = new();
         readonly List<RuleEngineV4TargetCandidate> _candidates = new();
-        readonly RuleEngineV4WorldSession _session = new();
         readonly RuleEngineV4PhysicsServices _physics = new();
         readonly RuleEngineV4CatalogAccess _catalogAccess = new();
         readonly RuleEngineV4DeliveryEvaluator _deliveryEvaluator;
@@ -25,17 +23,16 @@ namespace Dovus.Game.Skills.RuleEngineV4
         System.Action<RuleEngineV4CastOutcome> _settle;
         int _comboLength = RuleEngineV4CastContext.VerbAdjectiveComboLen;
 
-        public RuleEngineV4CastHost(ManifestationDirector director)
+        public RuleEngineV4CastHost(RuleEngineV4CombatContext combat)
         {
-            _director = director;
-            _director.RuleEngineV4Session = _session;
+            _combat = combat;
             _deliveryEvaluator = new RuleEngineV4DeliveryEvaluator(_physics);
-            _runner = new RuleEngineV4WorldCommandRunHost(director, _session, _physics, _deliveryEvaluator);
+            _runner = new RuleEngineV4WorldCommandRunHost(combat, _physics, _deliveryEvaluator);
         }
 
         public RuleEngineV4CatalogAccess CatalogAccess => _catalogAccess;
 
-        public RuleEngineV4WorldSession Session => _session;
+        public RuleEngineV4WorldSession Session => _combat.Session;
 
         public float LastDealt => _lastDealt;
 
@@ -72,7 +69,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             {
                 LastDenial = denial;
                 DebugConfig.DevLog($"[RuleEngineV4] skill çıkmadı {key}: {denial}");
-                RuleDrivenVfxSink.NotCast(_director._visual != null ? _director._visual.transform : null, verb, adj, denial);
+                RuleDrivenVfxSink.NotCast(_combat.Visual != null ? _combat.Visual.transform : null, verb, adj, denial);
                 return true;
             }
             LastDenial = RuleEngineV4CastDenial.None;
@@ -94,7 +91,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 return false;
             _ = _catalogAccess.Catalog;
             return RuleEngineV4Slice.IsSliceCombo(verb, adj)
-                && RuleEngineV4Slice.IsSliceWeapon(_director.EquippedWeaponNumber());
+                && RuleEngineV4Slice.IsSliceWeapon(_combat.EquippedWeaponNumber());
         }
 
         static bool TryCombo(SkillResolution skill, out int verb, out int adj)
@@ -121,7 +118,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (!RuleEngineV4Slice.IsSliceCombo(verb, adj))
                 return false;
 
-            int weaponId = _director.EquippedWeaponNumber();
+            int weaponId = _combat.EquippedWeaponNumber();
             if (!RuleEngineV4Slice.IsSliceWeapon(weaponId))
                 return false;
 
@@ -171,11 +168,11 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
             FaceHeldPick(held, focus, surfaceAim);
             LastPlan = plan;
-            RuleEngineV4SkillAnimBridge.PlayForPlan(_director, plan, data.SkillAnim);
+            RuleEngineV4SkillAnimBridge.PlayForPlan(_combat, plan, data.SkillAnim);
             _runner.Start(plan, focus, d =>
             {
                 _lastDealt = d;
-                _director._castPort?.NotifyRuleEngineV4Dealt(d);
+                _combat.NotifyCastDealt?.Invoke(d);
             }, surfaceAim, _settle);
             return true;
         }
@@ -192,7 +189,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     manualId = held.Target.TargetKey;
                     return;
                 case RuleEngineV4HeldTarget.Kind.Default:
-                    TargetableHost locked = _director._targeting != null ? _director._targeting.Selected : null;
+                    TargetableHost locked = _combat.Targeting != null ? _combat.Targeting.Selected : null;
                     manual = locked != null && locked.IsAvailable;
                     manualId = locked != null ? locked.TargetKey : null;
                     return;
@@ -208,9 +205,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
             bool overridesLock = held.Mode == RuleEngineV4HeldTarget.Kind.Target
                 || held.Mode == RuleEngineV4HeldTarget.Kind.Auto;
             if (overridesLock && focus != null)
-                _director._skillAim?.FaceCastTarget(focus);
+                _combat.SkillAim?.FaceCastTarget(focus);
             else if (held.Mode == RuleEngineV4HeldTarget.Kind.Surface && aim.IsValid)
-                _director._skillAim?.FaceCastPoint(aim.Point);
+                _combat.SkillAim?.FaceCastPoint(aim.Point);
         }
 
         internal Transform LastFocus { get; private set; }
@@ -236,7 +233,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
                 aim = held.SurfaceAim;
                 return aim.IsValid && aim.DistanceM <= placeM;
             }
-            if (!_physics.TryAimMarkOnlySurface(_director.MechanicsPlayer, placeM, out aim))
+            if (!_physics.TryAimMarkOnlySurface(_combat.Player, placeM, out aim))
                 return false;
             bool living = TryLivingDistance(pick, out float livingM);
             if (RuleEngineV4MarkOnlyRules.SurfaceBeatsLiving(aim.DistanceM, living && livingM <= placeM, livingM))
@@ -259,7 +256,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             plan = null;
             anchor = null;
-            Transform player = _director.MechanicsPlayer;
+            Transform player = _combat.Player;
             if (player == null
                 || !RuleEngineV4MarkOnlyRules.TargetsMark(resolution)
                 || !_marks.TryNearestSurfaceMark(player.position, data.Globals.IsaretUseRangeM, WorldMs(), out anchor, out float anchorM))
@@ -289,14 +286,14 @@ namespace Dovus.Game.Skills.RuleEngineV4
             return false;
         }
 
-        double WorldMs() => _director.MechanicsClock != null ? _director.MechanicsClock.Director.WorldTimeMs : 0;
+        double WorldMs() => _combat.WorldTimeMs;
 
         void CollectSceneCandidates()
         {
-            Transform player = _director.MechanicsPlayer;
-            double worldMs = _director.MechanicsClock != null ? _director.MechanicsClock.Director.WorldTimeMs : 0;
-            IReadOnlyList<TargetableHost> live = _director._liveTargetables != null
-                ? _director._liveTargetables.Live
+            Transform player = _combat.Player;
+            double worldMs = _combat.WorldTimeMs;
+            IReadOnlyList<TargetableHost> live = _combat.LiveTargetables != null
+                ? _combat.LiveTargetables.Live
                 : System.Array.Empty<TargetableHost>();
             RuleEngineV4SceneTargets.Collect(
                 player != null ? player.position : Vector3.zero,
@@ -310,9 +307,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
         Transform ResolveTargetTransform(in RuleEngineV4TargetPick pick)
         {
             if (pick.UseSelf)
-                return _director.MechanicsPlayer;
-            IReadOnlyList<TargetableHost> live = _director._liveTargetables != null
-                ? _director._liveTargetables.Live
+                return _combat.Player;
+            IReadOnlyList<TargetableHost> live = _combat.LiveTargetables != null
+                ? _combat.LiveTargetables.Live
                 : System.Array.Empty<TargetableHost>();
             if (RuleEngineV4SceneTargets.TryResolveTransform(live, pick.TargetId, out Transform t))
                 return t;
@@ -338,7 +335,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
 
         public void PlaceMark(Transform marked, float lifeSec)
         {
-            double ms = _director.MechanicsClock != null ? _director.MechanicsClock.Director.WorldTimeMs : 0;
+            double ms = _combat.WorldTimeMs;
             _marks.Place(marked, lifeSec, ms);
         }
 
@@ -346,6 +343,6 @@ namespace Dovus.Game.Skills.RuleEngineV4
             _marks.PlaceOnSurface(aim, OwnerColor, lifeSec, WorldMs());
 
         /// <summary>İşareti koyan oyuncunun takım rengi.</summary>
-        internal Color OwnerColor => _director._colors != null ? _director._colors.Visuals.PlayerColor : Color.white;
+        internal Color OwnerColor => _combat.OwnerColor;
     }
 }

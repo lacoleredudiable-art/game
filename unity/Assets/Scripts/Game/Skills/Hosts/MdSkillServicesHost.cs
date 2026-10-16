@@ -100,7 +100,8 @@ public sealed class MdSkillServicesHost
         {
             if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
             {
-                RuleEngineV4.RuleEngineV4SkillAnimBridge.PlayBasicStrike(_md, slotRune);
+                RuleEngineV4.RuleEngineV4SkillAnimBridge.PlayBasicStrike(
+                    RuleEngineV4ManifestationAdapter.Bind(_md), slotRune);
                 return;
             }
             _md._visual?.PulseBasicStrike();

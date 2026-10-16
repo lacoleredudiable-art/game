@@ -56,7 +56,11 @@ namespace Dovus.Game.Composition.Builders
                 rules,
                 ctx.Player != null ? ctx.Player.transform : null,
                 ctx.MainCamera,
-                ctx.ManifestationDirector);
+                () => ctx.RuleEngineV4Combat != null
+                    ? ctx.RuleEngineV4Combat.EquippedWeaponNumber()
+                    : ctx.EquippedWeapon != null && int.TryParse(ctx.EquippedWeapon.Id, out int w)
+                        ? w
+                        : 0);
             CameraBossBody body = ctx.FollowCameraController != null ? ctx.FollowCameraController.BossBody : null;
             if (body != null)
                 gozcu.WatchBossBody(body.Root, body.RadiusM, body.TopAboveRootM);

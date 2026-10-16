@@ -100,6 +100,7 @@ namespace Dovus.Game.Composition.Builders
         public EquipmentItem EquippedWeapon;
         public EquipmentBonusResolver EquipmentBonus;
         public ManifestationDirector ManifestationDirector;
+        public RuleEngineV4CombatContext RuleEngineV4Combat;
         public BossDirector BossDirector;
         public CombatFeelDirector CombatFeelDirector;
         public GroundScarFieldView GroundScars;

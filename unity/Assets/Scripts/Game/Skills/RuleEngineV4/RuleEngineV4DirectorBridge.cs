@@ -1,21 +1,21 @@
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
-using Dovus.Game.Skills;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
 {
     public sealed class RuleEngineV4DirectorBridge
     {
-        readonly ManifestationDirector _director;
         readonly RuleEngineV4CastHost _castHost;
         readonly RuleEngineV4HeldCast _heldCast;
 
-        public RuleEngineV4DirectorBridge(ManifestationDirector director)
+        public RuleEngineV4DirectorBridge(RuleEngineV4CombatContext combat)
         {
-            _director = director;
-            _castHost = new RuleEngineV4CastHost(director);
-            _heldCast = new RuleEngineV4HeldCast(director, _castHost);
+            _castHost = new RuleEngineV4CastHost(combat);
+            combat.CastHost = _castHost;
+            combat.PlaceMark = _castHost.PlaceMark;
+            combat.PlaceSurfaceMark = _castHost.PlaceSurfaceMark;
+            _heldCast = new RuleEngineV4HeldCast(combat, _castHost);
         }
 
         internal RuleEngineV4CastHost CastHost => _castHost;

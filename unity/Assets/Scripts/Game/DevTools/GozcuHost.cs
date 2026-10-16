@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
-using Dovus.Game.Skills;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -32,7 +31,7 @@ namespace Dovus.Game.DevTools
         GozcuReporter _reporter;
         Transform _player;
         Camera _camera;
-        ManifestationDirector _director;
+        System.Func<int> _equippedWeaponNumber;
         KinematicMotorController _motor;
         Animator _animator;
         CapsuleCollider _probe;
@@ -48,13 +47,13 @@ namespace Dovus.Game.DevTools
 
         public int ReportedCount => _reporter?.Reported ?? 0;
 
-        public void Configure(RuleEngineV4Gozcu rules, Transform player, Camera camera, ManifestationDirector director)
+        public void Configure(RuleEngineV4Gozcu rules, Transform player, Camera camera, System.Func<int> equippedWeaponNumber)
         {
             _rules = rules;
             _reporter = new GozcuReporter(rules.LogIntervalSec);
             _player = player;
             _camera = camera;
-            _director = director;
+            _equippedWeaponNumber = equippedWeaponNumber;
             _motor = player != null ? player.GetComponent<KinematicMotorController>() : null;
 
             // Gövde yoklaması: oyuncunun collider'ı yok. Yalnız ComputePenetration anında açılır,
@@ -196,9 +195,9 @@ namespace Dovus.Game.DevTools
         void CheckClip()
         {
             Animator anim = PlayerAnimator();
-            if (anim == null || anim.runtimeAnimatorController == null || _director == null)
+            if (anim == null || anim.runtimeAnimatorController == null || _equippedWeaponNumber == null)
                 return;
-            int weapon = _director.EquippedWeaponNumber();
+            int weapon = _equippedWeaponNumber();
             for (int layer = 0; layer < anim.layerCount; layer++)
             {
                 float layerWeight = layer == 0 ? 1f : anim.GetLayerWeight(layer);
