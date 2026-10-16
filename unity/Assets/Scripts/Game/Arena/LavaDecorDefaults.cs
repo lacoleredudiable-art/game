@@ -30,7 +30,9 @@ namespace Dovus.Game.Arena
         public const float HeatSpeedMinMps = 0.15f;
         public const float MinPoolExtentM = 3f;
         public const float PointLightHeightM = 0.4f;
-        public const float PointLightIntensity = 2.4f;
+        /// <summary>Linear renk uzayı: Gamma'da 2,4 idi; ek ışık koyu zemin üstünde toplandığı için tepe noktası
+        /// 2,4^2,2 = 6,9 ile eşlenir. (tahmin; lav parlaması telefonda bakılır)</summary>
+        public const float PointLightIntensity = 6.9f;
         public const float PointLightRangeMult = 4.5f;
         public const float PoolRadiusCenterM = 1.3f;
         public const float PoolRadiusEastM = 1.6f;

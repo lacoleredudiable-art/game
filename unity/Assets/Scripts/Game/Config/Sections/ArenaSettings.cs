@@ -25,7 +25,11 @@ namespace Dovus.Game.Config.Sections
                 public Color FogColor = new Color(0.69f, 0.718f, 0.737f);
                 public float FogDensity = 0.0032f;
                 public Color KeyLightColor = new Color(1f, 1f, 1f);
-                public float KeyLightIntensity = 1.6f;
+                /// <summary>Linear renk uzayı değeri. Gamma'da 1,6 idi; Linear'da ışık şiddeti doğrusal toplanır,
+                /// o yüzden aynı ekran parlaklığı için dönüştürüldü: ((A + I·NL)^2,2 − A^2,2) / NL, A = gökyüzü
+                /// ortam 0,78, I = 1,6, NL = sin 52° = 0,788 → 5,36 ≈ 5,4. Gölgedeki ve en aydınlık nokta Gamma ile
+                /// aynı çıkar, aradaki yarı ton Linear'da doğal. (tahmin; telefonda ölçülüp ayarlanır)</summary>
+                public float KeyLightIntensity = 5.4f;
                 public Vector3 KeyLightEuler = new Vector3(52f, -30f, 0f);
                 public float KeyShadowStrength = 0.75f;
                 public Color RimLightColor = new Color(0.38f, 0.55f, 1f);

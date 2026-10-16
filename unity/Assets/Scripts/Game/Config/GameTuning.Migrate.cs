@@ -297,6 +297,7 @@ namespace Dovus.Game.Config
             // Arena kopyasıyla gelir; altıgen + dodge biraz sağa (0,78 → 0,81), arayüz sadeleştirme.
             Input.HexagonCenterXNorm = fresh.Input.HexagonCenterXNorm;
 
+            // v25: Linear renk uzayı; ana ışık şiddeti (1,6 → 5,4) yukarıdaki Arena kopyasıyla gelir.
             TuningVersion = CurrentVersion;
         }
     }
