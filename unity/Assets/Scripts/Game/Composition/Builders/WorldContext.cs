@@ -48,7 +48,6 @@ namespace Dovus.Game.Composition.Builders
         public TeamComboAccess TeamAccess;
         public TeamComboHost TeamComboHost;
         public SfxDirector Sfx;
-        public ElementRadialMenuHud ElementMenu;
         public GameObject Arena;
         public float WalkHalf;
         public float SpawnMaxR;

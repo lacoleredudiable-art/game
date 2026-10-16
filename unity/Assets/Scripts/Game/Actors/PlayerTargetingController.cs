@@ -51,11 +51,8 @@ namespace Dovus.Game.Actors
         RectTransform _frame;
         Text _frameText;
         Image _frameBackground;
-        ElementRadialMenuHud _elementMenu;
         IDebugPanelInputState _debugPanel;
         SceneLiveRegistry<TargetableHost> _targetables;
-
-        public void BindElementMenu(ElementRadialMenuHud menu) => _elementMenu = menu;
 
         public void ConfigureDebugPanel(IDebugPanelInputState debugPanel) => _debugPanel = debugPanel;
 
@@ -315,8 +312,7 @@ namespace Dovus.Game.Actors
         bool InputBlocked() =>
             (_debugPanel?.TuningPanelOpen ?? false)
             || (_debugPanel?.GrammarDebugOpen ?? false)
-            || BuildSelectHud.IsOpen
-            || (_elementMenu != null && _elementMenu.IsMenuOpen);
+            || BuildSelectHud.IsOpen;
 
         void BuildMarker()
         {

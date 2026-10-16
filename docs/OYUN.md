@@ -12,7 +12,7 @@ Sol joystick hareket. Sağ altıgende ilk nokta fiil, ikinci nokta (en fazla bir
 
 | Konu | Değer | Kaynak |
 |------|-------|--------|
-| Kombo üst sınırı (rün) | **2** (fiil + 1 sıfat) | `kural-motoru-v4.json` (`slice_skill_motor` + `scale`) → `combo_system.current_max_length` → `SkillMotor` / `HexagonInputController` |
+| Kombo üst sınırı (rün) | **2** (fiil + 1 sıfat) | `kural-motoru-v4.json` (`slice_runes` + `scale`) → `SliceGrammarBuilder` → `combo_system.current_max_length` → `SkillMotor` / `HexagonInputController` |
 | Hasar/can ölçeği | ×4000 (`CombatScale.DamageAndHp`) | `global_rules.*.max_hp` ham → oyun canı |
 | Oyuncu max can | **4,000,000** (ham 1000 × 4000) | `BossCombatProfile` / dilim grameri |
 | Boss max can | **60,000,000** (ham 15000 × 4000) | aynı |

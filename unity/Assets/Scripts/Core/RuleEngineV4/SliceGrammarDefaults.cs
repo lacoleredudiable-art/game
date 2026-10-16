@@ -4,8 +4,7 @@ using Dovus.Core.Shared;
 namespace Dovus.Core.RuleEngineV4
 {
     /// <summary>
-    /// Dilim cümle grameri: SkillMotor / EquipmentCatalog için JSON kökü
-    /// <c>kural-motoru-v4.json</c> → <c>slice_skill_motor</c> + scale bağlama.
+    /// Dilim cümle grameri: <see cref="SliceGrammarBuilder"/> + <c>kural-motoru-v4.json</c> scale.
     /// </summary>
     public static class SliceGrammarDefaults
     {

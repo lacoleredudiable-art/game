@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import base64
+import gzip
 import json
 import re
 import sys
@@ -11,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCENE_UNITY = ROOT / "unity" / "Assets" / "Scenes" / "Prototype.unity"
 RULE_V4 = ROOT / "unity" / "Assets" / "Resources" / "RuleEngineV4" / "kural-motoru-v4.json"
+SCAFFOLD_B64 = ROOT / "tools" / "slice-grammar-scaffold.b64"
 COMBO_MAX = 2
 OUT_MD = ROOT / "docs" / "OYUN.md"
 
@@ -60,10 +63,15 @@ def scaled_hp(raw: float, scale: float) -> int:
     return int(round(raw * scale))
 
 
+def _load_scaffold() -> dict:
+    raw = gzip.decompress(base64.b64decode(_read_text(SCAFFOLD_B64).strip()))
+    return json.loads(raw.decode("utf-8"))
+
+
 def load_slice_grammar_document() -> dict:
-    """kural-motoru-v4.json slice_skill_motor + scale alanları (SliceGrammarDefaults ile aynı bağlama)."""
+    """SliceGrammarMotorScaffold + kural-motoru-v4 scale (SliceGrammarDefaults ile aynı bağlama)."""
+    motor = json.loads(json.dumps(_load_scaffold()))
     v4 = json.loads(_read_text(RULE_V4))
-    motor = json.loads(json.dumps(v4["slice_skill_motor"]))
     scale = v4["scale"]
     motor["combo_system"]["current_max_length"] = COMBO_MAX
     gr = motor["global_rules"]
@@ -93,8 +101,9 @@ def build_generated_section() -> str:
     element = load_slice_grammar_document()
     combo_max = element["combo_system"]["current_max_length"]
     combo_source = (
-        "`kural-motoru-v4.json` (`slice_skill_motor` + `scale`) → "
-        "`combo_system.current_max_length` → `SkillMotor` / `HexagonInputController`"
+        "`kural-motoru-v4.json` (`slice_runes` + `scale`) → "
+        "`SliceGrammarBuilder` → `combo_system.current_max_length` → "
+        "`SkillMotor` / `HexagonInputController`"
     )
 
     combat_scale_cs = _read_text(ROOT / "unity/Assets/Scripts/Core/Damage/CombatScale.cs")
