@@ -22,9 +22,7 @@
 .vscode/
 *.csproj
 !tools/CoreTests/*.csproj
-!tools/AtomSim/*.csproj
 !tools/GameCompile/GameCompile.csproj
-!tools/SweepV2/*.csproj
 !tools/IntegrationTests/*.csproj
 !tools/UnityCompile/*.csproj
 tools/GameCompile/gen/
@@ -64,11 +62,8 @@ unity-import.log
 
 # dotnet test çıktıları (tools/CoreTests)
 tools/CoreTests/bin/
-tools/AtomSim/bin/
-tools/SweepV2/bin/
 tools/IntegrationTests/bin/
 tools/UnityCompile/bin/
-tools/SweepV2/out/
 tools/verify-out/
 
 # Ham asset indirmeleri (Blend/OBJ/zip kaynak dosyaları) — Unity'nin gerçekten kullandığı

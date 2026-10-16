@@ -3,7 +3,7 @@ using Dovus.Core.Shared;
 namespace Dovus.Core.Data
 {
     /// <summary>
-    /// element-sistemi.json kökü — tek MiniJson.Parse; tüketiciler <see cref="Root"/> üzerinden okur.
+    /// Dilim cümle grameri JSON kökü (slice-sentence-grammar.json) — tek MiniJson.Parse; tüketiciler <see cref="Root"/> üzerinden okur.
     /// </summary>
     public sealed class ElementSystemDocument
     {

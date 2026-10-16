@@ -62,9 +62,6 @@ public class DocsTruthTests
     static readonly HashSet<string> PathAllowlist = new(StringComparer.OrdinalIgnoreCase)
     {
         "archive/capture-scripts",
-        "docs/play-sweep/pr35-final-4x.csv",
-        "docs/play-sweep/headless-baseline.sha256",
-        "docs/play-sweep/known-play-diffs.txt",
     };
 
     [Test]

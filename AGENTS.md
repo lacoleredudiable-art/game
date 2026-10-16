@@ -75,7 +75,7 @@ tasarım sorusu olarak döner.
 
 ## Okuma
 - Önce: kural kitabı v4.5 ilgili bölüm → `kural-motoru-v4.json` → görevin adlandırdığı dosyalar.
-- Asla okuma: `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`, `docs/play-sweep/*.csv`.
+- Asla okuma: `unity/Library/`, `unity/Temp/`, `unity/obj/`, `unity/Logs/`.
 
 ## Komutlar (repo kökünden)
 - `dotnet test tools/CoreTests --filter "FullyQualifiedName~<Sınıf>"` (alan testi) · `dotnet test tools/IntegrationTests`
