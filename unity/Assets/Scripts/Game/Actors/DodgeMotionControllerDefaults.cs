@@ -7,7 +7,5 @@ namespace Dovus.Game.Actors
         public const float MinBodyRadiusM = 0.01f;
         public const float FallbackEdgeGapM = 0.15f;
         public const float FallbackGlideSpeedMps = 3.5f;
-        // Hiç yol alamadan engele çarpan dodge hak yakmaz (kaynakta yok: başlangıç tahmini, ölçümle ayarlanır).
-        public const float NoTravelRefundM = 0.05f;
     }
 }
