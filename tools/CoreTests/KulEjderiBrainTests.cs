@@ -400,4 +400,50 @@ public sealed class KulEjderiBrainTests
         Assert.That(brain.TelegraphProgress01(t), Is.EqualTo(0f).Within(0.05f));
         Assert.That(brain.TelegraphProgress01(t + telegraphMs / 2.0), Is.EqualTo(0.5f).Within(0.05f));
     }
+
+    [Test]
+    public void KE_5_11_Q12_Announced_attack_waits_for_team_task_to_end_then_starts_at_once()
+    {
+        var brain = AwakeBrain(seed: 11);
+        brain.TeamTaskActive = true;
+        double due = KulEjderiDefaults.AwakenMs + KulEjderiDefaults.FirstAnnouncedAfterPhaseStartMs + 20000;
+
+        var during = Run(brain, KulEjderiDefaults.AwakenMs, due);
+        Assert.That(during.Any(e => e.Attack.HasValue && KulEjderiAttackTable.For(e.Attack.Value).Announced), Is.False);
+
+        brain.TeamTaskActive = false;
+        // Süren saldırı bitince (en çok birkaç sn) sıradaki seçim duyurulu olandır.
+        RunUntil(brain, due + Step, b => b.State == KulEjderiState.Telegraph && b.CurrentAttack!.Announced, 15000);
+    }
+
+    [Test]
+    public void D7_Q13_Two_long_attacks_never_strike_within_dodge_recharge()
+    {
+        for (int seed = 1; seed <= 12; seed++)
+        {
+            foreach (float hp in new[] { 1f, 0.5f, 0.1f })
+            {
+                var brain = AwakeBrain(seed);
+                brain.OnHpRatio(hp, KulEjderiDefaults.AwakenMs);
+                var strikes = new List<double>();
+                var events = new List<KulEjderiEvent>();
+                for (double t = KulEjderiDefaults.AwakenMs; t <= 400000; t += Step)
+                {
+                    brain.Tick(t);
+                    // Uzun saldırının etkin süresi biter bitmez oyuncu sendeleme kısaltır: aralığı daraltmayı dener.
+                    if (brain.State == KulEjderiState.Recovery && brain.CurrentAttack!.IsLong)
+                        brain.BeginStagger(t, 1);
+                    brain.DrainEvents(events);
+                }
+
+                strikes.AddRange(events
+                    .Where(e => e.Kind == KulEjderiEventKind.Struck && KulEjderiAttackTable.For(e.Attack!.Value).IsLong)
+                    .Select(e => e.WorldMs));
+                Assert.That(strikes.Count, Is.GreaterThan(2), $"seed {seed} hp {hp}");
+                for (int i = 1; i < strikes.Count; i++)
+                    Assert.That(strikes[i] - strikes[i - 1], Is.GreaterThanOrEqualTo(KulEjderiDefaults.DodgeRechargeMs),
+                        $"seed {seed} hp {hp}: {i}. uzun saldırı çok erken");
+            }
+        }
+    }
 }

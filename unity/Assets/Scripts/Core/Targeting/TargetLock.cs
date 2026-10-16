@@ -62,21 +62,16 @@ namespace Dovus.Core.Targeting
         }
 
         /// <summary>
-        /// Her karede çağrılır. Hedef yok / uygun değil ise ya da bırakma mesafesini aştıysa kilit düşer;
+        /// Her karede çağrılır. Hedef yok / uygun değil ise kilit düşer (mesafe bakılmaz, G-10);
         /// seçili nokta kullanılamaz olduysa varsayılan noktaya döner. Hâlâ kilitliyse true.
         /// </summary>
-        public bool Update(IReadOnlyList<LockOnCandidate> candidates, in LockOnRange range)
+        public bool Update(IReadOnlyList<LockOnCandidate> candidates)
         {
             if (!IsLocked)
                 return false;
             if (!Find(candidates, TargetId, out LockOnCandidate c) || !c.Available)
             {
                 Drop(LockReleaseReason.TargetGone);
-                return false;
-            }
-            if (c.DistanceM > range.ReleaseM)
-            {
-                Drop(LockReleaseReason.OutOfRange);
                 return false;
             }
             if (!LockPointRules.TryFind(c.Points, PointId, out LockPoint p) || !p.Available)

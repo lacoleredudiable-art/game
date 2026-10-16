@@ -9,7 +9,7 @@ namespace CoreTests;
 public sealed class TargetLockTests
 {
     // Mesafe sayıları test verisidir (kaynakta yok); kuralın kendisi sayıdan bağımsız.
-    static readonly LockOnRange Range = new(10f, 12f);
+    static readonly LockOnRange Range = new(10f);
 
     const int Head = 1, Body = 2, Wing = 3;
 
@@ -72,7 +72,7 @@ public sealed class TargetLockTests
     {
         var sut = new TargetLock();
         sut.TryAcquire(7, new List<LockOnCandidate> { Enemy(7) }, Range);
-        bool still = sut.Update(new List<LockOnCandidate> { Enemy(7, available: false) }, Range);
+        bool still = sut.Update(new List<LockOnCandidate> { Enemy(7, available: false) });
         Assert.That(still, Is.False);
         Assert.That(sut.IsLocked, Is.False);
         Assert.That(sut.LastRelease, Is.EqualTo(LockReleaseReason.TargetGone));
@@ -83,18 +83,20 @@ public sealed class TargetLockTests
     {
         var sut = new TargetLock();
         sut.TryAcquire(7, new List<LockOnCandidate> { Enemy(7) }, Range);
-        sut.Update(new List<LockOnCandidate>(), Range);
+        sut.Update(new List<LockOnCandidate>());
         Assert.That(sut.LastRelease, Is.EqualTo(LockReleaseReason.TargetGone));
     }
 
     [Test]
-    public void Update_Hysteresis_KeepsLockBetweenAcquireAndRelease_ThenDrops()
+    public void Update_G10_KeepsLockAtAnyDistance_OnlyDeadOrGoneDrops()
     {
         var sut = new TargetLock();
         sut.TryAcquire(7, new List<LockOnCandidate> { Enemy(7, 9f) }, Range);
-        Assert.That(sut.Update(new List<LockOnCandidate> { Enemy(7, 11.5f) }, Range), Is.True);
-        Assert.That(sut.Update(new List<LockOnCandidate> { Enemy(7, 12.5f) }, Range), Is.False);
-        Assert.That(sut.LastRelease, Is.EqualTo(LockReleaseReason.OutOfRange));
+        Assert.That(sut.Update(new List<LockOnCandidate> { Enemy(7, 12.5f) }), Is.True);
+        Assert.That(sut.Update(new List<LockOnCandidate> { Enemy(7, 500f) }), Is.True);
+        Assert.That(sut.IsLocked, Is.True);
+        Assert.That(sut.Update(new List<LockOnCandidate> { Enemy(7, 500f, available: false) }), Is.False);
+        Assert.That(sut.LastRelease, Is.EqualTo(LockReleaseReason.TargetGone));
     }
 
     [Test]
@@ -215,7 +217,7 @@ public sealed class TargetLockTests
         sut.TryAcquire(7, list, Range);
         sut.TrySelectPoint(Wing, list);
         var after = new List<LockOnCandidate> { Enemy(7, points: BossPoints(wingAvailable: false)) };
-        Assert.That(sut.Update(after, Range), Is.True);
+        Assert.That(sut.Update(after), Is.True);
         Assert.That(sut.TargetId, Is.EqualTo(7));
         Assert.That(sut.PointId, Is.EqualTo(Body));
     }

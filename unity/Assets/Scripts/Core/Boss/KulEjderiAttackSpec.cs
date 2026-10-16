@@ -38,6 +38,8 @@ namespace Dovus.Core.Boss
         /// <summary>Vuruş (ya da periyodik vuruş başına) hasar, oyuncu azami canının yüzdesi.</summary>
         public float DamagePct { get; }
         public KulEjderiShape Shape { get; }
+        /// <summary>D-7: "uzun" saldırı (etkin süresi eşikten uzun); vuruşları dodge dolumu içinde üst üste gelmez.</summary>
+        public bool IsLong => ActiveMs >= KulEjderiDefaults.LongAttackActiveMs;
         public float RadiusM { get; set; }
         public float AngleDeg { get; set; }
         public float KnockbackM { get; set; }
