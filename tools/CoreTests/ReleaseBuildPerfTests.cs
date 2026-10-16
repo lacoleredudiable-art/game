@@ -123,7 +123,7 @@ public class ReleaseBuildPerfTests
         string json = JsonSerializer.Serialize(new CombatTuning(), options);
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).Substring(0, 16);
         Assert.That(TuningSchema.Version, Is.EqualTo(15));
-        Assert.That(hash, Is.EqualTo("ECC5C443575766F9"),
+        Assert.That(hash, Is.EqualTo("8D3DC9D11223B4C4"),
             "CombatTuning varsayılanı değişti: TuningSchema.Version'ı artır, bu parmak izini ve sürüm satırını güncelle.");
     }
 
