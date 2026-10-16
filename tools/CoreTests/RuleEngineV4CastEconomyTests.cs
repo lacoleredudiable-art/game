@@ -125,4 +125,33 @@ public sealed class RuleEngineV4CastEconomyTests
         Assert.That(e.TryBegin(Combo, T0 + Ms(s.CooldownSec * s.FizzleCooldownFrac), out _), Is.True,
             "yarım bekleme bitince tekrar çıkar");
     }
+
+    [Test]
+    public void Sacrifice_PaysNoMana_ButStillStartsCooldown()
+    {
+        RuleEngineV4Scale s = Scale();
+        var e = new RuleEngineV4CastEconomy(s);
+        Assert.That(RuleEngineV4CastEconomy.IsManaFree(RuleEngineV4CastEconomy.SacrificeAdjective), Is.True);
+        Assert.That(RuleEngineV4CastEconomy.IsManaFree(1), Is.False);
+
+        Assert.That(e.TryBegin(Combo, T0, out _, manaFree: true), Is.True);
+        Assert.That(e.Mana(T0), Is.EqualTo(s.ManaPool), "Fedakarlık mana ödemez");
+        Assert.That(e.CooldownRemainingSec(Combo, T0), Is.EqualTo(s.CooldownSec).Within(1e-6));
+        Assert.That(e.TryBegin(Combo, T0, out RuleEngineV4CastDenial d, manaFree: true), Is.False);
+        Assert.That(d, Is.EqualTo(RuleEngineV4CastDenial.Cooldown));
+    }
+
+    [Test]
+    public void Sacrifice_CastsWithEmptyMana()
+    {
+        RuleEngineV4Scale s = Scale();
+        var e = new RuleEngineV4CastEconomy(s);
+        int casts = (int)(s.ManaPool / s.ManaCostPerSkill);
+        for (int i = 0; i < casts; i++)
+            Assert.That(e.TryBegin("c" + i, T0, out _), Is.True);
+
+        Assert.That(e.TryBegin(Combo, T0, out RuleEngineV4CastDenial d), Is.False);
+        Assert.That(d, Is.EqualTo(RuleEngineV4CastDenial.Mana));
+        Assert.That(e.TryBegin(Combo, T0, out d, manaFree: true), Is.True, "mana bitince Fedakarlık yine çıkar");
+    }
 }
