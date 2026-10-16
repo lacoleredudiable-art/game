@@ -39,6 +39,12 @@ namespace Dovus.Core.Boss
         // KE-5.12 takım görevi başarısı: 4 s sendeleme
         public const int TeamTaskStaggerMs = 4000;
 
+        // D-7 (Mustafa, 16 Ekim: B): iki "uzun" saldırının vuruş anları arası en az dodge hak dolumu kadar.
+        // Dolum süresi DodgeTuning'in varsayılanından gelir (6 s, O-4.7); "uzun" tanımı belgede yok:
+        // etkin süresi bu eşikten uzun olan saldırı uzun sayılır (tahmin, ölçümle ayarlanır).
+        public const int LongAttackActiveMs = 2000;
+        public static readonly int DodgeRechargeMs = new Tuning.DodgeTuning().ChargeRechargeMs;
+
         // KE-3.7 öfke: dövüşün 765. saniyesi; açık kalma yarıya, küçük tehdit aralığı 2 s
         public const int EnrageAtMs = 765000;
         public const float EnrageRecoveryFactor = 0.5f;

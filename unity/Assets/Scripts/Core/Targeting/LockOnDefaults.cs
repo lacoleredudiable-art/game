@@ -7,6 +7,6 @@ namespace Dovus.Core.Targeting
         /// </summary>
         public const float HighHeadThresholdM = 10f;
 
-        // Kilit alma / bırakma mesafesi kaynakta yok (ölçüm); çağıran taraf ayardan verir, burada uydurulmaz.
+        // Kilit alma mesafesi (silah menzili) kaynakta yok; bırakma mesafesi yok (G-10) (ölçüm); çağıran taraf ayardan verir, burada uydurulmaz.
     }
 }

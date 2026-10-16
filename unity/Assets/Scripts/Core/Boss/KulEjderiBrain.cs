@@ -27,6 +27,7 @@ namespace Dovus.Core.Boss
         double _fightStartMs;
         double _resistantUntilMs = double.NegativeInfinity;
         double _gatedAttackLastMs = double.NegativeInfinity;
+        double _lastLongStrikeMs = double.NegativeInfinity;
         KulEjderiAttackId? _lastAttack;
         float _hpRatio = 1f;
         bool _enraged;
@@ -223,7 +224,13 @@ namespace Dovus.Core.Boss
         KulEjderiAttackSpec? SelectAttack(double worldMs)
         {
             if (!TeamTaskActive && worldMs >= _nextAnnouncedMs)
-                return KulEjderiAttackTable.AnnouncedFor(_phase);
+            {
+                // D-7: dodge dolumu dolmadan ikinci uzun saldırı gelmez; duyurulu saldırı normal havuzdan kısa
+                // bir saldırıyla beklenir (iptal edilmez, süre dolunca seçilir).
+                KulEjderiAttackSpec announced = KulEjderiAttackTable.AnnouncedFor(_phase);
+                if (!BlockedByDodgeRecharge(announced, worldMs))
+                    return announced;
+            }
 
             IReadOnlyList<KulEjderiAttackSpec> pool = KulEjderiAttackTable.NormalPool(_phase);
             var candidates = new List<KulEjderiAttackSpec>();
@@ -236,6 +243,8 @@ namespace Dovus.Core.Boss
                 if (!TeamTaskActive && _lastAttack.HasValue && spec.Id == _lastAttack.Value)
                     continue;
                 if (spec.MinRepeatGapMs > 0 && worldMs - _gatedAttackLastMs < spec.MinRepeatGapMs)
+                    continue;
+                if (BlockedByDodgeRecharge(spec, worldMs))
                     continue;
                 candidates.Add(spec);
                 total += spec.Weight;
@@ -253,6 +262,10 @@ namespace Dovus.Core.Boss
 
             return candidates[candidates.Count - 1];
         }
+
+        /// <summary>D-7: spec uzunsa ve vuruşu son uzun vuruştan dodge dolumu dolmadan gelecekse true.</summary>
+        bool BlockedByDodgeRecharge(KulEjderiAttackSpec spec, double worldMs) =>
+            spec.IsLong && worldMs + spec.TelegraphMs - _lastLongStrikeMs < KulEjderiDefaults.DodgeRechargeMs;
 
         /// <summary>KE-5.11: faz 1'de yalnız Pençe Çakması; KE-6.12: faz 2'de hiç; KE-7.9: faz 3'te yalnız Pençe Süpürmesi.</summary>
         bool AllowedDuringTeamTask(KulEjderiAttackSpec spec)
@@ -289,6 +302,8 @@ namespace Dovus.Core.Boss
             _stateEndMs = startMs + spec.ActiveMs;
             if (spec.MinRepeatGapMs > 0)
                 _gatedAttackLastMs = startMs;
+            if (spec.IsLong)
+                _lastLongStrikeMs = startMs;
             Emit(KulEjderiEventKind.Struck, startMs, spec.Id);
         }
 
