@@ -50,7 +50,9 @@ public class LookBrightLedTests
     public void PresetB_SunIntensity_IsBrightAndDrivenByKeyLight()
     {
         float eff = Const(Arena(), "KeyLightIntensity") * Const(Defaults(), "SunIntensityPresetBMult");
-        Assert.That(eff, Is.InRange(1.5f, 1.7f), "ana ışık fiili şiddeti (teşhis 5 §4)");
+        // Gamma'da 1,5-1,7 idi (teşhis 5 §4). Linear renk uzayına geçişle aynı ekran parlaklığı için
+        // 5,4 civarına dönüştürüldü (LinearColorSpaceTests formülü).
+        Assert.That(eff, Is.InRange(5.0f, 5.8f), "ana ışık fiili şiddeti (Linear, teşhis 5 §4 + Linear aşaması)");
     }
 
     [Test]
