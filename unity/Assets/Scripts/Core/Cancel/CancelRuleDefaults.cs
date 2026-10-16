@@ -17,53 +17,67 @@ namespace Dovus.Core.Cancel
             const ActionPhase any = ActionPhase.Any;
 
             // --- Skill çalışırken -------------------------------------------------------------
-            // "Hazırlık yalnız dodge ile kesilir; dodge hakkı yanar, CD yanmaz."
+            // Hazırlık dodge ile kesilir; dodge hakkı ve skill bekleme süresi yanar (iade yok: Q2).
             r.Add(Cancel("S1", ActionKind.Skill, ActionPhase.Windup, ActionKind.Dodge, true, o.WindupDodgeRefundsCooldown,
-                RuleStatus.Proposed, S13 + ", 15 §4 (O-3.5 çelişir: CD harcanır)"));
+                RuleStatus.Decided, "Q2 (2026-10-16), O-3.5"));
             r.Add(Deny("S2", ActionKind.Skill, ActionPhase.Windup, ActionKind.Skill, o.BufferMs, RuleStatus.Proposed, S13));
             r.Add(Deny("S3", ActionKind.Skill, ActionPhase.Windup, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Proposed, S13));
             r.Add(Deny("S4", ActionKind.Skill, ActionPhase.Windup, ActionKind.BasicStrike, o.BufferMs, RuleStatus.Proposed, S13));
 
-            // "Etki kesilmez."
+            // Q1: dodge etki anında da hemen keser (etki zaten doğdu, bekleme süresi yanar).
             r.Add(o.DodgeCancelsSkillActive
-                ? Cancel("S5", ActionKind.Skill, ActionPhase.Active, ActionKind.Dodge, false, false, RuleStatus.Gap, "O-3.11 (13 §9 çelişir)")
+                ? Cancel("S5", ActionKind.Skill, ActionPhase.Active, ActionKind.Dodge, false, false, RuleStatus.Decided, "Q1 (2026-10-16), O-3.11")
                 : Deny("S5", ActionKind.Skill, ActionPhase.Active, ActionKind.Dodge, o.BufferMs, RuleStatus.Proposed, S13 + ", 15 §4 (O-3.11 çelişir)"));
             r.Add(Deny("S6", ActionKind.Skill, ActionPhase.Active, ActionKind.Skill, o.BufferMs, RuleStatus.Proposed, S13));
             r.Add(Deny("S7", ActionKind.Skill, ActionPhase.Active, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Proposed, S13));
             r.Add(Deny("S8", ActionKind.Skill, ActionPhase.Active, ActionKind.BasicStrike, o.BufferMs, RuleStatus.Proposed, S13));
 
-            // "Toparlanma kesilebilir; öncelik dodge > silah değişimi > düz vuruş sıfırlama."
+            // Toparlanma dodge ve silah değişimiyle kesilir; düz vuruşla KESİLMEZ (Q3), düz vuruş sıraya girer.
             r.Add(Cancel("S9", ActionKind.Skill, ActionPhase.Recovery, ActionKind.Dodge, false, false, RuleStatus.Decided, S13 + ", O-3.5"));
             r.Add(o.SwapCancelsSkillRecovery
                 ? Cancel("S10", ActionKind.Skill, ActionPhase.Recovery, ActionKind.WeaponSwap, false, false, RuleStatus.Proposed, S13)
-                : Deny("S10", ActionKind.Skill, ActionPhase.Recovery, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Proposed, S13));
+                : Deny("S10", ActionKind.Skill, ActionPhase.Recovery, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Decided, "Q3 (2026-10-16)"));
             r.Add(o.StrikeCancelsSkillRecovery
                 ? Cancel("S11", ActionKind.Skill, ActionPhase.Recovery, ActionKind.BasicStrike, false, false, RuleStatus.Proposed, S13 + " (düz vuruş sıfırlama)")
-                : Deny("S11", ActionKind.Skill, ActionPhase.Recovery, ActionKind.BasicStrike, o.BufferMs, RuleStatus.Proposed, S13));
+                : Deny("S11", ActionKind.Skill, ActionPhase.Recovery, ActionKind.BasicStrike, o.BufferMs, RuleStatus.Decided, "Q3 (2026-10-16)"));
             // Skill → skill doğrudan kesme yok: sıradaki skill toparlanma bitince başlar (tamponla).
             r.Add(Deny("S12", ActionKind.Skill, ActionPhase.Recovery, ActionKind.Skill, o.BufferMs, RuleStatus.Proposed, S13 + ", O-4.12"));
 
             // --- Silah değişimi: kendi toparlanması iptal edilemez (sonsuz zincir olmasın) -------
             r.Add(Deny("W1", ActionKind.WeaponSwap, any, ActionKind.Dodge, o.BufferMs, RuleStatus.Decided, "O-2.19, " + S13));
-            r.Add(Deny("W2", ActionKind.WeaponSwap, any, ActionKind.Skill, o.BufferMs, RuleStatus.Decided, "O-2.19, " + S13));
+            r.Add(Deny("W2", ActionKind.WeaponSwap, any, ActionKind.Skill, o.BlockedInputBufferMs, RuleStatus.Decided, "Q4 (2026-10-16), O-2.19"));
             r.Add(Deny("W3", ActionKind.WeaponSwap, any, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Proposed, S13));
-            r.Add(Deny("W4", ActionKind.WeaponSwap, any, ActionKind.BasicStrike, o.BufferMs, RuleStatus.Gap, "belgede yok"));
+            r.Add(Deny("W4", ActionKind.WeaponSwap, any, ActionKind.BasicStrike, o.BlockedInputBufferMs, RuleStatus.Decided, "Q4 (2026-10-16)"));
 
             // --- Düz vuruş ---------------------------------------------------------------------
             // Dodge her düz vuruş fazını keser (bugünkü DodgeCancelRules: "skill ve düz vuruş kesilir").
             r.Add(Cancel("B1", ActionKind.BasicStrike, any, ActionKind.Dodge, false, false, RuleStatus.Decided, "O-3.11, DodgeCancelRules"));
             // Y24: klip sürerken gelen dokunuş sıraya alınır.
             r.Add(Deny("B2", ActionKind.BasicStrike, any, ActionKind.BasicStrike, o.StrikeQueueMs, RuleStatus.Decided, "Y24"));
-            // Belgede yok: düz vuruş sırasında skill/değişim → klip bitince başlasın (tampon).
-            r.Add(Deny("B3", ActionKind.BasicStrike, any, ActionKind.Skill, o.BufferMs, RuleStatus.Gap, "belgede yok"));
-            r.Add(Deny("B4", ActionKind.BasicStrike, any, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Gap, "belgede yok"));
+            // Q3: skill düz vuruşun animasyonunu keser. Vuruş karesinden önce (hazırlık) basılırsa vuruş etki etmez,
+            // sonra (toparlanma) basılırsa vuruş etki eder, yalnız animasyon skill'inkiyle değişir.
+            if (o.SkillCancelsStrike)
+            {
+                r.Add(Cancel("B3a", ActionKind.BasicStrike, ActionPhase.Windup | ActionPhase.Active, ActionKind.Skill, true, false, RuleStatus.Decided, "Q3 (2026-10-16)"));
+                r.Add(Cancel("B3b", ActionKind.BasicStrike, ActionPhase.Recovery, ActionKind.Skill, false, false, RuleStatus.Decided, "Q3 (2026-10-16)"));
+            }
+            else
+                r.Add(Deny("B3", ActionKind.BasicStrike, any, ActionKind.Skill, o.BufferMs, RuleStatus.Gap, "belgede yok"));
+            // Q4: zamanında (vuruş karesinden sonra) silah değişimi düz vuruşu keser ve zinciri sıfırlar; erken basış tampona girer.
+            if (o.SwapCancelsStrikeRecovery)
+            {
+                r.Add(Deny("B4a", ActionKind.BasicStrike, ActionPhase.Windup | ActionPhase.Active, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Decided, "Q4 (2026-10-16)"));
+                r.Add(Cancel("B4b", ActionKind.BasicStrike, ActionPhase.Recovery, ActionKind.WeaponSwap, false, false, RuleStatus.Decided, "Q4 (2026-10-16)"));
+            }
+            else
+                r.Add(Deny("B4", ActionKind.BasicStrike, any, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Gap, "belgede yok"));
 
             // --- Dodge çalışırken ----------------------------------------------------------------
             // Hak ve zincir kararı DodgeChain/DodgeChargeBank'ta; bu tablo yalnız "başka eylem keser mi"yi söyler.
             r.Add(Cancel("D1", ActionKind.Dodge, any, ActionKind.Dodge, false, false, RuleStatus.Decided, "15 §3 (DodgeChain karar verir)"));
-            r.Add(Deny("D2", ActionKind.Dodge, any, ActionKind.Skill, o.BufferMs, RuleStatus.Gap, "belgede yok"));
+            r.Add(Deny("D2", ActionKind.Dodge, any, ActionKind.Skill, o.BlockedInputBufferMs, RuleStatus.Decided, "Q4 (2026-10-16)"));
             r.Add(Deny("D3", ActionKind.Dodge, any, ActionKind.WeaponSwap, o.BufferMs, RuleStatus.Decided, "O-2.19"));
-            r.Add(Deny("D4", ActionKind.Dodge, any, ActionKind.BasicStrike, o.BufferMs, RuleStatus.Gap, "belgede yok"));
+            r.Add(Deny("D4", ActionKind.Dodge, any, ActionKind.BasicStrike, o.BlockedInputBufferMs, RuleStatus.Decided, "Q4 (2026-10-16)"));
 
             return new CancelRuleTable(r, new[]
             {

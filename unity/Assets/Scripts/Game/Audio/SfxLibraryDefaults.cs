@@ -23,9 +23,6 @@ namespace Dovus.Game.Audio
         public const float DodgePitchMax = 1.1f;
         public const float DodgeMinGapSec = 0.08f;
 
-        public const float PerfectDodgeVolume = 0.7f;
-        public const float PerfectDodgePitchMax = 1.05f;
-        public const float PerfectDodgeMinGapSec = 0.1f;
 
         public const float BossWindupPitchMin = 0.9f;
         public const float BossWindupMinGapSec = 0.3f;

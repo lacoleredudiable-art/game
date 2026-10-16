@@ -101,7 +101,7 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator O_5_4_MukemmelDodge_FovOranTabanininAltinaInmez()
+        public IEnumerator O_5_4_Dodge_FovOranTabanininAltinaInmez()
         {
             FreezeBoss();
             ParkAll();
@@ -109,11 +109,10 @@ namespace Dovus.Tests.PlayMode
             HexagonInputController input = InputController();
             yield return WaitSentenceIdle(input);
             CameraRenderedProbe probe = AddCameraProbe(Camera.main, 0f);
-            _label = "mükemmel dodge";
+            _label = "dodge";
             yield return PressDodgeUntilStarted(input);
-            // Gelen vuruş hasar borusunun girişinden: dodge penceresinin başında yutulursa mükemmeldir.
+            // Gelen vuruş hasar borusunun girişinden: dodge penceresinde yutulur.
             Assert.That(PlayerDodgeController.BlocksIncoming(_player), Is.True, "dodge gelen vuruşu yutmadı");
-            Assert.That(PlayerDodgeController.ConsumeNextHit(_player), Is.GreaterThan(1f), "mükemmel dodge tetiklenmedi");
             yield return new WaitForSecondsRealtime(PunchWatchSec);
             List<CameraRenderedProbe.Sample> samples = probe.Samples;
             Object.Destroy(probe.gameObject);

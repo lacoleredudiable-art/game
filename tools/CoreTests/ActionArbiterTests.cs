@@ -34,7 +34,7 @@ public sealed class ActionArbiterTests
     }
 
     [Test]
-    public void Dodge_in_windup_cuts_skill_without_cooldown()
+    public void Dodge_in_windup_cuts_skill_and_cooldown_is_spent()
     {
         var a = Make();
         a.Request(ActionKind.Skill, 1, 0);
@@ -42,23 +42,21 @@ public sealed class ActionArbiterTests
         Assert.That(r.Outcome, Is.EqualTo(ArbiterOutcome.Cancelled));
         Assert.That(r.CutKind, Is.EqualTo(ActionKind.Skill));
         Assert.That(r.Decision.FizzlesRunning, Is.True);
-        Assert.That(r.Decision.RefundsRunningCooldown, Is.True);
+        Assert.That(r.Decision.RefundsRunningCooldown, Is.False, "Q2: iade yok");
         Assert.That(a.Running.Kind, Is.EqualTo(ActionKind.Dodge));
     }
 
     [Test]
-    public void Dodge_in_active_is_buffered_and_fires_when_recovery_opens()
+    public void Dodge_in_active_cuts_skill_immediately()
     {
         var a = Make();
         a.Request(ActionKind.Skill, 1, 0);
-        // etki fazı 200–300: dodge 250'de basıldı → reddedilir, tampona girer (150 ms).
+        // Q1: etki fazı 200–300; dodge 250'de basıldı → hemen keser.
         ArbiterResult r = a.Request(ActionKind.Dodge, 0, 250);
-        Assert.That(r.Outcome, Is.EqualTo(ArbiterOutcome.Buffered));
-        Assert.That(a.Tick(299).Outcome, Is.EqualTo(ArbiterOutcome.None));
-        ArbiterResult fired = a.Tick(300);
-        Assert.That(fired.Outcome, Is.EqualTo(ArbiterOutcome.Cancelled));
-        Assert.That(fired.FromBuffer, Is.True);
-        Assert.That(fired.Plan.Kind, Is.EqualTo(ActionKind.Dodge));
+        Assert.That(r.Outcome, Is.EqualTo(ArbiterOutcome.Cancelled));
+        Assert.That(r.CutKind, Is.EqualTo(ActionKind.Skill));
+        Assert.That(r.Decision.FizzlesRunning, Is.False);
+        Assert.That(a.Running.Kind, Is.EqualTo(ActionKind.Dodge));
     }
 
     [Test]
@@ -74,20 +72,18 @@ public sealed class ActionArbiterTests
     }
 
     [Test]
-    public void Swap_cancels_recovery_then_own_recovery_blocks_next_skill_until_it_ends()
+    public void Swap_cancels_recovery_then_own_recovery_drops_skill_presses()
     {
         var a = Make();
         a.Request(ActionKind.Skill, 1, 0);
         ArbiterResult swap = a.Request(ActionKind.WeaponSwap, 0, 400);
         Assert.That(swap.Outcome, Is.EqualTo(ArbiterOutcome.Cancelled));
 
-        // Değişim sürerken (400–650) yeni skill: reddedilir, tampona girer.
+        // Q4: değişim sürerken (400–650) skill çalışmaz; atılır, saklanmaz.
         ArbiterResult s2 = a.Request(ActionKind.Skill, 2, 600);
-        Assert.That(s2.Outcome, Is.EqualTo(ArbiterOutcome.Buffered));
-        ArbiterResult go = a.Tick(650);
-        Assert.That(go.Outcome, Is.EqualTo(ArbiterOutcome.Started));
-        Assert.That(go.Plan.Token, Is.EqualTo(2));
-        Assert.That(go.FromBuffer, Is.True);
+        Assert.That(s2.Outcome, Is.EqualTo(ArbiterOutcome.Rejected));
+        Assert.That(a.Tick(650).Outcome, Is.EqualTo(ArbiterOutcome.None));
+        Assert.That(a.Request(ActionKind.Skill, 3, 650).Outcome, Is.EqualTo(ArbiterOutcome.Started));
     }
 
     [Test]
@@ -104,8 +100,8 @@ public sealed class ActionArbiterTests
     {
         var a = Make();
         a.Request(ActionKind.WeaponSwap, 0, 0); // 0–250, kimse kesemez
-        a.Request(ActionKind.BasicStrike, 0, 100);
-        a.Request(ActionKind.Skill, 5, 110);
+        a.Request(ActionKind.BasicStrike, 0, 100); // Q4: atılır
+        a.Request(ActionKind.Skill, 5, 110); // Q4: atılır
         a.Request(ActionKind.Dodge, 0, 120);
         ArbiterResult r = a.Tick(250);
         Assert.That(r.Plan.Kind, Is.EqualTo(ActionKind.Dodge));
@@ -140,8 +136,62 @@ public sealed class ActionArbiterTests
         var seen = new List<ActionKind>();
         a.OnStarted = (p, t) => seen.Add(p.Kind);
         a.Request(ActionKind.WeaponSwap, 0, 0);
-        a.Request(ActionKind.Skill, 1, 150);
+        a.Request(ActionKind.Dodge, 0, 150); // swap sürerken dodge tampona girer
         a.Tick(250);
-        Assert.That(seen, Is.EqualTo(new[] { ActionKind.WeaponSwap, ActionKind.Skill }));
+        Assert.That(seen, Is.EqualTo(new[] { ActionKind.WeaponSwap, ActionKind.Dodge }));
+    }
+
+    // Düz vuruş: hazırlık 200 (vuruş karesi) + toparlanma 200.
+    [Test]
+    public void Skill_before_strike_hit_frame_cancels_strike_and_it_does_not_land()
+    {
+        var a = Make();
+        a.Request(ActionKind.BasicStrike, 0, 0);
+        ArbiterResult r = a.Request(ActionKind.Skill, 1, 150);
+        Assert.That(r.Outcome, Is.EqualTo(ArbiterOutcome.Cancelled));
+        Assert.That(r.CutKind, Is.EqualTo(ActionKind.BasicStrike));
+        Assert.That(r.Decision.FizzlesRunning, Is.True);
+    }
+
+    [Test]
+    public void Skill_after_strike_hit_frame_cancels_animation_but_hit_lands()
+    {
+        var a = Make();
+        a.Request(ActionKind.BasicStrike, 0, 0);
+        ArbiterResult r = a.Request(ActionKind.Skill, 1, 200); // vuruş karesi tam bu an
+        Assert.That(r.Outcome, Is.EqualTo(ArbiterOutcome.Cancelled));
+        Assert.That(r.Decision.FizzlesRunning, Is.False);
+        Assert.That(a.Running.Kind, Is.EqualTo(ActionKind.Skill));
+    }
+
+    [Test]
+    public void Swap_after_strike_hit_frame_cuts_it_and_early_swap_waits_in_buffer()
+    {
+        var a = Make();
+        a.Request(ActionKind.BasicStrike, 0, 0);
+        Assert.That(a.Request(ActionKind.WeaponSwap, 0, 100).Outcome, Is.EqualTo(ArbiterOutcome.Buffered));
+        ArbiterResult go = a.Tick(200);
+        Assert.That(go.Outcome, Is.EqualTo(ArbiterOutcome.Cancelled), "tampondaki swap vuruş karesi açılınca keser");
+        Assert.That(go.Plan.Kind, Is.EqualTo(ActionKind.WeaponSwap));
+    }
+
+    [Test]
+    public void Strike_during_dodge_is_dropped()
+    {
+        var a = Make();
+        a.Request(ActionKind.Dodge, 0, 0);
+        Assert.That(a.Request(ActionKind.BasicStrike, 0, 100).Outcome, Is.EqualTo(ArbiterOutcome.Rejected));
+        Assert.That(a.Request(ActionKind.Skill, 1, 100).Outcome, Is.EqualTo(ArbiterOutcome.Rejected));
+        Assert.That(a.Tick(400).Outcome, Is.EqualTo(ArbiterOutcome.None));
+    }
+
+    [Test]
+    public void Strike_tap_during_skill_recovery_waits_and_does_not_cut()
+    {
+        var a = Make();
+        a.Request(ActionKind.Skill, 1, 0);
+        Assert.That(a.Request(ActionKind.BasicStrike, 0, 900).Outcome, Is.EqualTo(ArbiterOutcome.Buffered));
+        Assert.That(a.Running.Kind, Is.EqualTo(ActionKind.Skill));
+        Assert.That(a.Tick(1000).Plan.Kind, Is.EqualTo(ActionKind.BasicStrike));
     }
 }

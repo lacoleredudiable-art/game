@@ -160,28 +160,9 @@ namespace Dovus.Game.Feel
                 if (_visualFreeze != null)
                     _visualFreeze.Trigger(feel.HitstopPerfectMs / 1000f);
 
-                float kick = result.Grade == DodgeGrade.Mukemmel
-                    ? feel.CameraPerfectZoomKick
-                    : feel.CameraDodgeZoomKick;
+                float kick = feel.CameraDodgeZoomKick;
                 _follow?.Punch(kick, feel.CameraRollDeg, feel.ShakePerfectPx, feel.ShakeDecay);
                 _impactUntil = Time.unscaledTime + feel.ImpactFrameMs / 1000f;
-
-                if (result.Grade == DodgeGrade.Mukemmel)
-                {
-                    _haptics?.Pulse(feel.PerfectDodgeHapticMs);
-                    if (_afterimage != null && _playerTransform != null)
-                    {
-                        _afterimage.EmitBurst(
-                            _playerTransform.position,
-                            _playerTransform.rotation,
-                            _playerTransform.lossyScale,
-                            feel.PerfectDodgeAfterimageCount,
-                            feel.PerfectDodgeAfterimageLifeMs);
-                    }
-
-                    DebugConfig.DevLog(
-                        $"[Feel2Verify] perfect-dodge haptic={feel.PerfectDodgeHapticMs}ms afterimages={feel.PerfectDodgeAfterimageCount}");
-                }
             }
             else if (result.Outcome == ExchangeOutcome.Hit)
             {

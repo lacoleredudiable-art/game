@@ -14,7 +14,7 @@ public sealed class ClassSizeRatchetTests
     // spec'te yok: mevcut toplamlar (yalnız aşağı ratchet; değer = gerçek toplam)
     static readonly Dictionary<string, int> Allowlist = new()
     {
-        ["ManifestationDirector"] = 3371,
+        ["ManifestationDirector"] = 3370,
         ["PlaySweep"] = 2445,
         ["HexagonView"] = 1093,
         ["BossDirector"] = 1112,
@@ -22,7 +22,7 @@ public sealed class ClassSizeRatchetTests
         ["PortalSystem"] = 979,
         ["MixamoAnimatorBind"] = 843,
         ["BuildSelectHud"] = 836,
-        ["TuningPanelHud"] = 811,
+        ["TuningPanelHud"] = 807,
         ["VitalsHud"] = 753,
         ["MechanicWorldRuntime"] = 733,
         ["MechanicGrammar"] = 722,

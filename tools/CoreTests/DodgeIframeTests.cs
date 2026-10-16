@@ -79,19 +79,7 @@ public class DodgeIframeTests
     }
 
     [Test]
-    public void PerfectWindow_IsTheFirstSliceOfIframes()
-    {
-        var tuning = new DodgeTuning();
-        int press = 5000;
-        Assert.That(PerfectDodgeRule.InWindow(press, press, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.True);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 149, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.True);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 150, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.False);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 200, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.False);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 299, tuning.IframeStartMs, tuning.IframeMs, 0), Is.False);
-    }
-
-    [Test]
-    public void PerfectRefund_ReturnsOneCharge_WithoutPassingMax()
+    public void Refund_ReturnsOneCharge_WithoutPassingMax()
     {
         var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 6000 });
         bank.TrySpend(0);
@@ -114,19 +102,6 @@ public class DodgeIframeTests
         bank.Refund(0.5f);
         Assert.That(bank.Ready, Is.EqualTo(0));
         Assert.That(bank.Fill01, Is.EqualTo(0.5f).Within(0.02f));
-    }
-
-    [Test]
-    public void NextHitBuff_ConsumesOnce()
-    {
-        var buff = new NextHitBuff();
-        Assert.That(buff.Multiplier, Is.EqualTo(1f));
-        Assert.That(buff.IsArmed, Is.False);
-
-        buff.Arm(1.3f);
-        Assert.That(buff.Consume(), Is.EqualTo(1.3f).Within(0.0001f));
-        Assert.That(buff.Consume(), Is.EqualTo(1f));
-        Assert.That(buff.IsArmed, Is.False);
     }
 
     [Test]

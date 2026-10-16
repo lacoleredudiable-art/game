@@ -13,22 +13,43 @@ namespace Dovus.Core.Cancel
         public int StrikeQueueMs = CancelDefaults.StrikeQueueMs;
 
         /// <summary>
-        /// 13 §9 [Ö] + 15 §4: hazırlıkta dodge ile kesilen skill'in CD'si yanmaz (true).
-        /// 10 O-3.5: "mana ve cooldown harcanır" (false). Belgeler çelişiyor; 13 üstte olduğu için true.
+        /// [K] Mustafa 2026-10-16 Q2: hazırlıkta dodge ile kesilen skill'in bekleme süresi yanar, iade yok (false).
+        /// Oyunda genel kural: iade yok. true yapmak 13 §9 / 15 §4'ün eski önerisine döner.
         /// </summary>
-        public bool WindupDodgeRefundsCooldown = true;
+        public bool WindupDodgeRefundsCooldown = false;
 
         /// <summary>
-        /// 13 §9 [Ö] + 15 §4: "Etki kesilmez" (false). 10 O-3.11 ve bugünkü <c>DodgeCancelRules</c>:
-        /// dodge her durumdan çıkar (true). Çelişki; 13/15 üstte olduğu için false.
+        /// [K] Mustafa 2026-10-16 Q1: dodge skill'i etki anında da hemen keser (true). 10 O-3.11 ile uyumlu.
+        /// false: etki kesilmez, dodge tampona girer (13 §9 / 15 §4'ün eski önerisi).
         /// </summary>
-        public bool DodgeCancelsSkillActive = false;
+        public bool DodgeCancelsSkillActive = true;
 
         /// <summary>13 §9 [Ö]: skill toparlanması silah değişimiyle kesilir.</summary>
         public bool SwapCancelsSkillRecovery = true;
 
-        /// <summary>13 §9 [Ö]: skill toparlanması düz vuruşla kesilir (düz vuruş sıfırlama / weave).</summary>
-        public bool StrikeCancelsSkillRecovery = true;
+        /// <summary>
+        /// [K] Mustafa 2026-10-16 Q3: skill toparlanması düz vuruşla KESİLMEZ (false); düz vuruş tampona girer.
+        /// </summary>
+        public bool StrikeCancelsSkillRecovery = false;
+
+        /// <summary>
+        /// [K] Mustafa 2026-10-16 Q3: düz vuruş sürerken skill basılırsa skill düz vuruşun animasyonunu keser (true).
+        /// Vuruş karesinden önce basılırsa düz vuruş etki etmez, sonra basılırsa etki eder, animasyon skill'inkiyle değişir.
+        /// </summary>
+        public bool SkillCancelsStrike = true;
+
+        /// <summary>
+        /// [K] Mustafa 2026-10-16 Q4: düz vuruş sırasında zamanında (vuruş karesinden sonra, toparlanmada) silah değişimi
+        /// düz vuruşu keser ve zinciri sıfırlar (true). Daha erken basılırsa reddedilir, <see cref="BufferMs"/> kadar saklanır.
+        /// "Zamanında" penceresi = vuruş karesinden sonrası (basit okuma; kullanıcı ayrı süre verirse buraya girer).
+        /// </summary>
+        public bool SwapCancelsStrikeRecovery = true;
+
+        /// <summary>
+        /// [K] Mustafa 2026-10-16 Q4: dodge ya da silah değişimi sürerken gelen skill / düz vuruş "çalışmaz".
+        /// Basit okuma: girdi atılır, saklanmaz (0 ms). Sıraya alınsın istenirse tek bu sayı yükseltilir.
+        /// </summary>
+        public int BlockedInputBufferMs = 0;
 
         /// <summary>13 §9 [Ö]: skill/silah değişimi başlayınca düz vuruş sayacı sıfırlanır.</summary>
         public bool WeaveResetsStrikeCounter = true;

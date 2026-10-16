@@ -29,13 +29,6 @@ namespace Dovus.Core.Tuning
         public float CombinedDistanceMult = 1.6f;
         /// <summary>Birleşik kaçış süre çarpanı (his varsayılanı; spec'te yok).</summary>
         public float CombinedDurationMult = 1.4f;
-        /// <summary>O2: TEK mükemmel pencere — PERFECT derecesi, yük iadesi ve sonraki vuruş bonusu (spec'te yok → 150).</summary>
-        public int PerfectWindowMs = 150;
-        public float PerfectNextHitMult = 1.3f;
-        /// <summary>S1: mükemmel sıyırmanın ×PerfectNextHitMult bonusu bu süre içinde vurulmazsa düşer (his varsayılanı; spec'te yok).</summary>
-        public int PerfectNextHitWindowMs = 2000;
-        public float PerfectChargeRefund = 1f;
-        public float PerfectFeelSec = 0.2f;
         public float EdgeGapM = 0.15f;
         public int TelegraphLeadMs = 700;
 
@@ -73,11 +66,6 @@ namespace Dovus.Core.Tuning
             CombinedIframeMs = other.CombinedIframeMs;
             CombinedDistanceMult = other.CombinedDistanceMult;
             CombinedDurationMult = other.CombinedDurationMult;
-            PerfectWindowMs = other.PerfectWindowMs;
-            PerfectNextHitMult = other.PerfectNextHitMult;
-            PerfectNextHitWindowMs = other.PerfectNextHitWindowMs;
-            PerfectChargeRefund = other.PerfectChargeRefund;
-            PerfectFeelSec = other.PerfectFeelSec;
             EdgeGapM = other.EdgeGapM;
             TelegraphLeadMs = other.TelegraphLeadMs;
             SlideMinRatio = other.SlideMinRatio;
