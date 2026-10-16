@@ -92,7 +92,7 @@ public class RootAndSkillNumberTests
         int oldRoot = tuning.RootMs;
         SkillNumberTuningApplier.ApplyCcDurations(catalog, tuning);
         MobilityCcData mobility = SliceGrammarTestPaths.SliceMobilityCc();
-        int jsonRootMs = mobility.CcDurationsMs[StatusKind.Root];
+        int jsonRootMs = (int)mobility.CcDurationsMs[StatusKind.Root];
         Assert.That(tuning.RootMs, Is.EqualTo(jsonRootMs));
         Assert.That(tuning.RootMs, Is.Not.EqualTo(oldRoot));
 

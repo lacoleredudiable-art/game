@@ -92,8 +92,8 @@ namespace Dovus.Core.Casting
         static Dictionary<StatusKind, int> ReadCcDurations(MobilityCcData mobility)
         {
             var map = new Dictionary<StatusKind, int>();
-            foreach (KeyValuePair<StatusKind, int> kv in mobility.CcDurationsMs)
-                map[kv.Key] = kv.Value;
+            foreach (KeyValuePair<StatusKind, double> kv in mobility.CcDurationsMs)
+                map[kv.Key] = (int)Math.Round(kv.Value);
             return map;
         }
 

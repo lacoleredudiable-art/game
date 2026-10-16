@@ -5,7 +5,6 @@ using System.Text;
 using Dovus.Core;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
-using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 namespace Dovus.Core.Status
 {
@@ -34,20 +33,6 @@ namespace Dovus.Core.Status
 
         public static MobilityCcData FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
-
-        /// <summary>Dilim: mobility_cc tablosu katalogdan; SkillMotor JSON'unda <c>mobility_cc</c> yok.</summary>
-        public static MobilityCcData ForSlice(RuleEngineV4Catalog catalog)
-        {
-            if (catalog == null)
-                throw new ArgumentNullException(nameof(catalog));
-            IReadOnlyList<int> runes = catalog.SliceRunes;
-            var root = JsonValue.Of(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
-            {
-                ["mobility_cc"] = SliceGrammarFromV4.BuildMobilityCc(catalog, runes),
-                ["adjective_mods"] = SliceGrammarFromV4.BuildAdjectiveMods(catalog, runes),
-            });
-            return FromJsonRoot(root);
-        }
 
         public static MobilityCcData FromJsonRoot(JsonValue root)
         {
@@ -171,7 +156,7 @@ namespace Dovus.Core.Status
             _ => MediumPoise
         };
 
-        internal IReadOnlyDictionary<StatusKind, int> CcDurationsMs => _ccDurationMs;
+        internal IReadOnlyDictionary<StatusKind, double> CcDurationsMs => _ccDurationMs;
 
         void ParsePriorityPair(string key, string result)
         {

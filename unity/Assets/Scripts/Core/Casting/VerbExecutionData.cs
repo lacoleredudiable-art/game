@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
-using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 namespace Dovus.Core.Casting
 {
@@ -59,23 +58,6 @@ namespace Dovus.Core.Casting
 
         public static VerbExecutionData FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
-
-        /// <summary>Dilim: hitbox boyutları <see cref="SliceGrammarFromV4"/> meta + katalog; JSON'da <c>hitbox_vfx</c> yok.</summary>
-        public static VerbExecutionData ForSlice(RuleEngineV4Catalog catalog)
-        {
-            if (catalog == null)
-                throw new ArgumentNullException(nameof(catalog));
-            IReadOnlyList<int> runes = catalog.SliceRunes;
-            var root = JsonValue.Of(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
-            {
-                ["hitbox_vfx"] = SliceGrammarFromV4.BuildHitboxVfx(catalog, runes),
-                ["mobility_cc"] = JsonValue.Of(new Dictionary<string, JsonValue>(StringComparer.Ordinal)
-                {
-                    ["i_frame"] = SliceGrammarFromV4.BuildMobilityCc(catalog, runes)["i_frame"],
-                }),
-            });
-            return FromJsonRoot(root);
-        }
 
         public static VerbExecutionData FromJsonRoot(JsonValue root)
         {
