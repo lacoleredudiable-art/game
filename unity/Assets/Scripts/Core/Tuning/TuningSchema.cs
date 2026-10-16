@@ -12,7 +12,7 @@ namespace Dovus.Core.Tuning
     /// Sürüm 12 = dodge zincir test değerleri: T_tek 500, birleşme penceresi 500, T_zincir 1300 ms (15-dodge-tasarimi §3.4).
     /// Sürüm 13 = süzülme kuyruğu 120 → 400 ms (O-4.4a): hareket birleşme penceresini örter, takla süzülmede de tutar.
     /// Sürüm 14 = O-4.9 engelde kayma ayarları (SlideMinRatio, EngineChoiceT, SlideScanPadM, SlideMaxIter, SlideStallRatio).
-    /// Sürüm 15 = mükemmel dodge hak iadesi kalktı (PerfectChargeRefund silindi; oyunda iade yok, Q16 2026-10-16).
+    /// Sürüm 15 = mükemmel dodge tamamen kalktı (hak iadesi, ×1,3 sonraki vuruş, ağır çekim, ses/titreşim/after-image; PerfectWindowMs vb. ayarlar silindi; oyunda iade yok, Q16 2026-10-16).
     /// </summary>
     public static class TuningSchema
     {

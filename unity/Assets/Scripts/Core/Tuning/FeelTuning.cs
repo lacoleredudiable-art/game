@@ -20,7 +20,6 @@ namespace Dovus.Core.Tuning
         // spec'te yok — his varsayılanı; görsel, hasar anını değiştirmez
         public float BasicStrikeAnimSpeed = 1.2f;
 
-        public float CameraPerfectZoomKick = 0.14f;
         public float CameraDodgeZoomKick = 0.08f;
         public float CameraRollDeg = 1.5f;
         public float ShakePerfectPx = 6f;
@@ -49,10 +48,7 @@ namespace Dovus.Core.Tuning
         public int BossHitFlashMs = 90;
         public float HitFlashStrength = 0.85f;
         public float PlayerHitVignetteSec = 0.30f;
-        public int PerfectDodgeHapticMs = 25;
         public int PlayerHitHapticMs = 25;
-        public int PerfectDodgeAfterimageCount = 5;
-        public int PerfectDodgeAfterimageLifeMs = 200;
         public bool HitImpactEnabled = true;
         public int HitImpactMaxConcurrent = 8;
         public float HitImpactLifeSec = 0.35f;
@@ -99,7 +95,6 @@ namespace Dovus.Core.Tuning
             PostHitSilenceMs = other.PostHitSilenceMs;
             BasicStrikeAnimSpeed = other.BasicStrikeAnimSpeed;
 
-            CameraPerfectZoomKick = other.CameraPerfectZoomKick;
             CameraDodgeZoomKick = other.CameraDodgeZoomKick;
             CameraRollDeg = other.CameraRollDeg;
             ShakePerfectPx = other.ShakePerfectPx;
@@ -121,10 +116,7 @@ namespace Dovus.Core.Tuning
             BossHitFlashMs = other.BossHitFlashMs;
             HitFlashStrength = other.HitFlashStrength;
             PlayerHitVignetteSec = other.PlayerHitVignetteSec;
-            PerfectDodgeHapticMs = other.PerfectDodgeHapticMs;
             PlayerHitHapticMs = other.PlayerHitHapticMs;
-            PerfectDodgeAfterimageCount = other.PerfectDodgeAfterimageCount;
-            PerfectDodgeAfterimageLifeMs = other.PerfectDodgeAfterimageLifeMs;
             HitImpactEnabled = other.HitImpactEnabled;
             HitImpactMaxConcurrent = other.HitImpactMaxConcurrent;
             HitImpactLifeSec = other.HitImpactLifeSec;
