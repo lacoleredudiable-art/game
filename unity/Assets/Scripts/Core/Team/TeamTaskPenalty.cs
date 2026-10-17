@@ -8,15 +8,19 @@ namespace Dovus.Core.Team
         public static TeamTaskPenaltyResult Resolve(TeamTaskKind kind, TeamDifficulty difficulty)
         {
             bool exposedDie = kind == TeamTaskKind.AshRain && difficulty != TeamDifficulty.Training;
+            // KE-6.13 ([K] 17 Ekim): Kül Yağmuru'nda şerit dışındaki ölür, takıma ayrıca ceza yok (Cehennem hariç)
+            bool teamPenalty = kind != TeamTaskKind.AshRain;
             switch (difficulty)
             {
                 case TeamDifficulty.Training:
                     return new TeamTaskPenaltyResult(false, 0f, 0f, false, "Görev kaçtı — " + Hint(kind));
                 case TeamDifficulty.Normal:
-                    return new TeamTaskPenaltyResult(false, TeamTaskDefaults.PenaltyNormalHpFraction, 0f, exposedDie, "Görev kaçtı");
+                    float normal = teamPenalty ? TeamTaskDefaults.PenaltyNormalHpFraction : 0f;
+                    return new TeamTaskPenaltyResult(false, normal, 0f, exposedDie, "Görev kaçtı");
                 case TeamDifficulty.Hard:
+                    float hard = teamPenalty ? TeamTaskDefaults.PenaltyHardHpFraction : 0f;
                     float reset = kind == TeamTaskKind.HeartSeal ? TeamTaskDefaults.PenaltyHardHeartSealBossHpRatio : 0f;
-                    return new TeamTaskPenaltyResult(false, TeamTaskDefaults.PenaltyHardHpFraction, reset, exposedDie, "Görev kaçtı");
+                    return new TeamTaskPenaltyResult(false, hard, reset, exposedDie, "Görev kaçtı");
                 default:
                     return new TeamTaskPenaltyResult(true, 1f, 0f, exposedDie, "Tur yandı");
             }

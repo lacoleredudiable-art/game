@@ -35,7 +35,9 @@ namespace Dovus.Core.Team
                 if (t.FirstAtPhaseSec >= 0.0)
                 {
                     if (phaseSec < 0.0 || phaseSec < t.NextAtPhaseSec) continue;
-                    t.NextAtPhaseSec = phaseSec + t.RepeatSec; // tetik ne zaman işlerse, süre oradan sayılır
+                    // KE-7.6 sabit döngü: tetik geç işlese de bir sonraki yuva first + k × repeat'te kalır
+                    t.NextAtPhaseSec = t.FirstAtPhaseSec
+                        + (Math.Floor((phaseSec - t.FirstAtPhaseSec) / t.RepeatSec) + 1) * t.RepeatSec;
                     return t.Kind;
                 }
                 if (t.Fired || hpRatio > t.HpBelow) continue;

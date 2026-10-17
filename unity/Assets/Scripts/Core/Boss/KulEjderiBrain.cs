@@ -52,8 +52,12 @@ namespace Dovus.Core.Boss
         /// <summary>Faz başlangıcı (duyurulu saldırı sayacı buradan işler).</summary>
         public double PhaseStartMs => _phaseStartMs;
 
-        /// <summary>Açık kalma ya da sendeleme: boss'un vurma penceresi.</summary>
-        public bool IsOpen => _state == KulEjderiState.Recovery || _state == KulEjderiState.Staggered;
+        /// <summary>Açık kalma, sendeleme ya da Kor Mührü çökmesi: boss'un vurma penceresi.</summary>
+        public bool IsOpen =>
+            _state == KulEjderiState.Recovery || _state == KulEjderiState.Staggered || _state == KulEjderiState.Collapsed;
+
+        /// <summary>KE-7.8 çökme sürüyor: bütün bölgeler ×2,0 (<see cref="KulEjderiHitZones"/>).</summary>
+        public bool IsCollapsed => _state == KulEjderiState.Collapsed;
 
         /// <summary>Uyanış, geçiş ve ölüm sinemalarında boss hasar almaz.</summary>
         public bool AcceptsDamage =>
@@ -61,6 +65,12 @@ namespace Dovus.Core.Boss
             && _state != KulEjderiState.Dying && _state != KulEjderiState.Dead;
 
         public bool IsResistant(double worldMs) => worldMs < _resistantUntilMs;
+
+        /// <summary>KE-5.3: uyanış sinemasında oyuncular hasar almaz.</summary>
+        public bool PlayersProtected => _state == KulEjderiState.Awakening;
+
+        /// <summary>KE-5.2: oyuncu Z > −2 çizgisini geçti mi (uyanma tetiği; hasar vermek de uyandırır).</summary>
+        public static bool CrossesWakeLine(float playerZ) => playerZ > KulEjderiDefaults.WakeLineZ;
 
         /// <summary>Ön işaret ilerlemesi 0-1 (ön işaret dışında 0).</summary>
         public float TelegraphProgress01(double worldMs)
@@ -78,15 +88,18 @@ namespace Dovus.Core.Boss
             _events.Clear();
         }
 
-        /// <summary>KE-5.2: oyuncu çizgiyi geçti ya da ejderhaya hasar verdi. true = uyanış başladı.</summary>
-        public bool Wake(double worldMs)
+        /// <summary>
+        /// KE-5.2: oyuncu çizgiyi geçti ya da ejderhaya hasar verdi. true = uyanış başladı.
+        /// KE-5.3: ilk girişte 4 s (replik + kükreme), "Tekrar"da (<paramref name="isRetry"/>) 2 s.
+        /// </summary>
+        public bool Wake(double worldMs, bool isRetry = false)
         {
             if (!Enabled || _state != KulEjderiState.Sleeping)
                 return false;
             _fightStartMs = worldMs;
             _state = KulEjderiState.Awakening;
             _stateStartMs = worldMs;
-            _stateEndMs = worldMs + KulEjderiDefaults.AwakenMs;
+            _stateEndMs = worldMs + (isRetry ? KulEjderiDefaults.AwakenRetryMs : KulEjderiDefaults.AwakenMs);
             Emit(KulEjderiEventKind.Awakened, worldMs, null);
             return true;
         }
@@ -134,10 +147,43 @@ namespace Dovus.Core.Boss
                     CancelCurrent(worldMs);
                     EnterStagger(worldMs, durationMs);
                     return true;
+                case KulEjderiState.Collapsed:
+                    throw OpenCollapseStaggerQuestion();
                 default:
                     return false;
             }
         }
+
+        /// <summary>
+        /// KE-7.8 Kor Mührü başarısı (yalnız faz 3): plakalar açılır, ejderha 12 s çöker, bütün bölgeler ×2,0.
+        /// Süren saldırı iptal olur. true = çökme başladı.
+        /// </summary>
+        public bool BeginCollapse(double worldMs)
+        {
+            if (!Enabled || _phase != KulEjderiPhase.Phase3)
+                return false;
+            switch (_state)
+            {
+                case KulEjderiState.Idle:
+                case KulEjderiState.Telegraph:
+                case KulEjderiState.Active:
+                case KulEjderiState.Recovery:
+                    CancelCurrent(worldMs);
+                    _state = KulEjderiState.Collapsed;
+                    _stateStartMs = worldMs;
+                    _stateEndMs = worldMs + KulEjderiDefaults.HeartSealCollapseMs;
+                    Emit(KulEjderiEventKind.CollapseStarted, worldMs, null);
+                    return true;
+                case KulEjderiState.Staggered:
+                    throw OpenCollapseStaggerQuestion();
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>[AÇIK] KE-7.8: çökme ile sendeleme üst üste gelirse ne olacağı karar verilmedi; sessiz seçim yok.</summary>
+        static InvalidOperationException OpenCollapseStaggerQuestion() => new InvalidOperationException(
+            "[AÇIK] KE-7.8: çökme sırasında sendeleme (×1,5 ile ×2,0 çarpılır mı, büyüğü mü geçer) karar verilmedi.");
 
         public void Tick(double worldMs)
         {
@@ -184,6 +230,12 @@ namespace Dovus.Core.Boss
                     if (worldMs < _stateEndMs)
                         return false;
                     Emit(KulEjderiEventKind.StaggerEnded, _stateEndMs, null);
+                    EnterIdle(_stateEndMs, NextGapMs());
+                    return true;
+                case KulEjderiState.Collapsed:
+                    if (worldMs < _stateEndMs)
+                        return false;
+                    Emit(KulEjderiEventKind.CollapseEnded, _stateEndMs, null);
                     EnterIdle(_stateEndMs, NextGapMs());
                     return true;
                 case KulEjderiState.Transition:
@@ -343,11 +395,26 @@ namespace Dovus.Core.Boss
         {
             _phase = phase;
             _phaseStartMs = startMs;
-            _nextAnnouncedMs = startMs + KulEjderiDefaults.FirstAnnouncedAfterPhaseStartMs;
+            _nextAnnouncedMs = phase == KulEjderiPhase.Phase3
+                ? Phase3FirstCraterHeartMs()
+                : startMs + KulEjderiDefaults.FirstAnnouncedAfterPhaseStartMs;
         }
+
+        /// <summary>KE-7.6: faz 3'te Kraterin Kalbi döngünün 28. saniyesinde (döngü fazın 5. saniyesinde başlar).</summary>
+        double Phase3FirstCraterHeartMs() =>
+            _phaseStartMs + KulEjderiDefaults.Phase3CycleStartMs + KulEjderiDefaults.Phase3CraterHeartAtMs;
 
         void ScheduleNextAnnounced(double fromMs)
         {
+            if (_phase == KulEjderiPhase.Phase3)
+            {
+                // KE-7.6 sabit 40 s döngü: geç başlayan duyuru bir sonraki yuvayı kaydırmaz
+                double first = Phase3FirstCraterHeartMs();
+                double k = Math.Floor((fromMs - first) / KulEjderiDefaults.Phase3CycleMs) + 1;
+                _nextAnnouncedMs = first + Math.Max(0, k) * KulEjderiDefaults.Phase3CycleMs;
+                return;
+            }
+
             int span = KulEjderiDefaults.AnnouncedIntervalMaxMs - KulEjderiDefaults.AnnouncedIntervalMinMs;
             _nextAnnouncedMs = fromMs + KulEjderiDefaults.AnnouncedIntervalMinMs + _rng.Next(span + 1);
         }

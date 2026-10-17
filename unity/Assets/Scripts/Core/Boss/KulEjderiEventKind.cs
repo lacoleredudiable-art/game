@@ -13,6 +13,9 @@ namespace Dovus.Core.Boss
         Cancelled,
         StaggerStarted,
         StaggerEnded,
+        /// <summary>KE-7.8 Kor Mührü başarısı: plakalar açılır, ejderha çöker.</summary>
+        CollapseStarted,
+        CollapseEnded,
         TransitionStarted,
         PhaseChanged,
         Enraged,

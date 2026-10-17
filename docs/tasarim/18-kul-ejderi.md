@@ -14,7 +14,9 @@ belgesinde yazılacak; bu belge arenadan yalnız boss'un kullandığı noktalar�
 ölçüldü); menzil parçanın en yakın yüzeyine ölçülür (K2, KE-2.6); faz 2'de pençeler yerinde kalır (K3); Kor Mührü
 ödülü çökme, kalbe vurulmaz (K4, KE-7.8); Kanat Savuruşu'nda kanat güney kenara kadar süpürür (K5, KE-6.6); kanat
 koru faz 2'de yanar (K6, SI-5.3); uyanış ilk girişte 4 s, "Tekrar"da 2 s (K7, KE-5.3); faz 3 sabit döngü (K8,
-KE-7.6); Kül Yağmuru'nda takım cezası yok (K9, KE-6.13).
+KE-7.6); Kül Yağmuru'nda takım cezası yok (K9, KE-6.13); her silah her bölgeye vurur, yüksek bölgelerin altında yere
+inen vuruş sütunu vardır, menzil kuralı değişmez (K10, KE-2.12; KE-2.10 kapandı); sütundan gelen vuruş en estetik
+biçimde gösterilir: kor hilali (K11, KE-2.12).
 
 ---
 
@@ -51,17 +53,18 @@ KE-7.6); Kül Yağmuru'nda takım cezası yok (K9, KE-6.13).
 | KE-2.3 | Baş (faz 1, yatarken) | 9 m uzun, 7 m yüksek. Burun ucu (0, 7), kafatasının arkası (0, 16,5); çenenin alt yüzü yerden ~2,5 m yukarıda. Boyun Z = 16,5–18 arasında göğse girer | YÖN + v2 model | T |
 | KE-2.4 | Ön pençeler | İki pençe, her biri 5,2 m uzun, 4,2 m geniş; tırnak ucu Z 11,3, topuk Z 16,5. Sol (batı) pençe merkezi (−8, 13,7), sağ (doğu) (8, 13,7). Bacak dirsekten geriye bükülür, omuz göğse (Z ≈ 19, 10 m yükseklik) girer | Tripo bacak modeli (12 Ekim, `ejder_on` v0) | T |
 | KE-2.5 | Çarpışma (oyuncu boss'un içine giremez) | Baş: kapsül, yarıçap 3,0 m, eksen Z, (0, 3, 9) – (0, 3, 15). Her pençe: kapsül, yarıçap 2,0 m, yükseklik 4 m, merkez (±8, 2, 13,7); bacak: kapsül, yarıçap 1,5 m, (±7,5, 0, 15) – (±7,4, 10, 19). Boyun ve gövde: duvar. Faz 2 ve 3'te konumlar KE-6'daki gibi değişir | ÖNERİ | T, G |
-| KE-2.6 | Tek gövde yarıçabı kuralı | `02` D-1'deki "boss 2,5 m" tek kapsülü bu boss'ta geçersiz; boss parçalardan oluşur. Menzil, parçanın oyuncuya en yakın yüzeyine üç boyutlu ölçülür, merkezine değil (K 22:15 kenardan ölçüm kuralı; [K] 17 Ekim). Örnek: faz 2'de oyuncu Z 2'de, başın alt yüzüne 11,7 m (Yay 14,1 m ile vurur), başın merkezine 17,1 m | ÖNERİ + [K] | T |
+| KE-2.6 | Tek gövde yarıçabı kuralı | `02` D-1'deki "boss 2,5 m" tek kapsülü bu boss'ta geçersiz; boss parçalardan oluşur. Menzil, parçanın oyuncuya en yakın yüzeyine üç boyutlu ölçülür, merkezine değil (K 22:15 kenardan ölçüm kuralı; [K] 17 Ekim). Ölçü, bölgenin vuruş kutusuna yapılır (KE-2.12). Örnek: faz 2'de oyuncu Z 2'de yerde: başın gövde kutusuna 12,0 m (Yay 14,1 m ile doğrudan vurur), baş sütununa yatay 6,5 m (Kılıç 6 m ulaşmaz; başın altına girmeli) | ÖNERİ + [K] | T |
 | KE-2.7 | Hareket | Boss yürümez, yer değiştirmez. Baş, kuzeyden (güneye bakış yönü) sağa ve sola en çok 60° döner, en çok 30 °/s (SI-8.3). O-6.5'teki 90 °/s gövde dönüşü bu boss'ta kullanılmaz | ÖNERİ | T |
 
 ### 2.1 Vurulabilir bölgeler
 
 | Kimlik | Bölge | Hangi fazda | Hasar çarpanı | Not |
 |---|---|---|---|---|
-| KE-2.8 | Baş | 1, 2, 3 | ×1,0 | Faz 2'de baş 10–24 m yüksekte (alt yüzü 10 m): yakın silahlar yalnız sendelemede (KE-8.1) ulaşır; menzil ≥ 14 m silahlar (Yay, Asa, Top, Tılsım) her zaman ulaşır (KE-2.6) |
+| KE-2.8 | Baş | 1, 2, 3 | ×1,0 | Her silah vurur ([K] 17 Ekim). Faz 2'de baş 10–25 m yüksekte (alt yüzü 10,1 m): Kılıç başın altındaki sütuna (iki pençenin arası, X ±5,9 içi) vurur, vuruş kor hilaliyle başa gider; menzilli silahlar gövdeye doğrudan ulaşır (KE-2.6, KE-2.12) |
 | KE-2.9 | Pençeler | 1, 2, 3 | ×0,6 | Taş zırh. Yakın silahların güvenli hedefi |
-| KE-2.10 | Göğüs | 2 | ×1,0 | **[AÇIK] (K):** v2 modelde faz 2'de göğsün ön yüzü Z ≈ 18'de (arena sınırı), alt yüzü 8,6 m yükseklikte; arena içinden en yakın yüzeye ~7,2 m, Kılıç (6 m) ulaşmaz. Eski metin (alt yüz 4 m, Z 12–17) modelle tutmuyor. Göğüs yalnız menzilli bölge mi olsun, yoksa doğrulmuş pozda göğüs öne mi gelsin? |
+| KE-2.10 | Göğüs | 2 | ×1,0 | Her silah vurur ([K] 17 Ekim; eski [AÇIK] "Kılıç ulaşmaz" kapandı). v2 modelde faz 2'de göğsün ön yüzü Z 18,4'te (arena sınırının hemen dışı), alt yüzü 8,0 m, X ±5,8. Göğüs ejderhanın konumu değişmeden sütunla vurulur (KE-2.12): arena sınırına yanaşan Kılıç sütuna değer |
 | KE-2.11 | Kalp | 3, yalnız görünür | — | Vurulmaz, hasar almaz ([K] 17 Ekim). Kor Mührü başarısında plakalar açılır, kalp atar ve ekrandaki en parlak sıcak noktadır (SI-9.6). Ödül KE-7.8'deki çökmedir. Model: kalp (0, 2–9, 21–23), göğüs plakalarının arkasında |
+| KE-2.12 | Vuruş kutusu ve kor hilali | 1, 2, 3 | — | [K] 17 Ekim (K10, K11). Her bölgenin vuruş kutusu iki parçadır: **gövde** (modelden ölçülen kutu) ve gövde yerden yüksekteyse altında **sütun** (aynı X/Z izdüşümü, yerden gövdenin altına; çarpışmasız, oyuncu içinde durur). Menzil KE-2.6'daki gibi ölçülür, önce gövdeye, sonra sütuna. **Görünüm:** silah gövdeye doğrudan değerse normal vuruş; yalnız sütuna değerse kılıcın izi kor rengi bir hilal olarak kopar ve gövdenin vurana en yakın noktasına uçar. Parlama ve hasar sayısı o noktada, gerçek gövdenin üstünde çıkar, havada değil. Hasar değdiği karede yazılır; hilal yalnız görünümdür. Hilalin hızı, kalınlığı, ömrü kaynakta yok (ölçüm, telefonda gözle). Kutular (`ejder.blend`, 17 Ekim ölçümü, X/Y/Z): baş faz 1 ±6,2 / 2,5–15,2 / 6,9–18; faz 2 ±6,2 / 10,1–24,9 / 8,5–18; faz 3 ±6,2 / 5,7–20,3 / 7,1–18; sendeleme ve çökme −5,8…7,6 / 0–14,2 / 7–18; göğüs faz 2 ±5,8 / 8,0–16,6 / 18,4–20,5, faz 2 sendelemesi ±5,9 / 2,9–10,7 / 17,7–20,5; pençe KE-2.4 (yükseklik 4 m). Kod: `KulEjderiHurtboxes` |
 
 ---
 
