@@ -59,6 +59,15 @@ namespace Dovus.Game.Actors
             _claimed = true;
         }
 
+        /// <summary>
+        /// Silah yürüme seti değişince ayak tabanı yeniden örneklenir; eski silahın
+        /// <see cref="_footGroundY"/> değeri yeni Loko kliplerinde gövdeyi havaya çekerdi.
+        /// </summary>
+        public void ResetFootPlant()
+        {
+            _footReady = false;
+        }
+
         /// <summary>Kaldırma bitti. İnişi yeniden başlatmadan zemine yapışır; ayak kilidi bu kare çalışır.</summary>
         public void LandNow()
         {
@@ -88,8 +97,52 @@ namespace Dovus.Game.Actors
             _logic.Tick(dt);
             ApplyRoot();
             ResetVisual();
-            if (_logic.OnGround && FootLock && !SkipFootLock && !DodgeClipPlayback.ClipOwnsFeet(VisualAnimator()))
+            Animator anim = VisualAnimator();
+            bool dodgeOwns = DodgeClipPlayback.ClipOwnsFeet(anim);
+            // Loko_Yay_Run kalçayı kök XZ'den metrelerce öne kaçırır; kamera kökü takip eder →
+            // mesh uçar, sonra geri düşer (ping). Kalçayı köke çek.
+            if (_logic.OnGround && !dodgeOwns)
+                LockHipsXZ(anim);
+            // Koşu Loko_*_Run ayak eğrisini kendi taşır; kilitlemek görseli her kare savurur.
+            if (_logic.OnGround && FootLock && !SkipFootLock && !dodgeOwns && !LocoRunOwnsFeet(anim))
                 LockFeet();
+        }
+
+        /// <summary>Kalça dünya XZ'sini köke çeker (görsel local XZ). Y'ye dokunmaz.</summary>
+        void LockHipsXZ(Animator anim)
+        {
+            if (_visual == null || anim == null || !anim.isHuman)
+                return;
+            Transform hips = anim.GetBoneTransform(HumanBodyBones.Hips);
+            if (hips == null)
+                return;
+            Vector3 err = hips.position - transform.position;
+            err.y = 0f;
+            if (err.sqrMagnitude < ActorGroundingControllerDefaults.HipDriftCorrectMinM
+                * ActorGroundingControllerDefaults.HipDriftCorrectMinM)
+                return;
+            Transform parent = _visual.parent;
+            Vector3 localErr = parent != null ? parent.InverseTransformVector(err) : err;
+            localErr.y = 0f;
+            Vector3 lp = _visual.localPosition;
+            lp.x -= localErr.x;
+            lp.z -= localErr.z;
+            _visual.localPosition = lp;
+        }
+
+        const float LocoRunWeight = 0.5f;
+
+        static bool LocoRunOwnsFeet(Animator anim)
+        {
+            if (anim == null || !anim.isActiveAndEnabled || anim.runtimeAnimatorController == null)
+                return false;
+            foreach (AnimatorClipInfo ci in anim.GetCurrentAnimatorClipInfo(0))
+            {
+                if (ci.weight > LocoRunWeight && ci.clip != null
+                    && ci.clip.name.EndsWith("_Run", System.StringComparison.Ordinal))
+                    return true;
+            }
+            return false;
         }
 
         Animator _animator;
@@ -129,6 +182,7 @@ namespace Dovus.Game.Actors
                 CaptureVisual();
             if (_visual == null)
                 return;
+            // Y her kare plant'a; XZ'yi LockHipsXZ yazar — burada sıfırlamak kalça kilidini bozar.
             Vector3 lp = _visual.localPosition;
             if (Mathf.Abs(lp.y - _plantedVisualY) < 0.0001f)
                 return;
@@ -152,10 +206,13 @@ namespace Dovus.Game.Actors
             float error = feet - _footGroundY;
             if (Mathf.Abs(error) < 0.001f)
                 return;
+            // Yay Loko ayak salınımı sınırsız düzeltilince görsel her kare uçuyor / duvara giriyordu (O-1.23).
+            float step = Mathf.Clamp(error, -ActorGroundingControllerDefaults.MaxFootLockStepM,
+                ActorGroundingControllerDefaults.MaxFootLockStepM);
             Transform parent = _visual.parent;
             float parentScale = parent != null ? parent.lossyScale.y : 1f;
             Vector3 lp = _visual.localPosition;
-            lp.y -= Grounding.LocalOffsetForWorldError(error, parentScale);
+            lp.y -= Grounding.LocalOffsetForWorldError(step, parentScale);
             _visual.localPosition = lp;
         }
 

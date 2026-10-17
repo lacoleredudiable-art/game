@@ -417,7 +417,7 @@ namespace Dovus.Game.Actors
             for (int i = 0; i < hits; i++)
             {
                 RaycastHit h = CastHits[i];
-                if (h.collider == null)
+                if (h.collider == null || h.collider.transform.IsChildOf(transform))
                     continue;
                 if (h.distance < best)
                 {
@@ -453,7 +453,9 @@ namespace Dovus.Game.Actors
             for (int i = 0; i < count; i++)
             {
                 Collider col = ObstacleBuffer[i];
-                if (col == null || (anchoredTriggersBlock && !BlocksDodge(col)))
+                if (col == null || col.transform.IsChildOf(transform))
+                    continue;
+                if (anchoredTriggersBlock && !BlocksDodge(col))
                     continue;
 
                 Vector3 closest = col.ClosestPoint(probe);

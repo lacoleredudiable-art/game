@@ -88,7 +88,10 @@ namespace Dovus.Game.Weapons
                 bool match = t.name == wanted && t.GetComponentInChildren<Renderer>(true) != null;
                 t.gameObject.SetActive(match);
                 if (match)
+                {
+                    StripColliders(t.gameObject);
                     shown = t;
+                }
             }
             return shown;
         }
@@ -241,8 +244,23 @@ namespace Dovus.Game.Weapons
         {
             if (_animator == null || WeaponGripView.IsMixamoRig(_animator))
                 return;
-            bool hideAtlas = weaponKey is "kilic" or "kalkan";
-            SetSyntyAtlasHandItems(_animator, show: !hideAtlas);
+            // k3 Silah_* varken Synty atlas kılıç/kalkani açmak (eski: yalnız kilic/kalkan gizlerdi)
+            // Yay'da çift silah + self-collider → yürüyüş ping gibi geri atıyor, kamera yetişemiyordu.
+            bool ownSilah = HasOwnWeaponMesh(weaponKey);
+            SetSyntyAtlasHandItems(_animator, show: !ownSilah && weaponKey is not ("kilic" or "kalkan"));
+        }
+
+        bool HasOwnWeaponMesh(string weaponKey)
+        {
+            string wanted = OwnWeaponName(weaponKey);
+            if (string.IsNullOrEmpty(wanted) || _animator == null)
+                return false;
+            foreach (Transform t in _animator.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == wanted && t.GetComponentInChildren<Renderer>(true) != null)
+                    return true;
+            }
+            return false;
         }
 
         static void SetSyntyAtlasHandItems(Animator animator, bool show)
@@ -252,8 +270,20 @@ namespace Dovus.Game.Weapons
             foreach (Transform t in animator.GetComponentsInChildren<Transform>(true))
             {
                 if (t.name == "SM_Item_Sword" || t.name == "SM_Item_Shield")
+                {
+                    if (!show)
+                        StripColliders(t.gameObject);
                     t.gameObject.SetActive(show);
+                }
             }
+        }
+
+        static void StripColliders(GameObject go)
+        {
+            if (go == null)
+                return;
+            foreach (Collider c in go.GetComponentsInChildren<Collider>(true))
+                Destroy(c);
         }
 
         /// <summary>Bilek-önkol açısı ve silah ekseninin hedef yönden sapması (derece).</summary>
