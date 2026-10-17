@@ -17,6 +17,8 @@ namespace Dovus.Core.Boss
         Recovery,
         /// <summary>Kesilme, denge ya da görev başarısı sendelemesi.</summary>
         Staggered,
+        /// <summary>KE-7.8 Kor Mührü ödülü: 12 s çökme, bütün bölgeler ×2,0.</summary>
+        Collapsed,
         /// <summary>KE-6.1 / KE-7.1 faz geçiş sineması, hasar yok.</summary>
         Transition,
         /// <summary>KE-7.12: yığılma, 3 s.</summary>

@@ -14,8 +14,11 @@ namespace Dovus.Core.Boss
         // KE-3.4 can katmanı sayısı (her biri canın %20'si)
         public const int HealthLayerCount = 5;
 
-        // KE-5.3 uyanış sineması, ilk saldırı 2 s içinde
+        // KE-5.3 uyanış sineması ([K] 17 Ekim): ilk girişte 4 s, "Tekrar"da 2 s; ilk saldırı 2 s içinde
         public const int AwakenMs = 4000;
+        public const int AwakenRetryMs = 2000;
+        // KE-5.2 uyanma tetiği: Z > −2 çizgisi
+        public const float WakeLineZ = -2f;
         public const int FirstAttackAfterAwakenMs = 2000;
         // KE-6.1 / KE-7.1 faz geçiş sineması
         public const int TransitionMs = 4000;
@@ -38,6 +41,14 @@ namespace Dovus.Core.Boss
         public const float StaggerDamageMultiplier = 1.5f;
         // KE-5.12 takım görevi başarısı: 4 s sendeleme
         public const int TeamTaskStaggerMs = 4000;
+        // KE-7.8 Kor Mührü ödülü ([K] 17 Ekim): 12 s çökme, bütün vurulabilir bölgeler ×2,0
+        public const int HeartSealCollapseMs = 12000;
+        public const float CollapseDamageMultiplier = 2.0f;
+
+        // KE-7.6 faz 3 sabit 40 s döngü ([K] 17 Ekim): fazın 5. saniyesinde başlar; 0 s Kor Mührü, 28 s Kraterin Kalbi
+        public const int Phase3CycleStartMs = 5000;
+        public const int Phase3CycleMs = 40000;
+        public const int Phase3CraterHeartAtMs = 28000;
 
         // D-7 (Mustafa, 16 Ekim: B): iki "uzun" saldırının vuruş anları arası en az dodge hak dolumu kadar.
         // Dolum süresi DodgeTuning'in varsayılanından gelir (6 s, O-4.7); "uzun" tanımı belgede yok:
@@ -190,12 +201,24 @@ namespace Dovus.Core.Boss
         public const float TremblingGroundMinNearM = 2f;
         public const float TremblingGroundMaxNearM = 4f;
 
-        // KE-2.8 - KE-2.11 vurulabilir bölge çarpanları
+        // KE-2.8 - KE-2.10 vurulabilir bölge çarpanları (KE-2.11 kalp vurulmaz, [K] 17 Ekim)
         public const float HeadMultiplier = 1.0f;
         public const float ClawMultiplier = 0.6f;
         public const float ChestMultiplier = 1.0f;
-        public const float HeartOpenMultiplier = 2.0f;
-        // KE-2.8 faz 2'de baş 15 m yüksekte: menzil >= 14 m silahlar ulaşır
-        public const float Phase2HeadMinWeaponRangeM = 14f;
+
+        // KE-2.12 vuruş kutuları ([K] 17 Ekim: her silah her bölgeye vurur). Gövde kutusu v2 modelden ölçüldü
+        // (ejder.blend, 17 Ekim, arena koordinatı, 0,1 m dışa yuvarlandı); her yüksek gövdenin altında yere inen sütun
+        // vardır (aynı X/Z izdüşümü, Y 0'dan gövdenin altına). Pençeler KE-2.4/KE-2.5'ten (faz 2'de yerinde, K3).
+        // Baş: `ejder_bas` parçasının arena içindeki kısmı (Z < 18).
+        public const float HeadLyingMinX = -6.2f, HeadLyingMaxX = 6.2f, HeadLyingMinY = 2.5f, HeadLyingMaxY = 15.2f, HeadLyingMinZ = 6.9f, HeadLyingMaxZ = 18f;
+        public const float HeadRearedMinX = -6.2f, HeadRearedMaxX = 6.2f, HeadRearedMinY = 10.1f, HeadRearedMaxY = 24.9f, HeadRearedMinZ = 8.5f, HeadRearedMaxZ = 18f;
+        public const float HeadChestDownMinX = -6.2f, HeadChestDownMaxX = 6.2f, HeadChestDownMinY = 5.7f, HeadChestDownMaxY = 20.3f, HeadChestDownMinZ = 7.1f, HeadChestDownMaxZ = 18f;
+        // Poz_Sendeleme: baş yere iner, sağa döner (X asimetrik); Y alt sınırı zemin
+        public const float HeadSlumpedMinX = -5.8f, HeadSlumpedMaxX = 7.6f, HeadSlumpedMinY = 0f, HeadSlumpedMaxY = 14.2f, HeadSlumpedMinZ = 7f, HeadSlumpedMaxZ = 18f;
+        // Göğüs ön dilimi (`ejder_govde`, Z 17,5-20,5): Poz_Dogrulmus ve Poz_Sendeleme (faz 2 sendelemesi)
+        public const float ChestRearedMinX = -5.8f, ChestRearedMaxX = 5.8f, ChestRearedMinY = 8f, ChestRearedMaxY = 16.6f, ChestRearedMinZ = 18.4f, ChestRearedMaxZ = 20.5f;
+        public const float ChestSlumpedMinX = -5.9f, ChestSlumpedMaxX = 5.9f, ChestSlumpedMinY = 2.9f, ChestSlumpedMaxY = 10.7f, ChestSlumpedMinZ = 17.7f, ChestSlumpedMaxZ = 20.5f;
+        // Pençe (KE-2.4): merkez X ±8, 4,2 m geniş; Z 11,3-16,5; yükseklik 4 m (KE-2.5 kapsülü)
+        public const float ClawCenterAbsX = 8f, ClawWidthM = 4.2f, ClawMinZ = 11.3f, ClawMaxZ = 16.5f, ClawHeightM = 4f;
     }
 }

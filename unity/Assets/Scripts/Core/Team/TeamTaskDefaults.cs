@@ -14,8 +14,9 @@ namespace Dovus.Core.Team
         // Kor Mührü (KE-7.7, KE-7.8)
         public const double HeartSealDurationSec = 10.0;
         public const double HeartSealHoldSec = 3.0;
-        public const double HeartSealFirstAtPhaseSec = 5.0;
-        public const double HeartSealRepeatSec = 40.0;
+        // KE-7.6 sabit döngü: boss'un faz 3 döngüsüyle tek kaynak
+        public const double HeartSealFirstAtPhaseSec = Dovus.Core.Boss.KulEjderiDefaults.Phase3CycleStartMs / 1000.0;
+        public const double HeartSealRepeatSec = Dovus.Core.Boss.KulEjderiDefaults.Phase3CycleMs / 1000.0;
 
         // Kül Yağmuru (KE-6.9, KE-6.10, KE-6.11)
         public const double AshRainDurationSec = 8.0;
