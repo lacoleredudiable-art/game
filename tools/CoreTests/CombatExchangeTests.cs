@@ -37,7 +37,7 @@ public class CombatExchangeTests
             InEffectVolume = true
         };
 
-    [TestCase(149, DodgeGrade.Mukemmel)]
+    [TestCase(0, DodgeGrade.Harika)]
     [TestCase(150, DodgeGrade.Harika)]
     [TestCase(190, DodgeGrade.Harika)]
     [TestCase(191, DodgeGrade.Temiz)]
@@ -49,11 +49,11 @@ public class CombatExchangeTests
     }
 
     /// <summary>
-    /// Dört derecenin de gerçekten üretilebildiğini `Resolve` üzerinden doğrular.
+    /// Üç derecenin de gerçekten üretilebildiğini `Resolve` üzerinden doğrular.
     /// Eşikleri doğrudan sorgulamak yetmez: eşik i-frame penceresinin dışına düşerse
     /// `GradeFromGap` yine doğru cevabı verir ama oyunda o derece hiç oluşmaz.
     /// </summary>
-    [TestCase(60, DodgeGrade.Mukemmel)]
+    [TestCase(60, DodgeGrade.Harika)]
     [TestCase(170, DodgeGrade.Harika)]
     [TestCase(205, DodgeGrade.Temiz)]
     [TestCase(240, DodgeGrade.Siyirdi)]
@@ -221,6 +221,6 @@ public class CombatExchangeTests
 
         Assert.That(_dodge.GetGlideVelocityRatio(moveEnd), Is.EqualTo(0f).Within(1e-6f));
         Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + 1), Is.GreaterThan(0f));
-        Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + 120), Is.EqualTo(0f).Within(1e-6f));
+        Assert.That(_dodge.GetGlideVelocityRatio(moveEnd + tuning.GlideTailMs), Is.EqualTo(0f).Within(1e-6f));
     }
 }

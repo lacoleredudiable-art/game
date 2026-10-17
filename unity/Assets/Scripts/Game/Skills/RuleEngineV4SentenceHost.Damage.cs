@@ -195,7 +195,6 @@ namespace Dovus.Game.Skills
             {
                 SkillPower = skillPower * Mathf.Max(0f, effectScale),
                 Multiplier = outMult * runeMult,
-                LandMultiplier = () => _player != null ? PlayerDodgeController.ConsumeNextHit(_player) : 1f,
                 CanCrit = canCrit && skillPower > 0f,
                 CritChance = Crits.ChanceWith(extraCrit),
                 CritMultiplier = Crits.Multiplier,

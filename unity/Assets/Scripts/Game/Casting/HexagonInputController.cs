@@ -339,7 +339,7 @@ namespace Dovus.Game.Casting
             return _pointer.IsCombatControlAt(pos);
         }
 
-        /// <summary>Sol yarı sanal çubuktur; oradaki dokunuş hedef seçmez.</summary>
+        /// <summary>Sol-alt sanal çubuk bölgesi (O-4.3); oradaki dokunuş hedef seçmez.</summary>
         public bool IsStickHalf(Vector2 pos)
         {
             EnsureServices();

@@ -87,13 +87,6 @@ namespace Dovus.Game.Composition.Builders
 
             var chargeHud = root.AddComponent<DodgeChargeHud>();
             chargeHud.Bind(input, view);
-#if UNITY_EDITOR || DOVUS_DEBUG
-            if (DebugConfig.Enabled)
-            {
-                var practice = root.AddComponent<DodgePracticeController>();
-                practice.Bind(ctx.Player.transform, ctx.Boss.transform);
-            }
-#endif
         }
     }
 }

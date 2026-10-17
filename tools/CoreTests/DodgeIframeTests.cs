@@ -79,19 +79,7 @@ public class DodgeIframeTests
     }
 
     [Test]
-    public void PerfectWindow_IsTheFirstSliceOfIframes()
-    {
-        var tuning = new DodgeTuning();
-        int press = 5000;
-        Assert.That(PerfectDodgeRule.InWindow(press, press, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.True);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 149, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.True);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 150, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.False);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 200, tuning.IframeStartMs, tuning.IframeMs, tuning.PerfectWindowMs), Is.False);
-        Assert.That(PerfectDodgeRule.InWindow(press, press + 299, tuning.IframeStartMs, tuning.IframeMs, 0), Is.False);
-    }
-
-    [Test]
-    public void PerfectRefund_ReturnsOneCharge_WithoutPassingMax()
+    public void Refund_ReturnsOneCharge_WithoutPassingMax()
     {
         var bank = new DodgeChargeBank(new DodgeTuning { MaxCharges = 2, ChargeRechargeMs = 6000 });
         bank.TrySpend(0);
@@ -114,19 +102,6 @@ public class DodgeIframeTests
         bank.Refund(0.5f);
         Assert.That(bank.Ready, Is.EqualTo(0));
         Assert.That(bank.Fill01, Is.EqualTo(0.5f).Within(0.02f));
-    }
-
-    [Test]
-    public void NextHitBuff_ConsumesOnce()
-    {
-        var buff = new NextHitBuff();
-        Assert.That(buff.Multiplier, Is.EqualTo(1f));
-        Assert.That(buff.IsArmed, Is.False);
-
-        buff.Arm(1.3f);
-        Assert.That(buff.Consume(), Is.EqualTo(1.3f).Within(0.0001f));
-        Assert.That(buff.Consume(), Is.EqualTo(1f));
-        Assert.That(buff.IsArmed, Is.False);
     }
 
     [Test]
@@ -169,6 +144,27 @@ public class DodgeIframeTests
         float shortZ = 0.2f;
         DodgeEdge.StopBeforeCrossing(ref shortX, ref shortZ, 0f, 0f, 0f, 1.8f, 1.5f);
         Assert.That(shortZ, Is.EqualTo(0.2f).Within(0.001f));
+    }
+
+    [Test]
+    public void Edge_StartingExactlyOnTheEdge_InwardPathStaysPut_OutwardAndTangentPass()
+    {
+        // O-4.5, O-4.9: takla kenarın tam üstünden (c = 0) başlar; içeri giden yol gövdeden geçemez.
+        // Boss (0,0), kenar payı dahil minSeparation 1,8; oyuncu (0, 1,8) = tam kenarda.
+        float x = 0f;
+        float z = -4f;
+        DodgeEdge.StopBeforeCrossing(ref x, ref z, 0f, 1.8f, 0f, 0f, 1.8f);
+        Assert.That(z, Is.EqualTo(1.8f).Within(0.001f));
+
+        float outX = 0f;
+        float outZ = 6f;
+        DodgeEdge.StopBeforeCrossing(ref outX, ref outZ, 0f, 1.8f, 0f, 0f, 1.8f);
+        Assert.That(outZ, Is.EqualTo(6f).Within(0.001f));
+
+        float tanX = 4f;
+        float tanZ = 1.8f;
+        DodgeEdge.StopBeforeCrossing(ref tanX, ref tanZ, 0f, 1.8f, 0f, 0f, 1.8f);
+        Assert.That(tanX, Is.EqualTo(4f).Within(0.001f));
     }
 
     [Test]

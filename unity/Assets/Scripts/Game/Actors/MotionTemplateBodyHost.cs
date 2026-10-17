@@ -172,6 +172,21 @@ namespace Dovus.Game.Actors
             EnsureGrounding();
             Vector3 pos = ArenaClamp.XZ(new Vector3(_runner.X, _grounding.RootY, _runner.Z), _arena, _body);
             pos.y = _grounding.RootY;
+            // O-4.9: dodge'la aynı kapı; sütun, koza, canlı gövde ve arena kenarında dur, kayma.
+            if (_motor == null)
+                _motor = GetComponent<KinematicMotorController>();
+            if (_motor != null)
+            {
+                Vector3 from = transform.position;
+                Vector3 stopped = _motor.SweepStop(from, pos, out _, out bool clipped);
+                if (clipped)
+                {
+                    pos.x = stopped.x;
+                    pos.z = stopped.z;
+                    _runner.Rebase(pos.x, pos.z);
+                    _stopAfterSample = true;
+                }
+            }
             transform.position = pos;
             _stampedX = pos.x;
             _stampedZ = pos.z;

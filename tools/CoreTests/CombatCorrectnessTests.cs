@@ -252,25 +252,6 @@ public class CombatCorrectnessTests
         Assert.That(dmg, Does.Contain("if (outcome.Amount > 0f && weaponArmorBonus)"));
     }
 
-    // ── S1: kusursuz kaçış bonusu süreli ────────────────────────────────────
-
-    [Test]
-    public void S1_NextHitBuff_ExpiresAfterWindow()
-    {
-        var buff = new NextHitBuff();
-        buff.Arm(1.5f, 1000, 2000);
-        Assert.That(buff.IsArmedAt(2999), Is.True);
-        Assert.That(buff.IsArmedAt(3000), Is.False);
-        Assert.That(buff.Consume(2500), Is.EqualTo(1.5f));
-        Assert.That(buff.Consume(2600), Is.EqualTo(1f));
-
-        buff.Arm(1.5f, 1000, 2000);
-        Assert.That(buff.Consume(60000), Is.EqualTo(1f), "dakikalar sonra taşınmaz");
-        Assert.That(buff.IsArmed, Is.False);
-
-        Assert.That(new DodgeTuning().PerfectNextHitWindowMs, Is.EqualTo(2000));
-    }
-
     // ── S4: DoT zırhı deler, kaçılamaz, boss'ta sayı gösterir ───────────────
 
     [Test]

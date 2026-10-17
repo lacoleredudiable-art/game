@@ -216,8 +216,6 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Birleşik i-frame", 200, 2000, () => c.Dodge.CombinedIframeMs, v => c.Dodge.CombinedIframeMs = v, "ms");
             AddFloatSlider("Birleşik mesafe ×", 1f, 3f, () => c.Dodge.CombinedDistanceMult, v => c.Dodge.CombinedDistanceMult = v, "", "0.00");
             AddFloatSlider("Birleşik süre ×", 1f, 3f, () => c.Dodge.CombinedDurationMult, v => c.Dodge.CombinedDurationMult = v, "", "0.00");
-            // O2: tek mükemmel pencere (PERFECT derecesi + iade + sonraki vuruş).
-            AddIntSlider("PERFECT penceresi", 20, 300, () => c.Dodge.PerfectWindowMs, v => c.Dodge.PerfectWindowMs = v, "ms");
             AddIntSlider("HARİKA eşiği", 40, 350, () => c.Grade.HarikaGapMaxMs, v => c.Grade.HarikaGapMaxMs = v, "ms");
             // §6: bu eşik IframeMs'den küçük kalmalı yoksa SIYIRDI bandı hiç üretilemez.
             AddIntSlider("TEMİZ eşiği", 60, 400, () => c.Grade.TemizGapMaxMs,
@@ -264,13 +262,12 @@ namespace Dovus.Game.DevTools
             AddFloatSlider("Windup mesafe çarpanı", 1f, 1.8f, () => p.Camera.CameraWindupDistanceMul, v => p.Camera.CameraWindupDistanceMul = v, "×", "0.00");
             AddFloatSlider("Windup ekstra yükseklik", 0f, 1.5f, () => p.Camera.CameraWindupExtraHeightM, v => p.Camera.CameraWindupExtraHeightM = v, "m", "0.00");
             AddFloatSlider("Piksel→metre (sarsıntı)", 0.001f, 0.05f, () => p.Hud.CameraShakePxToM, v => p.Hud.CameraShakePxToM = v, "", "0.000");
-            AddFloatSlider("Mükemmel FOV sıçraması", 0f, 0.4f, () => c.Feel.CameraPerfectZoomKick, v => c.Feel.CameraPerfectZoomKick = v, "", "0.00");
             AddFloatSlider("Dodge FOV sıçraması", 0f, 0.4f, () => c.Feel.CameraDodgeZoomKick, v => c.Feel.CameraDodgeZoomKick = v, "", "0.00");
             AddFloatSlider("Kamera roll", 0f, 8f, () => c.Feel.CameraRollDeg, v => c.Feel.CameraRollDeg = v, "°", "0.00");
             AddFloatSlider("Sıyırma sarsıntısı", 0f, 30f, () => c.Feel.ShakePerfectPx, v => c.Feel.ShakePerfectPx = v, "px", "0.0");
             AddFloatSlider("Vurulma sarsıntısı", 0f, 40f, () => c.Feel.ShakeHitPx, v => c.Feel.ShakeHitPx = v, "px", "0.0");
             AddFloatSlider("Sarsıntı sönme hızı", 1f, 15f, () => c.Feel.ShakeDecay, v => c.Feel.ShakeDecay = v, "", "0.0");
-            AddIntSlider("Mükemmel hitstop (görsel)", 0, 300, () => c.Feel.HitstopPerfectMs, v => c.Feel.HitstopPerfectMs = v, "ms");
+            AddIntSlider("Dodge hitstop (görsel)", 0, 300, () => c.Feel.HitstopPerfectMs, v => c.Feel.HitstopPerfectMs = v, "ms");
             AddIntSlider("Vurulma hitstop (görsel)", 0, 400, () => c.Feel.HitstopPlayerHitMs, v => c.Feel.HitstopPlayerHitMs = v, "ms");
             AddIntSlider("Bossa isabet hitstop", 0, 300, () => c.Feel.HitstopBossHitMs, v => c.Feel.HitstopBossHitMs = v, "ms");
             AddIntSlider("Boss hitstop · hafif", 0, 120, () => c.Feel.HitstopBossLightMs, v => c.Feel.HitstopBossLightMs = v, "ms");
@@ -288,7 +285,6 @@ namespace Dovus.Game.DevTools
             AddIntSlider("Parçacık tavanı", 0, 20, () => c.Feel.HitImpactMaxConcurrent, v => c.Feel.HitImpactMaxConcurrent = v, "");
             AddFloatSlider("Parçacık ömrü", 0.05f, 1.2f, () => c.Feel.HitImpactLifeSec, v => c.Feel.HitImpactLifeSec = v, "sn", "0.00");
             AddBoolButton("Dokunsal (haptic)", () => c.Feel.FeelHapticsEnabled, v => c.Feel.FeelHapticsEnabled = v, "AÇIK", "KAPALI");
-            AddIntSlider("Mükemmel dodge haptic", 0, 80, () => c.Feel.PerfectDodgeHapticMs, v => c.Feel.PerfectDodgeHapticMs = v, "ms");
             AddIntSlider("Vurulma haptic", 0, 80, () => c.Feel.PlayerHitHapticMs, v => c.Feel.PlayerHitHapticMs = v, "ms");
             AddIntSlider("Impact frame", 0, 100, () => c.Feel.ImpactFrameMs, v => c.Feel.ImpactFrameMs = v, "ms");
             AddIntSlider("Vuruş sonrası sessizlik", 0, 400, () => c.Feel.PostHitSilenceMs, v => c.Feel.PostHitSilenceMs = v, "ms");

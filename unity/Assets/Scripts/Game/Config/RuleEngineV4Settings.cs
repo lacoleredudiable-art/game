@@ -31,6 +31,7 @@ namespace Dovus.Game.Config
         [Tooltip("Boss + 2-3 hafif yaratık + 2 AllyDummy dilim sahnesi.")]
         public bool SliceScene;
 
+        // Kullanılmıyor: minyon yarıçapı world_physics.body_radius_creature_m'den gelir. Serileştirme için alan kaldı.
         public float SliceMinionRadiusM = 0.5f;
         public float SliceMinionHeightM = 1f;
     }

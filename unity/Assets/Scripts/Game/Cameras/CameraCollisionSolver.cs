@@ -20,6 +20,7 @@ namespace Dovus.Game.Cameras
         float _smoothedAlongM;
         float _alongVelocity;
         CameraBossBody _bossBody;
+        CameraBossBody[] _columns = new CameraBossBody[0];
 
         /// <summary>Son karede pivot→istenen mesafe ekseninde çekiş (m).</summary>
         public float PulledInM { get; private set; }
@@ -27,6 +28,22 @@ namespace Dovus.Game.Cameras
         public CameraBossBody BossBody => _bossBody;
 
         public void BindBossBody(CameraBossBody body) => _bossBody = body;
+
+        /// <summary>
+        /// O-5.10 [K 2026-10-15]: sütunlar kamerayı öne çekmez (taramadan çıkar, saydamlaşır); kamera sütunun içine
+        /// de giremez (<see cref="KeepOutOfColumns"/>). <see cref="BindFiltering"/>'den sonra çağrılır.
+        /// </summary>
+        public void BindColumns(CameraBossBody[] columns)
+        {
+            _columns = columns ?? new CameraBossBody[0];
+            var roots = new List<Transform>(_ignoreRoots ?? new Transform[0]);
+            foreach (CameraBossBody c in _columns)
+            {
+                if (c?.Root != null)
+                    roots.Add(c.Root);
+            }
+            _ignoreRoots = roots.ToArray();
+        }
 
         /// <summary>Karakter/VFX kökleri spherecast'ten çıkar; layer mask burada kurulur.</summary>
         public void BindFiltering(Transform playerRoot, Transform bossRoot, Transform allyRoot)
@@ -113,6 +130,24 @@ namespace Dovus.Game.Cameras
                 return camPos;
             _smoothedAlongM = Mathf.Min(_smoothedAlongM, (safe - pivot).magnitude);
             return safe;
+        }
+
+        /// <summary>Boss gövdesi (O-5.15) ve sütunlar (O-5.10): kamera ikisinin de içine giremez.</summary>
+        public Vector3 KeepOutOfBodies(Vector3 pivot, Vector3 camPos, CameraSettings cam) =>
+            KeepOutOfColumns(pivot, KeepOutOfBossBody(pivot, camPos, cam), cam);
+
+        /// <summary>O-5.10 sert sınır: boss gövdesindeki gibi kamera sütunun içindeyse çıkışının arkasına alınır (öne gelmez).</summary>
+        public Vector3 KeepOutOfColumns(Vector3 pivot, Vector3 camPos, CameraSettings cam)
+        {
+            for (int i = 0; i < _columns.Length; i++)
+            {
+                if (_columns[i] == null
+                    || !_columns[i].TryKeepOut(pivot, camPos, SphereRadiusM(cam), cam.CameraCollisionMarginM, out Vector3 safe))
+                    continue;
+                _smoothedAlongM = Mathf.Min(_smoothedAlongM, (safe - pivot).magnitude);
+                camPos = safe;
+            }
+            return camPos;
         }
 
         static float SphereRadiusM(CameraSettings cam) =>

@@ -51,6 +51,8 @@ namespace Dovus.Game.Composition.Builders
                 ctx.Player.transform.position.y - CompositionConstants.PlayerHeightM * 0.5f,
                 tuning.Player.CharacterAnimSpeed,
                 out var playerAnim);
+            // SI-3.7: kenar ışığı yalnız oyuncu karakterinde ve silahında; dost ve boss'ta yok.
+            RimLightOverlay.Apply(ctx.Player.transform.Find(RimLightDefaults.OverlayVisualChildName)?.gameObject);
 
             ctx.Ally = VisualAttach.CreateCapsule(
                 "AllyDummy",

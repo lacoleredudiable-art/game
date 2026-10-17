@@ -60,7 +60,7 @@ dolum 10/s; can ve hasar tabanı aynı blokta). Hasar silahın ritim çarpanıyl
 ## Hasarsızlık ve süper zırh (12 Ekim)
 
 **[K] I-frame (hasarsızlık penceresi):** saldırı içinden geçer, hiç hasar alınmaz.
-- Dodge: tek basış 0,26 s, takla 0,52 s (`10-olculer` O-4.6). Pencere boyunca karakterde kor turuncusu parlama
+- Dodge: tek basış 0,26 s, takla 0,52 s (`10-olculer` O-4.6). **Güncel:** test değeri `T_tek` 0,5 s / `T_zincir` 1,3 s, kesin değer ayar masasında (`15` §3.4, [K] 14 Ekim). Pencere boyunca karakterde kor turuncusu parlama
   görünür (O-4.6a).
 - **Hareket fiili skilleri yolculuk boyunca hasarsızdır** (kalkıştan varışa; 3-3 sekmeleri, 3-9 çekilmesi dahil).
   Hareket kimseye vurmaz; karşılığı doğru zamanda kullanılınca saldırıdan kaçırmasıdır.

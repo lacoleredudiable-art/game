@@ -40,6 +40,7 @@ namespace Dovus.Game.Hud
         GameClockHost _clock;
         RuleEngineV4SentenceHost _manifestation;
         Sprite _circle;
+        BuildSelectElementRow _elements;
         readonly List<EquipmentItem> _weapons = new();
         readonly Dictionary<string, Image> _weaponChipImages = new();
         readonly Dictionary<string, Text> _weaponChipBadges = new();
@@ -120,6 +121,8 @@ namespace Dovus.Game.Hud
                 if (swap.Slot(1) != null)
                     _weapons.Add(swap.Slot(1));
             }
+
+            _elements?.Reset(_manifestation?.SelectedElementPaint?.Id ?? -1);
 
             IsOpen = true;
             _screen.SetActive(true);
@@ -291,6 +294,8 @@ namespace Dovus.Game.Hud
             _view?.SetLoadout(loadout);
             if (_manifestation != null && _weapons.Count > 0)
                 _manifestation.SetWeaponLoadout(_weapons[0], _weapons.Count > 1 ? _weapons[1] : null);
+            if (_elements != null && _manifestation != null)
+                _manifestation.TrySetElementPaint(_elements.SelectedId);
             _hasApplied = true;
             string className = _presetIndex >= 0 ? _skills.MainClasses[_presetIndex].Name : "özel";
             string weaponNames = _weapons.Count > 0

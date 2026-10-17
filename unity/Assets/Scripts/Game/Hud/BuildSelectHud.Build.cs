@@ -69,8 +69,10 @@ namespace Dovus.Game.Hud
             bool hasWeapons = _manifestation != null
                 && _manifestation.AvailableWeapons.Count > 0
                 && WeaponsCarried >= 2;
+            float rowBase = hasWeapons ? 0.19f : 0.02f;
+            _elements = BuildSelectElementRow.TryBuild(content, _skills, rowBase, CardColor, MutedText, AccentColor);
             RectTransform grid = CreateRect("RuneGrid", content, Vector2.zero, Vector2.one);
-            Place(grid, 0.015f, hasWeapons ? 0.19f : 0.02f, 0.645f, 0.82f);
+            Place(grid, 0.015f, _elements != null ? rowBase + BuildSelectElementRow.Height : rowBase, 0.645f, 0.82f);
             for (int id = 1; id <= 12; id++)
                 BuildCard(grid, id);
             if (hasWeapons)
@@ -291,7 +293,7 @@ namespace Dovus.Game.Hud
                 Stretch(rect, min, max);
         }
 
-        static RectTransform CreateRect(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax)
+        internal static RectTransform CreateRect(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -308,10 +310,10 @@ namespace Dovus.Game.Hud
             rect.offsetMax = Vector2.zero;
         }
 
-        static void Place(RectTransform rect, float xMin, float yMin, float xMax, float yMax) =>
+        internal static void Place(RectTransform rect, float xMin, float yMin, float xMax, float yMax) =>
             Stretch(rect, new Vector2(xMin, yMin), new Vector2(xMax, yMax));
 
-        static Button CreateButton(Transform parent, string label, int fontSize, Color color)
+        internal static Button CreateButton(Transform parent, string label, int fontSize, Color color)
         {
             var go = new GameObject(string.IsNullOrEmpty(label) ? "Button" : label);
             go.transform.SetParent(parent, false);
@@ -326,7 +328,7 @@ namespace Dovus.Game.Hud
             return button;
         }
 
-        static Text CreateText(Transform parent, string value, int fontSize, Color color, TextAnchor anchor)
+        internal static Text CreateText(Transform parent, string value, int fontSize, Color color, TextAnchor anchor)
         {
             var go = new GameObject("Text");
             go.transform.SetParent(parent, false);

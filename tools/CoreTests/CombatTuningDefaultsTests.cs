@@ -29,11 +29,8 @@ public class CombatTuningDefaultsTests
             Assert.That(t.Dodge.CombinedIframeMs, Is.EqualTo(1300));
             Assert.That(t.Dodge.CombinedDistanceMult, Is.EqualTo(1.6f));
             Assert.That(t.Dodge.CombinedDurationMult, Is.EqualTo(1.4f));
-            Assert.That(t.Dodge.PerfectWindowMs, Is.EqualTo(150));
-            Assert.That(t.Dodge.PerfectNextHitMult, Is.EqualTo(1.3f));
-            Assert.That(t.Dodge.PerfectChargeRefund, Is.EqualTo(1f));
             Assert.That(t.Dodge.CurveExp, Is.EqualTo(3.6f));
-            Assert.That(t.Dodge.GlideTailMs, Is.EqualTo(120));
+            Assert.That(t.Dodge.GlideTailMs, Is.EqualTo(400));
         });
 
         // Merkez düğmenin sürükleme eşiği (O1: süre eşiği yok)
@@ -145,8 +142,7 @@ public class CombatTuningDefaultsTests
     {
         var t = new CombatTuning();
 
-        Assert.That(t.Dodge.IframeStartMs + t.Dodge.PerfectWindowMs, Is.LessThan(t.Grade.HarikaGapMaxMs),
-            "PERFECT penceresinden sonra HARİKA bandı kalmalı");
+        Assert.That(t.Dodge.IframeStartMs, Is.LessThan(t.Grade.HarikaGapMaxMs));
         Assert.That(t.Grade.HarikaGapMaxMs, Is.LessThan(t.Grade.TemizGapMaxMs));
         Assert.That(t.Grade.TemizGapMaxMs, Is.LessThan(t.Dodge.IframeMs),
             "son eşik pencereden küçük olmalı, yoksa SIYIRDI bandı yok olur");

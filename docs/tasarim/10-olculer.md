@@ -65,7 +65,7 @@ Unity'de 1 birim = 1 m.
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-1.16 | Tam hız (joystick sonuna kadar) | 6,4 m/s | KOD `WalkSpeedMps` | T |
-| O-1.17 | En düşük hız (joystick ölü bölgeyi geçtiği an) | tam hızın 0,42'si = 2,7 m/s | KOD `MinStickSpeedFrac` | T |
+| O-1.17 | En düşük hız (joystick ölü bölgeyi geçtiği an) | KALDIRILDI (15 Ekim [K]): ölü bölge üstü tam hız, analog yok | KOD `MinStickSpeedFrac` kullanılmıyor | K |
 | O-1.18 | Hızlanma / yavaşlama | 52 m/s² (0 → tam hız 0,12 s) / 64 m/s² (tam hız → 0, 0,10 s) | KOD `MoveAccelMps2`, `MoveDecelMps2` | T |
 | O-1.19 | Dönme hızı | 720 °/s (geri dönüş 0,25 s) | KOD `TurnRateDegPerSec` | T |
 | O-1.20 | Kök hareketi (root motion) | **Kapalı.** Karakteri kod taşır; bütün klipler yerinde oynar (in-place). Klipteki kök yüksekliği kilitli | KOD (`lockRootHeightY`) | T (klipte kök XZ yer değiştirmesi ≤ 2 cm) |
@@ -136,13 +136,13 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 | O-3.2 | Evreler | Her saldırı klibinde üç evre: hazırlık, vuruş (aktif), toparlanma. Hazırlık = silahın ön süresi, toparlanma = silahın toparlanması (`04` ritim tablosu). Ör. Kılıç VUR: 0,20 s hazırlık + vuruş karesi + 0,20 s toparlanma | BELGE (`04`) | T (klip olay karelerinin zamanı ritim tablosuyla ±1 kare) |
 | O-3.3 | Olay işaretleri (event) | Her saldırı klibinde `Hit` (etkinin çıktığı kare), `FxStart`, `Step_L`/`Step_R` (adım). Yumruk'ta `Hit1–Hit3`. Etki zamanını klip değil kural motoru belirler; `Hit` karesi buna uyacak şekilde klip hızı ayarlanır | ÖNERİ | T |
 | O-3.4 | Geçiş (blend) süresi | Oyuncu 0,06 s; boss 0,15 s; dodge'a geçiş 0,03 s (anında hissettirsin) | KOD `AnimCrossFadeSec`, `BossAnimCrossFadeSec` + ÖNERİ | T |
-| O-3.5 | Kesme kuralları | Toparlanma her zaman dodge ile kesilir. Ön süre dodge ile kesilirse skill atılmaz; mana ve cooldown harcanır ("bilinçli at" kuralı). Hareket skilleri birbirini keser (`06` §1) | ÖNERİ + BELGE | T |
+| O-3.5 | Kesme kuralları | Toparlanma her zaman dodge ile kesilir. Ön süre dodge ile kesilirse skill atılmaz; mana ve cooldown harcanır, **iade yok** ([K] Mustafa, 16 Ekim: "yanlış zamanda skill atmamalıydın"; `13` §9'daki "CD yanmaz" [Ö] reddedildi). Etki fazında da dodge skill'i hemen keser, etki geçtiyse cooldown yanar ([K] 16 Ekim; `13` §9 "etki kesilmez" [Ö] reddedildi). Hareket skilleri birbirini keser (`06` §1) | ÖNERİ + BELGE | T |
 | O-3.6 | Üst gövde / alt gövde | Ön sürede yürünebilen silahlarda (Yumruk, Kitap) üst gövde saldırır, alt gövde yürür. Hız 0,15 m/s'nin altındaysa tam gövde klibi | KOD `UpperBodyCastMinSpeed` | K |
 | O-3.7 | Bekleme (idle) | 1 temel + 2 çeşitleme (8–14 s arasında rastgele); silah başına ayrı duruş | ÖNERİ | K |
 | O-3.8 | Darbe alma | Hafif darbe: 0,25 s, yalnız üst gövde, hareketi kesmez. Ağır darbe (boss saldırısı ≥ canın %20'si): 0,5 s, tam gövde, girdi kilitli değil (dodge keser) | ÖNERİ | K, E |
 | O-3.9 | Yere düşme ve kalkma | Yalnız itme ≥ 3 m olduğunda; düşme 0,4 s + kalkma 0,6 s; kalkmanın ilk 0,3 s'si dodge ile kesilebilir | ÖNERİ | K |
 | O-3.10 | Ölüm ve diriltilme | Ölüm 1,2 s (son pozda kalır); diriltme 1,0 s ayağa kalkış | ÖNERİ | K |
-| O-3.11 | Durum makinesi | Geçiş tablosu `06` klip listesinden üretilir; her durumdan dodge'a geçiş vardır (ölüm hariç); her durumdan ölüme geçiş vardır | ÖNERİ | T (tablo eksiksiz: her klibin giriş ve çıkışı tanımlı) |
+| O-3.11 | Durum makinesi | Geçiş tablosu `06` klip listesinden üretilir; her durumdan dodge'a geçiş vardır (ölüm hariç; skill'in hazırlık, etki ve toparlanma fazı dahil, [K] 16 Ekim; yalnız silah değiştirme ve dodge'un kendisi hariç, O-2.19); her durumdan ölüme geçiş vardır | ÖNERİ | T (tablo eksiksiz: her klibin giriş ve çıkışı tanımlı) |
 | O-3.12 | Ayak IK | Arena zemini düz olduğu için dilimde yok. Eğimli zemin gelirse açılır | ÖNERİ | — |
 
 ---
@@ -154,8 +154,8 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 | Kimlik | Madde | Değer | Kaynak | Doğrulama |
 |---|---|---|---|---|
 | O-4.1 | Joystick yarıçapı | 72 dp (≈ 11,5 mm) | KOD `JoystickMaxRadiusDp` | E |
-| O-4.2 | Ölü bölge | 0,12 (yarıçapın %12'si) | KOD `JoystickDeadZone` | T |
-| O-4.3 | Yer | Sol başparmak; parmağın ilk değdiği yerde belirir (yüzen joystick), ekranın sol yarısının alt %60'ında | ÖNERİ | E |
+| O-4.2 | Ölü bölge | 0,12 (yarıçapın %12'si); geçilince hız tam, yalnız yön okunur | KOD `JoystickDeadZone` | T |
+| O-4.3 | Yer | Sol başparmak; parmağın ilk değdiği yerde belirir (yüzen joystick), yalnız ekranın solundan %35 genişlik ve alttan %60 yükseklikte (`JoystickZoneWidthFrac`/`JoystickZoneHeightFrac`); bölge dışı = kamera sürükleme + hedef dokunuşu | ÖNERİ | E (başlangıç tahmini; %55–60 telefonda denenir) |
 
 ### 4.2 Dodge
 
@@ -163,12 +163,12 @@ Bu yöntem her yeni model ya da animasyonda bozulur. Yerine şu standart gelir:
 |---|---|---|---|---|
 | O-4.4 | Bir basış = zıplama | Joystick yönünde (joystick boşsa karakterin baktığı yön) 3,8 m, 0,25 s, yay şeklinde. Yükseklik **yalnız klipte** (tepe 0,6 m); çarpışma kapsülü zeminde kalır | KOD `DodgeTuning.DistanceM`, `DurationMs` + BELGE (`06` §5) | T, G |
 | O-4.4a | İki faz | Dodge iki fazlıdır: **patlama** (ilk 0,25 s, mesafenin ~%75'i, kamera hafif hareket bulanıklığı) + **süzülme** (0,40 s, yavaşlayarak, kalan ~%25). Süzülme bitince doğrudan bekleme pozu; iniş sarsıntısı yok. Bugünkü süzülme kuyruğu 0,12 s (`GlideTailMs`) → 0,40 s. Referans: Dragon Nest 2:37,6 kare analizi (patlama 0,27 s, süzülme 0,40 s) | KOD→ÖNERİ (onaylı K 12 Ekim) | T, K |
-| O-4.5 | Havadayken ikinci basış = takla | İlk basıştan sonra 0,2 s içinde; toplam mesafe ×1,6 (6,1 m), toplam süre ×1,4 (0,35 s); takla klibi havada döner, ayaklar zeminin altına inmez | KOD `DoubleTapWindowMs`, `CombinedDistanceMult`, `CombinedDurationMult` + BELGE | T, G, K |
-| O-4.6 | Hasarsızlık penceresi | Tek basış: basıştan itibaren 0,26 s. Takla: 0,52 s | KOD `IframeMs`, `CombinedIframeMs` | T |
+| O-4.5 | Havadayken ikinci basış = takla | İlk basışın hasarsızlık penceresi açıkken (birleşme penceresi = `T_tek`, test değeri 0,5 s; `15` §3.2); toplam mesafe ×1,6 (6,1 m), zincir penceresi `T_zincir` (test değeri 1,3 s, birinci basıştan; `15` §3.3 Model A [K]); takla klibi havada döner, ayaklar zeminin altına inmez | KOD `DoubleTapWindowMs`, `CombinedDistanceMult`, `CombinedDurationMult` + BELGE | T, G, K |
+| O-4.6 | Hasarsızlık penceresi | Tek basış `T_tek`: test değeri 0,5 s; zincir `T_zincir`: test değeri 1,3 s (`15` §3.4 [K] 14 Ekim; eski 0,26 / 0,52 s yerine geçti, kesin değer Aşama 8 ayar masasında) | KOD `IframeMs`, `CombinedIframeMs` | T |
 | O-4.6a | Hasarsızlık görünür | I-frame penceresi boyunca karakterin kenarında kor turuncusu parlama (0,05 s'de açılır, pencere bitince 0,05 s'de söner); Hareket skillerinin yolculuğunda da aynı parlama. Referans: Dragon Nest dodge, 1. fazda altın parlama | ÖNERİ (onaylı K 12 Ekim) | K |
-| O-4.7 | Hak ve dolum | 2 hak; her biri 6 s'de dolar | KOD `MaxCharges`, `ChargeRechargeMs` | T |
-| O-4.8 | Kusursuz dodge | Boss vuruşuna 0,15 s kala yapılan dodge: hak iade edilir, sonraki 2 s içindeki ilk vuruş ×1,3; 0,2 s ağır çekim hissi | KOD `PerfectWindowMs` vb. | T, E |
-| O-4.9 | Engeller | Dodge duvardan, sütundan, kozadan ve boss gövdesinden geçemez; çarpınca durmaz, yüzey boyunca kayar. Kayma bütçesi (yol uzunluğu) = R × max(t, `SlideMinRatio`); R = çarpma anında kalan yol, t = çubuk yönünün yüzeye teğet bileşeni (0-1). Taraf: t ≥ `EngineChoiceT` ise çubuğun teğet işaretinden (oyuncu seçer, tehlike alanı hesaba katılmaz); değilse motor `SlideScanPadM` kadar ileri tarayıp daha boş tarafı seçer; aktif alan telegraph'ları (slam, koni, atılış, zehir ağı alanı; mermi ve volley hariç; pencere her saldırının kendi windup'ı başlayınca) dolu sayılır; iki taraf da eşitse saat yönü. Kayma `SlideStepMs` sabit adımlarla yüzeyi takip eder (adım başına en çok `SlideMaxIter` iterasyon), kayma boyunca `EdgeGapM` korunur, taraf dodge boyunca kilitlidir. Bir adımda gerçek ilerleme beklenenin `SlideStallRatio` oranından azsa (köşe) kayma durur. i-frame `IframeMs` kadar sürer, hareketten bağımsızdır; hak her durumda yanar. "Tam 90°" ayrı kural değil, `EngineChoiceT` bandının içinde kalır | KOD `EdgeGapM` + K (tasarımcı kararı); `SlideMinRatio` 0,5, `EngineChoiceT` 0,17, `SlideScanPadM` 0,5 m, `SlideMaxIter` 4, `SlideStallRatio` 0,1 = (ölçüm) test başlangıç değeri, tahmin; `SlideStepMs` değeri yok (ölçüm); yeri `*Defaults` | G (her kare: oyuncu kapsülü bir engelin içinde ise kırmızı); T (fps'ten bağımsız: sabit adımla aynı sonuç) |
+| O-4.7 | Hak ve dolum | 2 hak; her biri 6 s'de dolar. **Hak iadesi yoktur** (engele çarpıp yol alamayan dodge dahil; [K] Mustafa, 16 Ekim: "geri iade yok, yaptığının sonucuna katlanırsın") | KOD `MaxCharges`, `ChargeRechargeMs` | T |
+| O-4.8 | ~~Kusursuz dodge~~ **[RED]** | Kaldırıldı: hak iadesi, ×1,3 vuruş, ağır çekim yok ([K] 13 Ekim, `13` §3). Eski satır: boss vuruşuna 0,15 s kala dodge → hak iadesi + ×1,3 + 0,2 s ağır çekim | ~~KOD `PerfectWindowMs` vb.~~ (kodda silinecek) | T, E |
+| O-4.9 | Engeller | Dodge duvardan, sütundan, kozadan, boss gövdesinden ve canlı gövdeden (minyon, dost) geçemez ([K] Mustafa, 15 Ekim; minyon ve dost için gövde silindiri yürümeyle aynı: yarıçaplar toplamı, durur, kaymaz); çarpınca durmaz, yüzey boyunca kayar. Kayma bütçesi (yol uzunluğu) = R × max(t, `SlideMinRatio`); R = çarpma anında kalan yol, t = çubuk yönünün yüzeye teğet bileşeni (0-1). Taraf: t ≥ `EngineChoiceT` ise çubuğun teğet işaretinden (oyuncu seçer, tehlike alanı hesaba katılmaz); değilse motor `SlideScanPadM` kadar ileri tarayıp daha boş tarafı seçer; aktif alan telegraph'ları (slam, koni, atılış, zehir ağı alanı; mermi ve volley hariç; pencere her saldırının kendi windup'ı başlayınca) dolu sayılır; iki taraf da eşitse saat yönü. Kayma `SlideStepMs` sabit adımlarla yüzeyi takip eder (adım başına en çok `SlideMaxIter` iterasyon), kayma boyunca `EdgeGapM` korunur, taraf dodge boyunca kilitlidir. Bir adımda gerçek ilerleme beklenenin `SlideStallRatio` oranından azsa (köşe) kayma durur. i-frame `IframeMs` kadar sürer, hareketten bağımsızdır; hak her durumda yanar. "Tam 90°" ayrı kural değil, `EngineChoiceT` bandının içinde kalır | KOD `EdgeGapM` + K (tasarımcı kararı); `SlideMinRatio` 0,5, `EngineChoiceT` 0,17, `SlideScanPadM` 0,5 m, `SlideMaxIter` 4, `SlideStallRatio` 0,1 = (ölçüm) test başlangıç değeri, tahmin; `SlideStepMs` değeri yok (ölçüm); yeri `*Defaults` | G (her kare: oyuncu kapsülü bir engelin içinde ise kırmızı; Gözcü `oyuncu_govde_icinde` = merkez minyon/dost/boss silindirinde, `oyuncu_isinlanma` = dodge/kalıp sahibi yokken kare adımı > yürüme hızı × dt × 2); T (fps'ten bağımsız: sabit adımla aynı sonuç) |
 | O-4.10 | After-image (iz görüntüsü) | Yalnız süzülme fazında, gerçek yol üzerinde, oyuncunun arkasında; 4 kopya, 0,15 s ömür, %55 opaklık. İz oyuncunun önüne düşmez | KOD `AfterimageAlpha` + ÖNERİ | K |
 | O-4.11 | Arena sınırı | Dodge, takla, Hareket skilleri ve itilme arena duvarının (§7) içinde kalır; sınır daire şeklindedir, kare değil | ÖNERİ | G |
 
@@ -196,10 +196,10 @@ boss saldırısının ekranı kaplaması. Aşağıdaki değerler bunları kapat�
 | O-5.4 | Görüş açısı (FOV, dikey) | 55° | KOD→ÖNERİ (kod 54, sahne 56; tek değer) | T |
 | O-5.5 | Takip yumuşaklığı | 0,12 s | KOD `FollowSmoothTimeSec` | E |
 | O-5.6 | Dönüş hız tavanı | 120 °/s (kamera bir karede bundan hızlı dönemez) | ÖNERİ | G (bir saniyede > 120° dönüş kırmızı) |
-| O-5.7 | Boss'a yakınken | Oyuncu boss'un gövde kenarına 2 m'den yakınsa kamera yönü (yaw) donar; 2–5 m arasında yumuşak geçiş; 5 m'den uzakta normal takip. Sebep: boss merkezine çok yakınken hedef yönü her karede ters dönüyor | ÖNERİ | G, E |
+| O-5.7 | Boss'a yakınken | Oyuncu boss'un gövde kenarına 2 m'den yakınsa kamera yönü (yaw) donar; 2–5 m arasında yumuşak geçiş; 5 m'den uzakta normal takip: donarken biriken fark geri alınır, ama O-5.6 tavanının altında ve oyuncu kadrajdan çıkmadan (yavaşça döner) [K 2026-10-15]. Sebep: boss merkezine çok yakınken hedef yönü her karede ters dönüyor | ÖNERİ | G, E |
 | O-5.8 | Hedef kilitliyken kadraj | Karakter ekranın alt üçte birinde, yatayda %40'ta; boss ekranın ortasında. Kilit mesafesi 5,2–8,8 m arasında oyuncu-boss mesafesine göre açılır | KOD `CameraLockOn*` + ÖNERİ | K |
 | O-5.9 | Omuz değişimi | Kilitliyken kamera omzu (sağ/sol 1,1 m) en çok 1,5 s'de bir değişir | KOD `CameraLockOnShoulderSideM` + ÖNERİ | G |
-| O-5.10 | Duvar arkası | Kamera ile karakter arasına duvar/sütun girerse 0,05 s'de öne gelir, engel kalkınca 0,35 s'de geri çekilir; en yakın 1,2 m | KOD `CameraCollision*` | G |
+| O-5.10 | Duvar arkası | Kamera ile karakter arasına duvar girerse 0,05 s'de öne gelir, engel kalkınca 0,35 s'de geri çekilir; en yakın 1,2 m. Sütun arada kalırsa kamera öne gelmez, mesafesini korur; sütun O-5.11 opaklığıyla (%35) saydamlaşır, kamera sütunun içine girmez [K 2026-10-15; önceki [Ö] "engelin önünde, karaktere yakın" kamerayı karakterin kafasına sokuyordu] | KOD `CameraCollision*`, `CameraSliceGuard` | G (`oyuncu_engel_arkasinda` her kare; sütun sayılmaz) |
 | O-5.11 | Boss arada kalırsa | Boss gövdesi kamera ile karakter arasındaysa kamera öne gelmez; boss modeli %35 opaklığa iner | ÖNERİ | K |
 | O-5.12 | Elle döndürme | Ekranın sağ yarısında boş bir yere sürükleme: 0,35 °/dp; eğim −8° ile 35° arası; ters eğim ayarı var | KOD `OrbitDegreesPerDp`, `CameraPitchMin/MaxDeg` | E |
 | O-5.13 | Sarsıntı | Yalnız yerel oyuncu; genlik = 0,05 × silahın ritim çarpanı (kamera metresi), süre 0,1 s; boss büyük saldırısında 0,12 m, 0,25 s. Ayarlardan kapatılabilir | BELGE (`07` §4.1) + KOD `BossShakeAmpBaseM` | E |
@@ -304,10 +304,10 @@ Aşağıdaki değerler orada aynen geçer.
 | O-8.2 | Ortam paleti | Soğuk ve soluk: taş gri-mavi (#3A4048), kül (#5B5A57), gölge (#1C1F24), uzak sis (#4A5260) | ÖNERİ | K |
 | O-8.3 | Vurgu rengi | Kor turuncu (#FF7A1A): rünler, ejderha motifleri, kalpteki kor. Ortamda yalnız ateş kaynaklarında | ÖNERİ | K |
 | O-8.4 | Fiil ve element renkleri | `07` efekt motorundaki renkler geçerli; ortam paletiyle karışmaması için doygunlukları ortamdan yüksek tutulur | BELGE | K |
-| O-8.5 | Ana ışık (güneş) | Alacakaranlık: yükseklik 20°, yön kuzeybatıdan; renk sıcak soluk (#F2C79A); şiddet 0,85; gölge şiddeti 0,4 | KOD `KeyLightIntensity` 0,85 + ÖNERİ (açı, renk) | K |
-| O-8.6 | Ortam ışığı | Gökyüzü rengi #2E3846, zemin rengi #1A1C20; düşük (karanlık bölgeler tamamen siyah olmaz) | ÖNERİ | K |
+| O-8.5 | Ana ışık (güneş) | LED gibi beyaz, canlı: renk (1/1/1); fiili şiddet 1,6 (Gamma, tahmin); gölge şiddeti 0,75 (gölge siyah olmaz); açı euler (52, −30, 0). Eski "alacakaranlık / sıcak soluk" tanımı kaldırıldı ([K] Mustafa, 2026-10-15) | KOD `KeyLightIntensity` + `LookPresetsDefaults` (ölçüm: telefonda ayarlanır) | K |
+| O-8.6 | Ortam ışığı | Gökyüzü (0,75/0,78/0,82), ufuk (0,62/0,64/0,67), zemin (0,42/0,43/0,45) (tahmin); ön ayar B ambiyanı koyulaştırmaz | KOD `ArenaSettings.Ambient*` | K |
 | O-8.7 | Sis | Üstel sis, yoğunluk 0,012; renk #4A5260. Bugünkü 0,0032 neredeyse görünmüyor ("hava kasvetli değil" notu) | KOD→ÖNERİ | K |
-| O-8.8 | Renk işleme | Doygunluk −35, kontrast −14, pozlama +0,15, vinyet 0,12, bloom eşiği 0,95 şiddet 0,65 | KOD (`ArenaSettings`) | K |
+| O-8.8 | Renk işleme | Gerçek kaynak `Look_B_Keskin.asset`: renk filtresi (1/1/1), kontrast +10, doygunluk −5, pozlama +0,3, beyaz dengesi 0, vinyet 0,18, bloom eşik 0,95 şiddet 0,55 (hepsi tahmin, telefonda ayarlanır). Rim yön ışığı (mavi) kaldırıldı (`RimLightIntensity` 0) | KOD (`Look_B_Keskin.asset` + `ArenaSettings`) | K |
 | O-8.9 | Renk uzayı | Linear (bugün Gamma). Linear ışık ve sisi daha doğru gösterir; geçişte bütün renkler yeniden kontrol edilir, ayrı bir PR'dır | KOD→ÖNERİ | K |
 | O-8.10 | Okunurluk sırası | 1) boss ön işareti, 2) dost skilleri ve dostun konumu, 3) kendi skillin, 4) boss gövdesi, 5) ortam. Bir üst sıradakini alttaki kapatamaz | ÖNERİ | K |
 
@@ -335,8 +335,8 @@ Efekt dili `07`'dedir. Burada yalnız sınırlar var.
 | O-10.1 | Vuruş donması (hitstop) | Yakın silahta isabet anında vuran ve vurulan donar: süre = 0,05 × ritim çarpanı, 0,03–0,10 s arasında (Kılıç 0,04 s, Çekiç 0,10 s; Yumruk seri olduğu için her parçada alt sınır 0,03 s). Menzilli silahta yok. Oyun saati donmaz, yalnız iki modelin animasyonu | ÖNERİ | T, E |
 | O-10.2 | Vurulma parlaması | Vurulan model 0,08 s beyaz, %60 | ÖNERİ | K |
 | O-10.3 | Hasar sayısı | 28 dp (kritik/kusursuz 36 dp); 64 px yükselir, 0,35 s bekler, 0,45 s'de söner; ayarlardan kapatılabilir | KOD `DamageFloat*` | K |
-| O-10.4 | Titreşim | Android 8 ve üstü. Kendi isabetin: 15 ms hafif. Hasar aldın: 50 ms orta. Boss büyük saldırısı sana değdi: 120 ms güçlü. Kusursuz dodge: 2 × 20 ms. Ayarlardan kapatılabilir | KOD (`FeelHaptics`, min SDK 26) + ÖNERİ | E |
-| O-10.5 | Kusursuz dodge hissi | 0,2 s boyunca oyun hızı 0,5 (yalnız tek oyuncuda; çok oyunculuda yalnız görsel vinyet) | KOD `PerfectFeelSec` + ÖNERİ | E |
+| O-10.4 | Titreşim | Android 8 ve üstü. Kendi isabetin: 15 ms hafif. Hasar aldın: 50 ms orta. Boss büyük saldırısı sana değdi: 120 ms güçlü. ~~Kusursuz dodge: 2 × 20 ms~~ **[RED]** (kusursuz dodge kaldırıldı, `13` §3). Ayarlardan kapatılabilir | KOD (`FeelHaptics`, min SDK 26) + ÖNERİ | E |
+| O-10.5 | ~~Kusursuz dodge hissi~~ **[RED]** | Kaldırıldı ([K] 13 Ekim, `13` §3). Eski satır: 0,2 s boyunca oyun hızı 0,5 | ~~KOD `PerfectFeelSec`~~ (kodda silinecek) | — |
 
 ---
 
@@ -445,7 +445,7 @@ Dilimde çok oyunculu yok ve kodda ağ paketi yok. Kurulduğunda bu değerler ge
 | Kimlik | Madde | Değer | Kaynak |
 |---|---|---|---|
 | O-17.1 | Dilim akışı | Açılış → silah seçimi (iki silah) → arena (boss uyuyor) → oyuncu 6 m'ye yaklaşınca ya da vurunca boss uyanır (2 s uyanış) → dövüş → sonuç ekranı | ÖNERİ |
-| O-17.2 | Ölüm (tek oyuncu) | 2 s ölüm → "Tekrar" ve "Silah değiştir" düğmeleri; tekrar 3 s içinde arenada | ÖNERİ |
+| O-17.2 | Ölüm (tek oyuncu); ölüm ve sonuç ekranında boss canı büyük yazılır ([K] 16 Ekim, `13` §5 [Ö] onaylandı) | 2 s ölüm → "Tekrar" ve "Silah değiştir" düğmeleri; tekrar 3 s içinde arenada | ÖNERİ |
 | O-17.3 | Kazanma | Boss ölümünden 2 s sonra sonuç: süre, atılan skill sayısı, en çok hasar veren kombo, deneme sayısı | ÖNERİ |
 | O-17.4 | Hedef | Dövüş süresi ~180 s; ilk zaferin ~8 denemede gelmesi | KOD (boss JSON `target_clear_time_sec`, `target_attempts`) |
 | O-17.5 | Eğitim | İlk açılışta 3 adım: 1) merkeze dokun (temel vuruş), 2) iki nokta çiz (ilk kombo), 3) çift rün. Her adım bir kukla üzerinde; geçilebilir | ÖNERİ |

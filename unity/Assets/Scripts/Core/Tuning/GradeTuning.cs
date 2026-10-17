@@ -9,9 +9,7 @@ namespace Dovus.Core.Tuning
     /// KÜÇÜK kalmalı. Aksi halde SIYIRDI bandı pencerenin dışına taşar ve hiç üretilemez —
     /// pencere kapandıktan sonra gelen vuruş zaten isabet eder, derece almaz.
     ///
-    /// O2 (denetim B): en üst derece artık ayrı bir eşik değil — <see cref="DodgeTuning.PerfectWindowMs"/>
-    /// (tek mükemmel pencere; yük iadesi ve sonraki vuruş bonusuyla aynı). Yazısı "PERFECT".
-    /// <see cref="HarikaGapMaxMs"/> bu pencereden büyük kalmalı.
+    /// Mükemmel dodge oyundan kaldırıldı (2026-10-16): en üst derece HARİKA.
     /// </summary>
     [System.Serializable]
     public class GradeTuning

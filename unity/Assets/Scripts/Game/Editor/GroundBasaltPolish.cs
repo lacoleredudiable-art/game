@@ -26,7 +26,7 @@ namespace Dovus.Game.Editor
             if (mat.HasProperty("_DetailNormalMapScale"))
                 mat.SetFloat("_DetailNormalMapScale", 0.85f);
 
-            Vector2 baseSt = new Vector2(0.14285715f, 0.14285715f);
+            Vector2 baseSt = new Vector2(0.25f, 0.25f);
             mat.SetTextureScale("_BaseMap", baseSt);
             mat.SetTextureScale("_MainTex", baseSt);
             mat.SetTextureScale("_BumpMap", baseSt);

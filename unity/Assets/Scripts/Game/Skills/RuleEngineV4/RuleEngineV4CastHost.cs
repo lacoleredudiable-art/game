@@ -65,7 +65,8 @@ namespace Dovus.Game.Skills.RuleEngineV4
             dealt = 0;
             string key = RuleEngineV4CastEconomy.ComboKey(verb, adj);
             double castMs = WorldMs();
-            if (!Economy.TryBegin(key, castMs, out RuleEngineV4CastDenial denial))
+            if (!Economy.TryBegin(key, castMs, out RuleEngineV4CastDenial denial,
+                    RuleEngineV4CastEconomy.IsManaFree(adj)))
             {
                 LastDenial = denial;
                 DebugConfig.DevLog($"[RuleEngineV4] skill çıkmadı {key}: {denial}");

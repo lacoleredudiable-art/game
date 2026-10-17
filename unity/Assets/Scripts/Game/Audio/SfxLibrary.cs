@@ -18,7 +18,6 @@ namespace Dovus.Game.Audio
         public const string Crit = "crit";
         public const string PlayerHurt = "player_hurt";
         public const string Dodge = "dodge";
-        public const string PerfectDodge = "perfect_dodge";
         public const string BossWindup = "boss_windup";
         public const string BossSlam = "boss_slam";
         public const string BossFire = "boss_fire";
@@ -50,7 +49,6 @@ namespace Dovus.Game.Audio
             (Crit, SfxLibraryDefaults.CritVolume, SfxLibraryDefaults.CritPitchMin, SfxLibraryDefaults.CritPitchMax, SfxLibraryDefaults.CritMinGapSec),
             (PlayerHurt, SfxLibraryDefaults.PlayerHurtVolume, SfxLibraryDefaults.PlayerHurtPitchMin, SfxLibraryDefaults.PlayerHurtPitchMax, SfxLibraryDefaults.PlayerHurtMinGapSec),
             (Dodge, SfxLibraryDefaults.DodgeVolume, SfxLibraryDefaults.DodgePitchMin, SfxLibraryDefaults.DodgePitchMax, SfxLibraryDefaults.DodgeMinGapSec),
-            (PerfectDodge, SfxLibraryDefaults.PerfectDodgeVolume, 1f, SfxLibraryDefaults.PerfectDodgePitchMax, SfxLibraryDefaults.PerfectDodgeMinGapSec),
             (BossWindup, 0.5f, SfxLibraryDefaults.BossWindupPitchMin, 1f, SfxLibraryDefaults.BossWindupMinGapSec),
             (BossSlam, SfxLibraryDefaults.BossSlamVolume, SfxLibraryDefaults.BossSlamPitchMin, SfxLibraryDefaults.BossSlamPitchMax, SfxLibraryDefaults.BossSlamMinGapSec),
             (BossFire, SfxLibraryDefaults.BossFireVolume, SfxLibraryDefaults.BossFirePitchMin, SfxLibraryDefaults.BossFirePitchMax, SfxLibraryDefaults.BossFireMinGapSec),

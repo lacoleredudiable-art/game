@@ -92,7 +92,9 @@ namespace Dovus.Core.Dodge
                 return;
 
             float tEnter = (-b - MathF.Sqrt(disc)) / (2f * a);
-            if (tEnter > 0f && tEnter < 1f)
+            // tEnter == 0: başlangıç tam kenarda (takla kıstırılmış konumdan başlar) ve yol içeri gidiyor.
+            // b < 0 teğet ve dışa giden yolu bunun dışında tutar.
+            if (tEnter >= 0f && tEnter < 1f && (tEnter > 0f || b < 0f))
             {
                 x = fromX + abx * tEnter;
                 z = fromZ + abz * tEnter;

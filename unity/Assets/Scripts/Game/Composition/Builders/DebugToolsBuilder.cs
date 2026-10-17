@@ -41,6 +41,9 @@ namespace Dovus.Game.Composition.Builders
             var teamDebug = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.TeamDebugHud>();
             teamDebug.Configure(ctx.TeamAccess, ctx.Runtime.DebugPanelsChrome);
             CreateGozcu(ctx);
+            // Dodge denemesi: BossDirector HudBuilder'dan sonra kurulur, bu yüzden burada bağlanır.
+            var practice = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.DodgePracticeController>();
+            practice.Bind(ctx.Player.transform, ctx.Boss.transform, ctx.BossDirector, ctx.Clock);
         }
 
         static void CreateGozcu(WorldContext ctx)

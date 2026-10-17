@@ -12,6 +12,8 @@ namespace Dovus.Game.Hud
 
         public List<EquipmentItem> SweepWeapons => _weapons;
 
+        public int SweepElementId => _elements != null ? _elements.SelectedId : -1;
+
         public void SweepApplyAndStart() => ApplyAndStart();
 
         public void SweepClose() => Close();

@@ -102,8 +102,9 @@ kesin değer dengelemede" diye güncellenir.
 
 ## 4. Diğer kurallarla ilişkisi (değişmez, hatırlatma)
 
-- **Kesme:** dodge skillin hazırlığını ve toparlanmasını keser; hazırlık kesilirse hak yanar, CD yanmaz
-  (`13` §9, O-3.5). Etki fazı kesilmez. Öncelik: dodge > silah değişimi > düz vuruş sıfırlama.
+- **Kesme ([K] 16 Ekim):** dodge skill'i her fazda (hazırlık, etki, toparlanma) hemen keser. Hazırlık kesilirse
+  skill atılmaz, mana ve CD yanar, iade yok (O-3.5). Etki geçtiyse CD yanar. Dodge sürerken skill ve düz vuruş
+  çalışmaz. Öncelik: dodge > silah değişimi > düz vuruş. (Eski [Ö] "CD yanmaz / etki kesilmez" reddedildi.)
 - **Darbe alma:** ağır darbe ve kalkmanın ilk 0,3 s'si dodge ile kesilir (O-3.8, O-3.9). Her durumdan dodge'a
   geçiş vardır, ölüm hariç (O-3.11).
 - **Silah değiştirme:** sırasında dodge yok (O-2.19).
@@ -127,6 +128,7 @@ kesin değer dengelemede" diye güncellenir.
 - **İz:** yalnız süzülme fazında, oyuncunun arkasında (O-4.10).
 - **[Ö] Hak göstergesi:** dodge butonunda iki hak dilimi. Zincir ikisini birden boşaltır; masa kimin hakkının
   bittiğini görebilir.
+- **[K] Hak iadesi yoktur** (16 Ekim: "yaptığının sonucuna katlanırsın"); engele çarpıp yol alamayan dodge da hak yakar.
 - **[Ö] Boş hak:** hak yokken basış dodge yapmaz; buton kısa sarsılır, hafif titreşim. Sessizce yutulmaz.
 - Mükemmel dodge'a ait ağır çekim, özel ses, hak iadesi yoktur ([RED]).
 
@@ -154,7 +156,9 @@ kesin değer dengelemede" diye güncellenir.
 
 | Kod | Soru | Seçenekler | Öneri |
 |---|---|---|---|
-| **D-7** | Boss, hak tüketmek için iki "uzun" saldırıyı 6 s içinde arka arkaya atabilir mi? | evet (hak yönetimi sınavı) · hayır (aralık ≥ dolum süresi) | boss tasarım oturumunda |
+| **D-7** | Boss, hak tüketmek için iki "uzun" saldırıyı 6 s içinde arka arkaya atabilir mi? | evet (hak yönetimi sınavı) · hayır (aralık ≥ dolum süresi) | **[K] 16 Ekim: hayır** (alfa için; aralık ≥ 6 s) |
+
+Kapananlar (16 Ekim): D-7 → [K] hayır, aralık ≥ 6 s · takla yönü engele bakıyorsa → joystick yönüne, engelde durur · hak iadesi yok.
 
 Kapananlar (14 Ekim): D-1 sayılar → test değeri 0,5 / 1,3 s, kesin değer dengelemede · D-2 → [K] Model A ·
 D-3 mesafe → test değeri ×1,6, kesin değer dengelemede · D-5 coyote time → **kaldırıldı**: hasar karesinden
@@ -173,6 +177,7 @@ zaten dodge yok) · D-4 birleşme penceresi `= T_tek`; sonrasında basış sıra
 
 ## 9. Mevcut belgelerle çelişkiler (karar sonrası güncellenecek)
 
+- **Kapandı (16 Ekim, belge temizliği):** `10` O-4.5, O-4.6, O-4.7, O-4.8, O-10.4, O-10.5, `09` i-frame satırı, `06` H-3 notu, `13` §8 coyote ve README bu belgeye göre güncellendi.
 - O-4.5: "0,2 s içinde" ve "toplam süre ×1,4 (0,35 s)" iki fazlı dodge'la (O-4.4a, 0,65 s) uyuşmuyor.
 - O-4.6 / `09` [K]: 0,26 / 0,52 s → test değeri 0,5 / 1,3 s, kesin değer dengelemede.
 - `06` §5.1 H-3 ×1,5 tavanı dodge taklasına uygulanmaz; dodge taklası ×1,6 kullanır (Mustafa, 14 Ekim: test

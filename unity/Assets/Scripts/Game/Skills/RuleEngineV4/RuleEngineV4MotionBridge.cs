@@ -49,10 +49,10 @@ namespace Dovus.Game.Skills.RuleEngineV4
         {
             if (body == null || template == null)
                 yield break;
-            float incoming = motor != null ? motor.Velocity.magnitude : 0;
             float dist = template.Phases.Count > 0 ? template.Phases[0].DistanceM : 0;
             float baseSpeed = dist / Mathf.Max(CastApproach.MinSec, template.Phases[0].DurationSec);
-            float speed = RuleEngineV4MotionHandoff.EffectiveSpeedMps(baseSpeed, incoming);
+            // Koşu hızı devredilmez: uçuş/atılış kendi komut hızıyla gider (koşarken 3-9 ~17 m/s'ye çıkıyordu).
+            float speed = baseSpeed;
             float meters = template.Phases[0].DistanceM;
             string motion = template.Phases[0].Motion;
             template = BuildLinearMove(template.Id, motion, meters, speed);

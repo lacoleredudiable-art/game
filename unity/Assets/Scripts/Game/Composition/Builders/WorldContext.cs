@@ -49,6 +49,8 @@ namespace Dovus.Game.Composition.Builders
         public TeamComboHost TeamComboHost;
         public SfxDirector Sfx;
         public GameObject Arena;
+        /// <summary>v4 dilim sütunlarının kökü (her çocuk bir sütun); dilim dışı null. Kamera O-5.10 için okur.</summary>
+        public Transform SliceColumns;
         public float WalkHalf;
         public float SpawnMaxR;
 
