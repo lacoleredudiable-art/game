@@ -19,7 +19,7 @@ namespace Dovus.Game.Skills
 
         internal int FriendlyTargetCap(in SkillResolution skill) => 1;
 
-        float ConsumeOverflowBonus(bool isBasicStrike) => 0f;
+        float ConsumeOverflowBonus(bool isBasicStrike) => 1f;
 
         internal void OnJsonShieldBlocked()
         {
@@ -95,13 +95,13 @@ namespace Dovus.Game.Skills
         {
             if (body == null)
                 return false;
-            if (_boss != null && body == _boss.transform)
+            if (_boss != null && (body == _boss.transform || body.IsChildOf(_boss.transform)))
                 return true;
             if (_liveTargetables != null)
             {
                 foreach (TargetableHost t in _liveTargetables.Live)
                 {
-                    if (t != null && t.transform == body)
+                    if (t != null && t.TeamId != 0 && (t.transform == body || body.IsChildOf(t.transform)))
                         return true;
                 }
             }

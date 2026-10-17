@@ -106,9 +106,9 @@ namespace Dovus.Game.Skills.Closing
         {
             LivingEffect logic = p.View != null ? p.View.Logic : null;
             logic?.FireClosingBang();
-            _host.StampScar(p.View, p.Closing);
-
             bool basic = IsPendingBasic(p);
+            if (!basic)
+                _host.StampScar(p.View, p.Closing);
             if (basic)
             {
                 _host.EnsureCastPort();
@@ -130,6 +130,12 @@ namespace Dovus.Game.Skills.Closing
 
             LivingEffect logic = p.View.Logic;
             Vector3 tip = new Vector3(logic.TipX, ClosingDefaults.ClosingTipGroundYM, logic.TipZ);
+            if (IsPendingBasic(p) && p.Target != null)
+            {
+                tip = p.Target.position;
+                tip.y = ClosingDefaults.ClosingTipGroundYM;
+            }
+
             string element = _host.SelectedElementPaint?.Name
                 ?? (p.Words != null && p.Words.Count > 0
                     ? RuneInfo.LegacySerializationName(p.Words[0].Rune)

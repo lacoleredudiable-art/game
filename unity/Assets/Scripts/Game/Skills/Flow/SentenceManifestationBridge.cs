@@ -150,7 +150,8 @@ namespace Dovus.Game.Skills.Flow
                 ? BasicStrikeCadenceRules.BangAtWorldMs(nowMs, basicPrefireSec)
                 : nowMs;
 
-            _host.Pose?.BeginRecovery(recoverySec, nowMs);
+            double recoveryStartMs = spawnedForBasicStrike && basicPrefireSec > 0f ? bangAt : nowMs;
+            _host.Pose?.BeginRecovery(recoverySec, recoveryStartMs);
             _host.PosedForRecovery = true;
 
             if (spawnedForBasicStrike && basicPrefireSec > 0f && !basicPrefireMoves)

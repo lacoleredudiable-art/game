@@ -34,13 +34,17 @@ namespace Dovus.App.Casting
             }
 
             double basicNow = port.WorldTimeMs();
-            if (!port.BasicCadenceReady(basicNow))
+            float basicPrefireSec = port.BasicStrikePrefireSec();
+            double strikeStartMs = basicPrefireSec > 0f
+                ? basicNow - basicPrefireSec * Dovus.Core.Shared.Units.SecToMs
+                : basicNow;
+            if (!port.BasicCadenceReady(strikeStartMs))
             {
                 DenialRequested?.Invoke(new CastDenialRequested(CastDenialReason.BasicCadenceNotReady));
                 return new BasicOutcome(false, true, false, 0f, 0);
             }
 
-            port.SetLastBasicStrikeMs(basicNow);
+            port.SetLastBasicStrikeMs(strikeStartMs);
             int basicHits = port.BasicHitsNow();
             float basicReach = port.BasicStrikeReachM();
             bool capsuleHit = port.IsBossInStrikeCapsule(ctx, basicReach);

@@ -17,18 +17,24 @@ namespace Dovus.Game.Actors
         {
             if (_animator == null || !_animator.isActiveAndEnabled || _animator.runtimeAnimatorController == null)
                 return;
+            bool snapToRun = worldSpeedMps > ActorViewDefaults.IdleSpeedCutoff
+                             && SkillClip.ShouldExitTimedHoldOnMove(_animator);
             if (!HasFloat(ParamLocoRunSpeed) || !HasFloat(ParamLocoPlayback))
             {
-                SetSpeed(worldSpeedMps / Mathf.Max(ActorViewDefaults.MinPositive, normalizeRefMps), dampSec);
+                SetSpeed(worldSpeedMps / Mathf.Max(ActorViewDefaults.MinPositive, normalizeRefMps), snapToRun ? 0f : dampSec);
+                if (snapToRun)
+                    SnapLayerZeroToLocomotion();
                 return;
             }
 
             float run = Mathf.Max(ActorViewDefaults.MinPositive, _animator.GetFloat(ParamLocoRunSpeed));
-            float model = worldSpeedMps / Mathf.Max(ActorViewDefaults.MinPositive, _animator.transform.lossyScale.y);
-            if (model < run * ActorViewDefaults.LocoRunSpeedRatioFloor)
+            float model = snapToRun
+                ? run
+                : worldSpeedMps / Mathf.Max(ActorViewDefaults.MinPositive, _animator.transform.lossyScale.y);
+            if (!snapToRun && model < run * ActorViewDefaults.LocoRunSpeedRatioFloor)
                 model = 0f;
             float playback = Mathf.Clamp(model / run, 1f, Mathf.Max(1f, maxPlaybackMult));
-            if (dampSec > 0f && Time.deltaTime > 0f)
+            if (!snapToRun && dampSec > 0f && Time.deltaTime > 0f)
             {
                 _animator.SetFloat(ParamSpeed, Mathf.Min(model, run), dampSec, Time.deltaTime);
                 _animator.SetFloat(ParamLocoPlayback, playback, dampSec, Time.deltaTime);
@@ -38,6 +44,18 @@ namespace Dovus.Game.Actors
                 _animator.SetFloat(ParamSpeed, Mathf.Min(model, run));
                 _animator.SetFloat(ParamLocoPlayback, playback);
             }
+            if (snapToRun)
+                SnapLayerZeroToLocomotion();
+        }
+
+        void SnapLayerZeroToLocomotion()
+        {
+            int locoHash = Animator.StringToHash(StateLocomotion);
+            if (!_animator.HasState(0, locoHash))
+                return;
+            _animator.Play(locoHash, 0, 0f);
+            ClearUpper();
+            _animator.Update(0f);
         }
 
         bool HasFloat(string name)

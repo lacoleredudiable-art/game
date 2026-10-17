@@ -326,9 +326,34 @@ namespace Dovus.Game.Actors
             _ring.textureMode = LineTextureMode.Stretch;
             _ring.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _ring.receiveShadows = false;
-            Shader shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null) ?? AssetLoader.FindShader("Unlit/Color", null);
+            Shader shader = FindRingLineShader();
             if (shader != null)
+            {
                 _ring.material = new Material(shader);
+                _ring.material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            }
+        }
+
+        static Shader FindRingLineShader()
+        {
+            Shader shader = AssetLoader.FindShader("Sprites/Default", null);
+            if (shader != null)
+                return shader;
+            shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null);
+            if (shader != null)
+                return shader;
+            return AssetLoader.FindShader("Hidden/Internal-Colored", null);
+        }
+
+        static void ApplyRingMaterialColor(Material mat, Color color)
+        {
+            if (mat == null)
+                return;
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", color);
+            if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", color);
+            mat.color = color;
         }
 
         void BuildFrame(Transform canvasRoot)
@@ -385,6 +410,7 @@ namespace Dovus.Game.Actors
                 _ring.endColor = color;
                 _ring.startWidth = _presentation.RingWidthM;
                 _ring.endWidth = _presentation.RingWidthM;
+                ApplyRingMaterialColor(_ring.material, color);
             }
             if (_frameBackground != null)
                 _frameBackground.color = new Color(color.r * 0.2f, color.g * 0.2f, color.b * 0.2f, 0.88f);

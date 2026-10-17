@@ -194,6 +194,8 @@ namespace Dovus.Game.Casting.Input
             _s.CenterStrikeArmed = false;
 
             float clipSec = _s.BasicStrikeClipSec != null ? _s.BasicStrikeClipSec() : 0f;
+            float prefireSec = _s.BasicStrikePrefireSec != null ? _s.BasicStrikePrefireSec() : 0f;
+            _s.BasicTapGate.SetPrefireSec(prefireSec);
             if (clipSec > 0f && !_s.BasicTapGate.TryAcceptTap(worldMs, clipSec))
                 return;
 
@@ -203,10 +205,12 @@ namespace Dovus.Game.Casting.Input
         void StartBasicStrike(double worldMs, bool fromQueue)
         {
             int runeId = _s.Tuning.Input.BasicStrikeDot;
-            if (!_s.Engine.BeginBasicStrike(runeId, worldMs))
+            float clipSec = _s.BasicStrikeClipSec != null ? _s.BasicStrikeClipSec() : 0f;
+            float prefireSec = _s.BasicStrikePrefireSec != null ? _s.BasicStrikePrefireSec() : 0f;
+            _s.BasicTapGate.SetPrefireSec(prefireSec);
+            if (!_s.Engine.BeginBasicStrike(runeId, worldMs, clipSec))
                 return;
 
-            float clipSec = _s.BasicStrikeClipSec != null ? _s.BasicStrikeClipSec() : 0f;
             if (clipSec > 0f && fromQueue)
                 _s.BasicTapGate.BeginClip(worldMs, clipSec);
 

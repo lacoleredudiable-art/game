@@ -276,10 +276,9 @@ namespace Dovus.Game.Skills.Closing
                 return false;
             ManifestationTuning man = _host.Combat.Manifestation;
             float radius = man.BasicStrikeRadiusM;
-            Vector3 dir = new Vector3(logic.DirX, 0f, logic.DirZ);
+            Vector3 dir = BasicStrikeCapsuleDir(logic);
             if (dir.sqrMagnitude < ClosingDamageDefaults.PlanarEpsilonSqr)
                 return false;
-            dir.Normalize();
             StrikeCapsule.Segment(_host.PlayerBodyRadiusM(), reachM, radius, out float nearM, out float farM);
             Vector3 chest = _host.Player.position + Vector3.up * man.StrikeChestOffsetM;
             Vector3 low = chest + dir * nearM;
@@ -293,7 +292,47 @@ namespace Dovus.Game.Skills.Closing
                 if (hit == bossT || hit.IsChildOf(bossT))
                     return true;
             }
-            return false;
+
+            float bossRadiusM = _host.Boss != null ? _host.Boss.BodyRadiusM : 0f;
+            return CapsuleIntersectsSphere(low, high, radius, bossT.position, bossRadiusM);
+        }
+
+        static bool CapsuleIntersectsSphere(Vector3 segLow, Vector3 segHigh, float capsuleRadiusM, Vector3 center, float sphereRadiusM)
+        {
+            Vector3 ab = segHigh - segLow;
+            float abLenSq = ab.sqrMagnitude;
+            if (abLenSq < ClosingDamageDefaults.PlanarEpsilonSqr)
+            {
+                float dx = center.x - segLow.x;
+                float dz = center.z - segLow.z;
+                float dist = (float)System.Math.Sqrt(dx * dx + dz * dz);
+                return dist <= capsuleRadiusM + sphereRadiusM;
+            }
+
+            Vector3 ap = center - segLow;
+            float t = Mathf.Clamp01(Vector3.Dot(ap, ab) / abLenSq);
+            Vector3 closest = segLow + ab * t;
+            float cdx = center.x - closest.x;
+            float cdz = center.z - closest.z;
+            float planarDist = (float)System.Math.Sqrt(cdx * cdx + cdz * cdz);
+            return planarDist <= capsuleRadiusM + sphereRadiusM;
+        }
+
+        /// <summary>Bang anında oyuncu hedefe dönmüş olur; spawn yönü eski kalabilir.</summary>
+        Vector3 BasicStrikeCapsuleDir(LivingEffect logic)
+        {
+            if (_host.Player != null)
+            {
+                Vector3 facing = _host.Player.forward;
+                facing.y = 0f;
+                if (facing.sqrMagnitude >= ClosingDamageDefaults.PlanarEpsilonSqr)
+                    return facing.normalized;
+            }
+
+            Vector3 legacy = new Vector3(logic.DirX, 0f, logic.DirZ);
+            return legacy.sqrMagnitude >= ClosingDamageDefaults.PlanarEpsilonSqr
+                ? legacy.normalized
+                : Vector3.forward;
         }
 
         public bool BasicTargetStillInReach(Transform target, float reachM)

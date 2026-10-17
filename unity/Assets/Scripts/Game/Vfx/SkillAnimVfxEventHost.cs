@@ -37,9 +37,9 @@ namespace Dovus.Game.Vfx
         /// Düz vuruş klibi state'i oynarken yalnız bu maske geçer, Trail_On / Trail_Off asla.
         /// State'ten çıkılınca skill maskesi geri gelir.
         /// </summary>
-        public void BeginBasicStrike(string stateName, RuleEngineV4SkillAnimEvent events)
+        public void BeginBasicStrike(string stateName, RuleEngineV4SkillAnimEvent events, float prefireSec = 0f)
         {
-            _basicStrike.Hold(stateName);
+            _basicStrike.Hold(stateName, prefireSec);
             _basicStrikeMask = events & ~SkillOnlyEvents;
         }
 

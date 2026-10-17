@@ -10,9 +10,11 @@ using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
 using Dovus.Core.Motion;
+using Dovus.Core.Equipment;
 using Dovus.Core.Presentation;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
+using Dovus.Game.Actors;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -122,20 +124,81 @@ namespace Dovus.Game.Skills.Targeting
             CastFacingTarget = null;
             if (_host.Targeting == null)
                 return;
+
+            float reach = BasicStrikeWeaponReachM();
+            float aimGate = StrikeCapsule.CenterRange(_host.PlayerBodyRadiusM(), reach);
+
             Transform selected = _host.Targeting.SelectedTransform;
-            if (selected != null && selected != _host.Player && _host.IsEnemyBody(selected))
+            if (selected != null && selected != _host.Player && _host.IsEnemyBody(selected)
+                && EnemyWithinBasicReach(selected, reach))
             {
                 CastFacingTarget = selected;
                 return;
             }
 
-            float range = _host.Combat != null
+            if (TryFindBossInRange(reach, out Transform boss))
+                CastFacingTarget = boss;
+            else if (_host.Targeting.TryResolveBasicEnemy(aimGate, out Transform auto) && auto != null)
+                CastFacingTarget = auto;
+        }
+
+        /// <summary>Kuşanılı silahın düz vuruş menzili; yoksa fiil-1 jab yedeği.</summary>
+        public float BasicStrikeWeaponReachM()
+        {
+            float fallback = _host.Combat != null
                 ? _host.Combat.Manifestation.BasicStrikeRangeM
                 : SkillNumberFallbacks.RangeM;
-            if (_host.Targeting.TryResolveBasicEnemy(
-                    StrikeCapsule.CenterRange(_host.PlayerBodyRadiusM(), range), out Transform auto)
-                && auto != null)
-                CastFacingTarget = auto;
+            EquipmentItem weapon = _host.EquippedWeapon;
+            if (weapon?.Profile != null && weapon.Profile.BasicReachM > 0f)
+                return weapon.Profile.BasicReachM;
+            return fallback;
+        }
+
+        /// <summary>Yay gibi menzilli düz vuruş: ok/ volley profili.</summary>
+        public bool BasicStrikeUsesMissileDelivery()
+        {
+            WeaponCombatProfile profile = _host.EquippedWeapon?.Profile;
+            if (profile == null)
+                return false;
+            return profile.HitShape == "arrow" || profile.BasicKind == "volley";
+        }
+
+        public bool TryFindBossInRange(float reachM, out Transform target)
+        {
+            target = null;
+            if (_host.Boss == null || _host.Player == null)
+                return false;
+            if (!StrikeCapsule.EdgeInReach(
+                    PlanarEdgeDistance(_host.Boss.transform),
+                    _host.PlayerBodyRadiusM(),
+                    reachM))
+                return false;
+            target = _host.Boss.transform;
+            return true;
+        }
+
+        bool EnemyWithinBasicReach(Transform enemy, float reachM)
+        {
+            if (_host.Player == null || enemy == null)
+                return false;
+            return StrikeCapsule.EdgeInReach(
+                PlanarEdgeDistance(enemy),
+                _host.PlayerBodyRadiusM(),
+                reachM);
+        }
+
+        float PlanarEdgeDistance(Transform body)
+        {
+            TargetableHost mark = body.GetComponent<TargetableHost>();
+            if (mark == null)
+                mark = body.GetComponentInParent<TargetableHost>();
+            if (mark != null)
+                return mark.DistanceFrom(_host.Player.position);
+            return PlanarMath.FlatDistance(
+                _host.Player.position.x,
+                _host.Player.position.z,
+                body.position.x,
+                body.position.z);
         }
 
         public Vector3 FacingOrBody(Transform target, Vector3 pos)

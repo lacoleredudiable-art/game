@@ -7,6 +7,7 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Casting;
+using Dovus.Core.Equipment;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
 using System.IO;
@@ -66,6 +67,36 @@ public class AttackFacingAndRangeTests
         HitboxSize lineSize = HitboxSizing.Resolve(line, 1f, 1f);
         Assert.That(lineSize.RadiusM * 2f, Is.EqualTo(0.8f).Within(0.001f), "çizgi genişliği 0.8 m");
         Assert.That(lineSize.ReachM, Is.EqualTo(3f).Within(0.001f));
+    }
+
+    [Test]
+    public void BasicAutoAim_UsesWeaponReach_NotJabHitboxAlone()
+    {
+        var catalog = EquipmentCatalog.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
+        EquipmentItem sword = catalog.FindWeapon(4);
+        EquipmentItem bow = catalog.FindWeapon(2);
+        Assert.That(sword.Profile.BasicReachM, Is.EqualTo(6f).Within(0.001f));
+        Assert.That(bow.Profile.BasicReachM, Is.EqualTo(14.1f).Within(0.001f));
+
+        var boxes = SliceGrammarTestPaths.SliceVerbExecution();
+        Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec jab), Is.True);
+        float jabReach = HitboxSizing.Resolve(jab, 1f, 1f).ReachM;
+        Assert.That(jabReach, Is.EqualTo(1.5f).Within(0.001f));
+
+        const float body = 0.5f;
+        const float bossEdgeDistM = 4f;
+        Assert.That(
+            StrikeCapsule.EdgeInReach(bossEdgeDistM, body, jabReach),
+            Is.False,
+            "4 m kenar mesafe fiil-1 jab menzilinde değil");
+        Assert.That(
+            StrikeCapsule.EdgeInReach(bossEdgeDistM, body, sword.Profile.BasicReachM),
+            Is.True,
+            "kılıç düz vuruş menzili boss'a uzanır");
+        Assert.That(
+            StrikeCapsule.CenterRange(body, bow.Profile.BasicReachM),
+            Is.GreaterThan(StrikeCapsule.CenterRange(body, jabReach)),
+            "yay auto-aim kapısı jab'dan geniş");
     }
 
     [Test]

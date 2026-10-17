@@ -12,13 +12,16 @@ namespace Dovus.Game.Skills
 {
     public sealed partial class LivingEffectView
     {
+        bool _basicStrikeMissile;
+        float _basicPrefireSec;
+
+        /// <summary>Düz vuruş: yay oku vs kılıç darbesi ayrımı (LivingEffectSpawner kurar).</summary>
+        public void ConfigureBasicStrikeDelivery(bool missile) => _basicStrikeMissile = missile;
+
+        public void ConfigureBasicStrikePrefire(float prefireSec) => _basicPrefireSec = Mathf.Max(0f, prefireSec);
+
         void DrawBasicStrike(EffectSilhouette s, float alpha)
         {
-            _ = s;
-            _ = alpha;
-            _line.positionCount = 0;
-            _lineBaseWidth = _colors.Visuals.EffectLineWidthDefaultM;
-
             if (_needle == null)
                 return;
 
@@ -26,11 +29,40 @@ namespace Dovus.Game.Skills
             if (dir.sqrMagnitude < 1e-4f)
                 dir = Vector3.forward;
 
-            float dist = Mathf.Min(_logic.TipDistance, _tuning.BasicStrikeRangeM);
             float y = _colors.Visuals.EffectBasicStrikeHeightM;
             Vector3 origin = new Vector3(_logic.OriginX, y, _logic.OriginZ);
-            // Uç, kısa menzilin ortasına yakın — "tek vuruşluk jab", uçan iğne değil.
-            Vector3 tip = origin + dir * Mathf.Max(LivingEffectViewDefaults.TipMinDistM, dist * LivingEffectViewDefaults.TipDistAlongMult);
+            float travel01 = _logic.MaxRange > LivingEffectViewDefaults.MaxRangeEpsilonM
+                ? Mathf.Clamp01(_logic.Travel / _logic.MaxRange)
+                : 0f;
+            float dist = _logic.TipDistance;
+            if (_basicStrikeMissile && _basicPrefireSec > 0f
+                && _logic.Phase is not LivingEffectPhase.Banging and not LivingEffectPhase.Fading)
+                travel01 = Mathf.Clamp01(_logic.AgeSec / _basicPrefireSec);
+
+            if (_basicStrikeMissile)
+            {
+                DrawBasicStrikeMissile(origin, dir, dist, s, alpha, travel01);
+                return;
+            }
+
+            DrawBasicStrikeMelee(origin, dir, dist, alpha);
+        }
+
+        void DrawBasicStrikeMelee(Vector3 origin, Vector3 dir, float dist, float alpha)
+        {
+            if (_logic.Phase != LivingEffectPhase.Banging && _logic.Phase != LivingEffectPhase.Fading)
+            {
+                _line.positionCount = 0;
+                if (_needle != null)
+                    _needle.gameObject.SetActive(false);
+                return;
+            }
+
+            float slashDist = Mathf.Max(LivingEffectViewDefaults.TipMinDistM, dist);
+            Vector3 tip = origin + dir * slashDist;
+
+            // Kılıç jab: menzil hattı yok — yalnız uçtaki iğne (§3.1 iaido yayı).
+            _line.positionCount = 0;
 
             _needle.gameObject.SetActive(true);
             _needle.position = tip;
@@ -40,6 +72,35 @@ namespace Dovus.Game.Skills
             if (_logic.Phase == LivingEffectPhase.Banging)
                 len *= 1f + LivingEffectViewDefaults.BangLenWobbleMult * Mathf.Sin(_logic.BangAgeSec * LivingEffectViewDefaults.BangLenWobbleFreqHz);
             _needle.localScale = new Vector3(thick, len * 0.5f, thick);
+        }
+
+        void DrawBasicStrikeMissile(
+            Vector3 origin,
+            Vector3 dir,
+            float dist,
+            EffectSilhouette s,
+            float alpha,
+            float travel01)
+        {
+            _ = s;
+            float thick = _colors.Visuals.EffectBasicStrikeThickM;
+            float len = _colors.Visuals.EffectBasicStrikeLenM;
+            DrawIgneZenitsu(origin, dir, dist, thick, len, travel01);
+
+            // Yay düz vuruş: oyuncudan hedefe menzil çizgisi yok — kor uçlu ok (§3 taşıyıcı).
+            _line.positionCount = 0;
+            ApplyBasicStrikeMissileKorTint(alpha);
+        }
+
+        /// <summary>Yay taşıyıcısı: fiil/element pembesi değil, kor turuncu ok (07-efekt-motoru §3).</summary>
+        void ApplyBasicStrikeMissileKorTint(float alpha)
+        {
+            Color kor = _colors.Visuals.TelegraphWarm;
+            kor.a = alpha;
+            SetMatColor(_lineMat, kor);
+            Color ghost = kor;
+            ghost.a = alpha * _colors.Visuals.EffectNeedleAfterimageAlpha;
+            SetMatColor(_ghostMat, ghost);
         }
 
         void DrawWave(Vector3 origin, Vector3 dir, float radius, EffectSilhouette s, float y)

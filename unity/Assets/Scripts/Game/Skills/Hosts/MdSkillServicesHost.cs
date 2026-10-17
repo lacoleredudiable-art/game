@@ -80,8 +80,9 @@ public sealed class MdSkillServicesHost
         public void SyncVisualDelivery() => _md.SyncVisualDelivery();
         public void PlayBasicStrikeVisual(int slotRune)
         {
+            _md.EnsureCastPort();
             RuleEngineV4.RuleEngineV4SkillAnimBridge.PlayBasicStrike(
-                RuleEngineV4ManifestationAdapter.Bind(_md), slotRune);
+                _md._castPort.CombatContext, slotRune);
         }
         public void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing) =>
             _md.StopBasicCannonAtFirstBody(logic, origin, facing);

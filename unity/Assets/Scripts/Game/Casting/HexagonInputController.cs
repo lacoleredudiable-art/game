@@ -300,6 +300,13 @@ namespace Dovus.Game.Casting
         /// <summary>Düz vuruş klip süresi (prefire_sec + recovery_sec) — kural-motoru-v4 silah satırından.</summary>
         public void BindBasicStrikeClipSec(System.Func<float> clipSec) => _session.BasicStrikeClipSec = clipSec;
 
+        public void BindBasicStrikePrefireSec(System.Func<float> prefireSec) =>
+            _session.BasicStrikePrefireSec = prefireSec;
+
+        public bool BasicClipActive(double worldMs) => _session.BasicTapGate.ClipActive(worldMs);
+
+        public bool BasicPrefireActive(double worldMs) => _session.BasicTapGate.PrefireActive(worldMs);
+
         void SyncPlayerStateFromWorld()
         {
             if (_session.PlayerStates == null)
@@ -321,6 +328,13 @@ namespace Dovus.Game.Casting
             bool isDrawing = (_session.Engine != null && _session.Engine.State.Phase == SentencePhase.Building)
                 || SkillHeldForRelease;
             bool isRecovering = _session.Engine != null && _session.Engine.State.Phase == SentencePhase.Recovering;
+            // Y24: tap kilidi klip boyunca; oyuncu state yalnız prefire'da cast/recover (recovery'de tam hız koşu).
+            if (_session.BasicTapGate.ClipActive(worldMs))
+            {
+                bool prefire = _session.BasicTapGate.PrefireActive(worldMs);
+                isCasting = prefire;
+                isRecovering = prefire;
+            }
 
             _session.PlayerStates.SyncWorld(
                 isDead, isStunned, isDodging, isRooted, isCasting, isDrawing, isRecovering);

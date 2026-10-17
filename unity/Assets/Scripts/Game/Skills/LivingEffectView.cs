@@ -288,8 +288,12 @@ namespace Dovus.Game.Skills
         static Shader FindTransparentUnlitShader()
         {
             var shader = AssetLoader.FindShader("Sprites/Default", null);
-            if (shader == null) shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
-            if (shader == null) shader = AssetLoader.FindShader("Unlit/Color", null);
+            if (shader == null)
+                shader = AssetLoader.FindShader("Universal Render Pipeline/Particles/Unlit", null);
+            if (shader == null)
+                shader = AssetLoader.FindShader("Universal Render Pipeline/Unlit", null);
+            if (shader == null)
+                shader = AssetLoader.FindShader("Unlit/Color", null);
             return shader != null ? shader : AssetLoader.FindShader("Hidden/Internal-Colored", null);
         }
 

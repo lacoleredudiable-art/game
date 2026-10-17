@@ -175,7 +175,9 @@ namespace Dovus.Core.Manifestation
                     if (_travel >= MaxRange)
                     {
                         _holdPastRangeSec += dtSec;
+                        // Bang beklerken (düz vuruş prefire) menzil dolsa da sönme — vade gelene kadar tut.
                         if (Phase == LivingEffectPhase.Traveling
+                            && _closing == null
                             && _holdPastRangeSec >= holdMax)
                             BeginFade();
                     }

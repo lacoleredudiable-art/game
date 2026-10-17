@@ -24,6 +24,7 @@ namespace Dovus.Core.Grammar
         double _remainingRecoveryMs;
         double _appliedWorldMs;
         int _lastWordDwellStacks;
+        double _basicStrikeClipRecoveryMs = -1;
 
         public SentenceEngine(SentenceTuning? tuning = null, RuneLoadout? loadout = null)
         {
@@ -54,7 +55,8 @@ namespace Dovus.Core.Grammar
         /// Merkez düz vuruş. Slot sırasına bakmaz: rün 1 hangi yuvada olursa olsun
         /// fiil Saldırı'dır. Slot 0 ekran noktası değildir.
         /// </summary>
-        public bool BeginBasicStrike(int runeId, double worldTimeMs)
+        /// <param name="clipSec">prefire_sec + recovery_sec; motor kilidi animasyon klibiyle hizalanır.</param>
+        public bool BeginBasicStrike(int runeId, double worldTimeMs, float clipSec = 0f)
         {
             CatchUp(worldTimeMs);
             if (!RuneInfo.TryFromId(runeId, out Rune rune))
@@ -67,6 +69,7 @@ namespace Dovus.Core.Grammar
             if (State.Phase != SentencePhase.Idle)
                 return false;
 
+            _basicStrikeClipRecoveryMs = clipSec > 0f ? clipSec * Units.SecToMs : -1;
             StartVerb(0, rune);
             return true;
         }
@@ -290,8 +293,16 @@ namespace Dovus.Core.Grammar
             // ve ödül okunuyor.
             if (completed.Closing.HasValue)
             {
-                _remainingRecoveryMs =
-                    _tuning.StepForDots(completed.Closing.Value.DotCount).RecoverySec * Units.SecToMs;
+                if (_basicStrikeClipRecoveryMs >= 0)
+                {
+                    _remainingRecoveryMs = _basicStrikeClipRecoveryMs;
+                    _basicStrikeClipRecoveryMs = -1;
+                }
+                else
+                {
+                    _remainingRecoveryMs =
+                        _tuning.StepForDots(completed.Closing.Value.DotCount).RecoverySec * Units.SecToMs;
+                }
                 State.Phase = SentencePhase.Recovering;
             }
             else
@@ -318,6 +329,7 @@ namespace Dovus.Core.Grammar
             _remainingWindowMs = 0;
             _armedWindowMs = 0;
             _remainingRecoveryMs = 0;
+            _basicStrikeClipRecoveryMs = -1;
             State.Phase = SentencePhase.Idle;
             State.Verb = null;
             State.Words = Array.Empty<SentenceWord>();

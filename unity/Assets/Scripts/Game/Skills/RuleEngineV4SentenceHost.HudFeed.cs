@@ -1,5 +1,6 @@
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
+using Dovus.Game.Hud;
 using UnityEngine;
 
 namespace Dovus.Game.Skills
@@ -21,12 +22,7 @@ namespace Dovus.Game.Skills
                 return null;
             Vector3 center = _boss.transform.position;
             Vector3 from = _lastImpactOrigin ?? (_player != null ? _player.position : center);
-            Vector3 dir = from - center;
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 1e-4f)
-                dir = Vector3.forward;
-            // Boss gövde yarıçapı ve kafa altı yükseklik: sayı gövdenin vurulan yüzünde doğar.
-            return center + dir.normalized * _boss.BodyRadiusM + Vector3.up * (_boss.BodyRadiusM * 2f);
+            return BossDamageAnchor.HitPoint(_boss, from);
         }
 
         internal Color? DamageTint()

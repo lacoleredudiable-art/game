@@ -64,6 +64,7 @@ namespace Dovus.Game.Casting.Input
         public bool CenterStrikeArmed;
 
         public System.Func<float> BasicStrikeClipSec;
+        public System.Func<float> BasicStrikePrefireSec;
         readonly BasicStrikeTapGate _basicTapGate = new();
         internal BasicStrikeTapGate BasicTapGate => _basicTapGate;
 

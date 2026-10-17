@@ -28,6 +28,8 @@ namespace Dovus.Game.Skills
             _visual.SetWeapon(_equippedWeapon != null ? _equippedWeapon.AnimationsKey : string.Empty);
             if (_animationBridge.StatePlayer == null)
                 _animationBridge.StatePlayer = _visual.PlayAction;
+            if (_castPort != null)
+                _castPort.SyncCombatFromDirector();
         }
 
         internal void StartCastVfxTimer(SkillResolution skill, IReadOnlyList<SentenceWord> words)

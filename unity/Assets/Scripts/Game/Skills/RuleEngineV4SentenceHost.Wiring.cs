@@ -110,6 +110,12 @@ namespace Dovus.Game.Skills
                     return 0f;
                 return BasicStrikeCadenceRules.ClipSec(weapon.PrefireSec, weapon.RecoverySec);
             });
+            input.BindBasicStrikePrefireSec(() =>
+            {
+                if (!TryEquippedBasicWeapon(out Dovus.Core.RuleEngineV4.RuleEngineV4Weapon weapon))
+                    return 0f;
+                return weapon.PrefireSec;
+            });
             var motorForStates = player != null ? player.GetComponent<KinematicMotorController>() : null;
             motorForStates?.BindPlayerStates(_playerStates);
             _slotPassives = new SlotPassiveDirector();

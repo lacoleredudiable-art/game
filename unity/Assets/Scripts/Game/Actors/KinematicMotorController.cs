@@ -128,6 +128,8 @@ namespace Dovus.Game.Actors
                 _status = GetComponent<ActorStatusHost>();
         }
 
+        bool _wasMovementBlocked;
+
         void Update()
         {
             ResolveSiblings();
@@ -155,6 +157,7 @@ namespace Dovus.Game.Actors
 
             if (_status != null && _status.EffectiveBlocksMovement)
             {
+                _wasMovementBlocked = true;
                 Velocity = Vector3.zero;
                 _visual?.SetSpeed(0f);
                 return;
@@ -162,6 +165,7 @@ namespace Dovus.Game.Actors
 
             if (_playerStates != null && _playerStates.BlocksMove)
             {
+                _wasMovementBlocked = true;
                 Velocity = Vector3.zero;
                 _visual?.SetSpeed(0f);
                 return;
@@ -186,11 +190,13 @@ namespace Dovus.Game.Actors
             Vector3 dirFlat = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
             Vector3 target = dirFlat * (_tuning.Player.WalkSpeedMps * speedMult * speedFrac);
 
+            bool unblockedToMove = _wasMovementBlocked && target.sqrMagnitude > 0.0001f;
+            _wasMovementBlocked = false;
             Vector3 current = Velocity;
             float rate = target.sqrMagnitude >= current.sqrMagnitude ? _tuning.Player.MoveAccelMps2 : _tuning.Player.MoveDecelMps2;
-            Velocity = Vector3.MoveTowards(current, target, rate * dtSec);
+            Velocity = unblockedToMove ? target : Vector3.MoveTowards(current, target, rate * dtSec);
 
-            _visual?.SetLocomotion(Velocity.magnitude, _tuning.Player.WalkSpeedMps, _tuning.Player.AnimSpeedDampSec,
+            _visual?.SetLocomotion(Velocity.magnitude, _tuning.Player.WalkSpeedMps, unblockedToMove ? 0f : _tuning.Player.AnimSpeedDampSec,
                 _tuning.Player.LocoMaxPlaybackMult);
 
             Vector3 from = transform.position;

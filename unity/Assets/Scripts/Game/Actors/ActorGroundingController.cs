@@ -100,8 +100,8 @@ namespace Dovus.Game.Actors
             Animator anim = VisualAnimator();
             bool dodgeOwns = DodgeClipPlayback.ClipOwnsFeet(anim);
             // Loko_Yay_Run kalçayı kök XZ'den metrelerce öne kaçırır; kamera kökü takip eder →
-            // mesh uçar, sonra geri düşer (ping). Kalçayı köke çek.
-            if (_logic.OnGround && !dodgeOwns)
+            // mesh uçar, sonra geri düşer (ping). skill_anim vuruşunda kalça adım eğrisi korunur.
+            if (_logic.OnGround && !dodgeOwns && !SkillStrikeOwnsHips(anim))
                 LockHipsXZ(anim);
             // Koşu Loko_*_Run ayak eğrisini kendi taşır; kilitlemek görseli her kare savurur.
             if (_logic.OnGround && FootLock && !SkipFootLock && !dodgeOwns && !LocoRunOwnsFeet(anim))
@@ -134,12 +134,23 @@ namespace Dovus.Game.Actors
 
         static bool LocoRunOwnsFeet(Animator anim)
         {
+            return LocoClipOwnsLayer(anim, "_Run");
+        }
+
+        /// <summary>skill_anim vuruş klibi (Kilic_VUR / Yay_VUR): kalça kilidi adımı keser.</summary>
+        static bool SkillStrikeOwnsHips(Animator anim)
+        {
+            return LocoClipOwnsLayer(anim, "_VUR");
+        }
+
+        static bool LocoClipOwnsLayer(Animator anim, string clipSuffix)
+        {
             if (anim == null || !anim.isActiveAndEnabled || anim.runtimeAnimatorController == null)
                 return false;
             foreach (AnimatorClipInfo ci in anim.GetCurrentAnimatorClipInfo(0))
             {
                 if (ci.weight > LocoRunWeight && ci.clip != null
-                    && ci.clip.name.EndsWith("_Run", System.StringComparison.Ordinal))
+                    && ci.clip.name.EndsWith(clipSuffix, System.StringComparison.Ordinal))
                     return true;
             }
             return false;

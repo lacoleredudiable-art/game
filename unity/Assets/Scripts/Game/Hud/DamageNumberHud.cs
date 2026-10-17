@@ -39,6 +39,8 @@ namespace Dovus.Game.Hud
             public GameObject Go;
             public RectTransform Rect;
             public Text Text;
+            public Outline Outline;
+            public Shadow Shadow;
             public float BornUnscaled;
             public Vector3 World;
             public float JitterX;
@@ -78,15 +80,18 @@ namespace Dovus.Game.Hud
             rect.sizeDelta = new Vector2(160f, 48f);
             var text = go.AddComponent<Text>();
             text.font = HudTheme.LegacyFont;
-            text.fontStyle = FontStyle.Normal;
+            text.fontStyle = FontStyle.Bold;
             var outline = go.AddComponent<Outline>();
-            outline.effectColor = new Color(0f, 0f, 0f, 0.75f);
+            outline.effectColor = new Color(0f, 0f, 0f, 0.82f);
             outline.effectDistance = new Vector2(DamageNumberHudDefaults.OutlineEffectDistancePx, -DamageNumberHudDefaults.OutlineEffectDistancePx);
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.72f);
+            shadow.effectDistance = new Vector2(DamageNumberHudDefaults.ShadowEffectDistancePx, -DamageNumberHudDefaults.ShadowEffectDistancePx);
             text.alignment = TextAnchor.MiddleCenter;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;
-            return new Floater { Go = go, Rect = rect, Text = text };
+            return new Floater { Go = go, Rect = rect, Text = text, Outline = outline, Shadow = shadow };
         }
 
         /// <summary>
@@ -108,7 +113,12 @@ namespace Dovus.Game.Hud
             else
             {
                 if (_defaultBoss != null)
-                    world = _defaultBoss.transform.position + Vector3.up * DamageNumberHudDefaults.FallbackBossHeightOffsetM;
+                {
+                    if (BossDamageAnchor.TryGetHeadTopWorldY(_defaultBoss, out float headY))
+                        world = new Vector3(_defaultBoss.transform.position.x, headY + DamageNumberHudDefaults.BossHeadTopExtraOffsetM, _defaultBoss.transform.position.z);
+                    else
+                        world = _defaultBoss.transform.position + Vector3.up * DamageNumberHudDefaults.FallbackBossHeightOffsetM;
+                }
             }
 
             ShowAt(world, amount, isCrit, tint, victimIsPlayer, victimIsBoss);
@@ -142,14 +152,10 @@ namespace Dovus.Game.Hud
             else if (victimIsBoss)
             {
                 f.Text.text = isCrit ? DamageNumberFormat.Format(amount) + "!" : DamageNumberFormat.Format(amount);
-                f.Text.color = isCrit
-                    ? new Color(1f, 0.42f, 0.38f, 1f)
-                    : new Color(0.88f, 0.14f, 0.16f, 1f);
+                f.Text.color = isCrit ? th.BossDamageCritColor : th.BossDamageColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(
                     isCrit ? _tuning.Hud.DamageFloatCritFontDp : _tuning.Hud.DamageFloatFontDp));
-                var outline = f.Text.GetComponent<Outline>();
-                if (outline != null)
-                    outline.effectColor = new Color(0.04f, 0.02f, 0.02f, 0.9f);
+                ApplyChrome(f, th.BossDamageOutlineColor, th.BossDamageOutlineColor);
                 DebugConfig.DevLog($"[Feel2Verify] boss-damage-number crit={isCrit} color={f.Text.color}");
             }
             else if (isCrit)
@@ -160,9 +166,11 @@ namespace Dovus.Game.Hud
             }
             else if (victimIsPlayer)
             {
-                f.Text.text = DamageNumberFormat.Format(amount);
+                f.Text.text = "-" + DamageNumberFormat.Format(amount);
                 f.Text.color = th.PlayerHitColor;
-                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatFontDp));
+                f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(
+                    isCrit ? _tuning.Hud.DamageFloatCritFontDp : _tuning.Hud.DamageFloatFontDp));
+                ApplyChrome(f, th.PlayerHitOutlineColor, th.PlayerHitOutlineColor);
             }
             else
             {
@@ -170,6 +178,7 @@ namespace Dovus.Game.Hud
                 // Element rengi beyaza doğru açılır: koyu element tonları da okunur kalsın.
                 f.Text.color = tint.HasValue ? Color.Lerp(tint.Value, th.DamageTextColor, DamageNumberHudDefaults.DamageTextColorLerp) : th.DamageTextColor;
                 f.Text.fontSize = Mathf.RoundToInt(HexagonLayoutScreen.DpToPixels(_tuning.Hud.DamageFloatFontDp));
+                ApplyChrome(f, new Color(0f, 0f, 0f, 0.82f), new Color(0f, 0f, 0f, 0.72f));
             }
 
             _pool[idx] = f;
@@ -202,10 +211,10 @@ namespace Dovus.Game.Hud
                     continue;
                 }
 
-                float t = age / life;
-                float riseY = rise * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(age / life));
-                float scale = age < DamageNumberHudDefaults.PunchScaleAgeSec
-                    ? Mathf.Lerp(punch, 1f, age / DamageNumberHudDefaults.PunchScaleBlendSec)
+                float riseT = Mathf.Clamp01(age / life);
+                float riseY = rise * (1f - Mathf.Pow(1f - riseT, DamageNumberHudDefaults.RiseEaseOutPower));
+                float scale = age < DamageNumberHudDefaults.PunchDurationSec
+                    ? PunchScale(age, punch)
                     : 1f;
                 float alpha = age < hold ? 1f : 1f - Mathf.Clamp01((age - hold) / Mathf.Max(DamageNumberHudDefaults.FadeDurationMinSec, fade));
 
@@ -235,6 +244,34 @@ namespace Dovus.Game.Hud
                 return;
             if (_follow != null)
                 _cam = _follow.ViewCamera;
+        }
+
+        static void ApplyChrome(Floater f, Color outlineColor, Color shadowColor)
+        {
+            if (f.Outline != null)
+                f.Outline.effectColor = outlineColor;
+            if (f.Shadow != null)
+                f.Shadow.effectColor = shadowColor;
+        }
+
+        static float PunchScale(float ageSec, float punchPeak)
+        {
+            float dur = DamageNumberHudDefaults.PunchDurationSec;
+            if (dur <= 0f)
+                return 1f;
+            float u = Mathf.Clamp01(ageSec / dur);
+            float peak = punchPeak * DamageNumberHudDefaults.PunchPeakMultiplier;
+            const float snapFrac = 0.32f;
+            if (u < snapFrac)
+                return Mathf.Lerp(DamageNumberHudDefaults.PunchBirthScale, peak, u / snapFrac);
+            return Mathf.LerpUnclamped(peak, 1f, EaseOutBack((u - snapFrac) / (1f - snapFrac)));
+        }
+
+        static float EaseOutBack(float t)
+        {
+            const float c1 = 1.70158f;
+            const float c3 = c1 + 1f;
+            return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
         }
     }
 }

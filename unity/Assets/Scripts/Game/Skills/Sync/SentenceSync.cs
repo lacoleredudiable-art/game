@@ -37,6 +37,12 @@ namespace Dovus.Game.Skills.Sync
             bool isDrawing = (_host.Engine != null && _host.Engine.State.Phase == SentencePhase.Building)
                 || (_host.Input != null && _host.Input.SkillHeldForRelease);
             bool isRecovering = _host.Engine != null && _host.Engine.State.Phase == SentencePhase.Recovering;
+            if (_host.Input != null && _host.Input.BasicClipActive(worldMs))
+            {
+                bool prefire = _host.Input.BasicPrefireActive(worldMs);
+                isCasting = prefire;
+                isRecovering = prefire;
+            }
 
             _host.PlayerStates.SyncWorld(
                 isDead, isStunned, isDodging, isRooted, isCasting, isDrawing, isRecovering);

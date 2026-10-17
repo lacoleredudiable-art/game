@@ -1,8 +1,10 @@
 using Dovus.App.Casting;
+using Dovus.Core.Casting;
 using Dovus.Core.Data;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.RuleEngineV4;
+using Dovus.Core.Tuning;
 using NUnit.Framework;
 using System.IO;
 
@@ -72,6 +74,70 @@ public sealed class BasicStrikeCadenceTests
         double start = 500;
         double unlock = start + YayPrefire * 1000.0;
         Assert.That(unlock, Is.LessThan(start + BasicStrikeCadenceRules.ClipMs(YayPrefire, YayRecovery)));
+    }
+
+    [Test]
+    public void SentenceEngine_BasicStrikeRecovery_MatchesFullClipNotStepTable()
+    {
+        var engine = new SentenceEngine(new SentenceTuning());
+        float clipSec = BasicStrikeCadenceRules.ClipSec(YayPrefire, YayRecovery);
+        double clipMs = BasicStrikeCadenceRules.ClipMs(YayPrefire, YayRecovery);
+        double stepMs = new SentenceTuning().StepForDots(1).RecoverySec * 1000.0;
+        Assert.That(stepMs, Is.LessThan(clipMs), "test: klip §5 tek nokta toparlanmasından uzun olmalı");
+
+        Assert.That(engine.BeginBasicStrike(1, 0, clipSec), Is.True);
+        engine.Commit();
+        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Recovering));
+        Assert.That(engine.State.RemainingRecoveryMs, Is.EqualTo(clipMs).Within(0.5));
+
+        engine.Tick(stepMs);
+        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Recovering),
+            "§5 0.18 sn dolsa bile klip kilidi sürer");
+
+        engine.Tick(clipMs - stepMs);
+        Assert.That(engine.State.Phase, Is.EqualTo(SentencePhase.Idle));
+    }
+
+    [Test]
+    public void PlayerState_WhileBasicClipActive_StaysCastingNotIdle()
+    {
+        var sm = new PlayerStateMachine(new[]
+        {
+            new PlayerStateNode("idle", "true", "true", "true", false),
+            new PlayerStateNode("casting", "false", "false", "true", false),
+            new PlayerStateNode("recovering", "false", "limited", "false", false),
+        });
+        var gate = new BasicStrikeTapGate();
+        float clipSec = BasicStrikeCadenceRules.ClipSec(KilicPrefire, KilicRecovery);
+        gate.SetPrefireSec(KilicPrefire);
+        gate.TryAcceptTap(0, clipSec);
+
+        double midPrefire = KilicPrefire * 1000.0 * 0.5;
+        bool prefireActive = gate.PrefireActive(midPrefire);
+        bool isRecovering = false;
+        bool isCasting = false;
+        if (prefireActive)
+        {
+            isCasting = true;
+            isRecovering = true;
+        }
+
+        sm.SyncWorld(false, false, false, false, isCasting, false, isRecovering);
+        Assert.That(sm.CurrentId, Is.EqualTo("casting"));
+        Assert.That(gate.PrefireActive(midPrefire), Is.True);
+        double midRecovery = (KilicPrefire + KilicRecovery * 0.5) * 1000.0;
+        Assert.That(gate.PrefireActive(midRecovery), Is.False, "recovery penceresinde yürüme state'ine izin");
+    }
+
+    [Test]
+    public void BangAtWorldMs_IsRecoveryPoseStart_NotCommitTime()
+    {
+        double commitMs = 1000;
+        double bangMs = BasicStrikeCadenceRules.BangAtWorldMs(commitMs, YayPrefire);
+        float recoverySec = YayRecovery;
+        double recoveryEnd = bangMs + recoverySec * 1000.0;
+        Assert.That(bangMs, Is.GreaterThan(commitMs));
+        Assert.That(recoveryEnd, Is.LessThan(commitMs + BasicStrikeCadenceRules.ClipMs(YayPrefire, YayRecovery)));
     }
 
     [Test]

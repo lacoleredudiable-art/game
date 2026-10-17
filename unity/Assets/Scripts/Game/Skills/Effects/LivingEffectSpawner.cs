@@ -98,8 +98,16 @@ namespace Dovus.Game.Skills.Effects
                     pos);
 
             ManifestationTuning man = _host.Combat.Manifestation;
+            bool basicMissile = false;
             if (basicStrike)
+            {
+                float weaponReach = _host.Aim.BasicStrikeWeaponReachM();
+                basicMissile = _host.Aim.BasicStrikeUsesMissileDelivery();
                 man = man.WithBasicStrikeProfile();
+                man.WaveMaxRadiusM = weaponReach;
+                if (words[0].Rune == Rune.Attack)
+                    man.NeedleMaxRangeM = weaponReach;
+            }
 
             var logic = new LivingEffect(
                 words[0].Rune,
@@ -116,6 +124,12 @@ namespace Dovus.Game.Skills.Effects
             go.transform.SetParent(_host.DirectorTransform, false);
             var view = go.AddComponent<LivingEffectView>();
             view.Bind(logic, man, _host.Colors, basicStrike);
+            if (basicStrike)
+            {
+                view.ConfigureBasicStrikeDelivery(basicMissile);
+                if (_host.TryBasicStrikeWeaponTiming(out float prefireSec, out _, out _))
+                    view.ConfigureBasicStrikePrefire(prefireSec);
+            }
             if (!basicStrike)
                 ApplySkillWorldPlan(logic, words);
             ApplySkillTint(view, words);

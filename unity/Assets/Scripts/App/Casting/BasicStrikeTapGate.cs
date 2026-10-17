@@ -7,6 +7,8 @@ namespace Dovus.App.Casting
     public sealed class BasicStrikeTapGate
     {
         double _clipUntilMs = -1;
+        double _clipStartMs = -1;
+        float _prefireSec;
         bool _queued;
 
         public bool HasQueuedTap => _queued;
@@ -14,6 +16,12 @@ namespace Dovus.App.Casting
         public double ClipUntilMs => _clipUntilMs;
 
         public bool ClipActive(double nowMs) => nowMs < _clipUntilMs;
+
+        public void SetPrefireSec(float prefireSec) => _prefireSec = prefireSec > 0f ? prefireSec : 0f;
+
+        /// <summary>Klip sürerken yalnız prefire penceresi — recovery'de yürüme state'ine izin verilir.</summary>
+        public bool PrefireActive(double nowMs) =>
+            _prefireSec > 0f && _clipStartMs >= 0 && nowMs < _clipStartMs + _prefireSec * Units.SecToMs;
 
         /// <summary>Klip bitene kadar gelen dokunuşları yutar; en fazla bir sonraki vuruş sıraya alınır.</summary>
         public bool TryAcceptTap(double nowMs, float clipSec)
@@ -30,6 +38,7 @@ namespace Dovus.App.Casting
 
         public void BeginClip(double nowMs, float clipSec)
         {
+            _clipStartMs = nowMs;
             long clipMs = (long)System.Math.Round(clipSec * Units.SecToMs, System.MidpointRounding.AwayFromZero);
             _clipUntilMs = nowMs + clipMs;
         }

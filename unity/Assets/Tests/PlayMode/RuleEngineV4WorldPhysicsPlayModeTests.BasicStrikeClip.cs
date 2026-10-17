@@ -48,6 +48,61 @@ namespace Dovus.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator O_4_14_BossHasarVeKiteYurume()
+        {
+            FreezeBoss();
+            var bossVitals = _md.MechanicsBossVitals;
+            var bossReactor = _boss.GetComponent<Dovus.Game.Boss.BossReactorController>();
+            var moveInput = _player.GetComponent<MoveInputController>();
+            HexagonInputController input = InputController();
+            Animator anim = PlayerAnimator();
+
+            foreach ((int weapon, float distM, string runClip) in new[]
+            {
+                (Kilic, 4f, "Loko_Kilic_Run"),
+                (Yay, 10f, "Loko_Yay_Run")
+            })
+            {
+                Equip(weapon);
+                Arrange(Vector3.right);
+                Vector3 bossPos = Origin + Vector3.right * distM;
+                Place(_boss, bossPos);
+                bossReactor?.SnapHome(bossPos);
+                Physics.SyncTransforms();
+                yield return WaitSentenceIdle(input);
+
+                float hpBefore = bossVitals.Hp;
+                moveInput.SetScriptedDirection(Vector2.right);
+                input.Pointer.BeginPointer(CenterPos(input));
+                input.Pointer.EndPointer(cancelled: false);
+
+                var sb = new StringBuilder();
+                bool sawRunInKite = false;
+                float start = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - start < 0.85f)
+                {
+                    yield return null;
+                    float elapsed = Time.realtimeSinceStartup - start;
+                    var clips = anim.GetCurrentAnimatorClipInfo(0)
+                        .Where(c => c.weight > 0.2f && c.clip != null)
+                        .Select(c => c.clip.name)
+                        .ToList();
+                    AnimatorStateInfo st0 = anim.GetCurrentAnimatorStateInfo(0);
+                    float spd = anim.GetFloat("Speed");
+                    string pState = _md.PlayerStates != null ? _md.PlayerStates.CurrentId : "?";
+                    if (elapsed >= 0.20f && elapsed <= 0.60f && clips.Any(c => c == runClip))
+                        sawRunInKite = true;
+                    sb.AppendLine($"t={elapsed:0.00}s state={pState} spd={spd:0.00} posX={_player.position.x:0.00} clips=[{string.Join("+", clips)}] norm={st0.normalizedTime:0.00}");
+                }
+                moveInput.SetScriptedDirection(null);
+                float hpAfter = bossVitals.Hp;
+                Debug.Log($"[KITE-DIAG] w={weapon} dist={distM}m hp:{hpBefore}->{hpAfter} sawRun={sawRunInKite}\n{sb}");
+                Assert.That(hpAfter, Is.LessThan(hpBefore), $"w={weapon} ({distM}m): boss hasar almadı! hp={hpBefore}->{hpAfter}");
+                Assert.That(sawRunInKite, Is.True, $"w={weapon}: kite penceresinde koşu klibi ({runClip}) oynamadı, kaydı!\n{sb}");
+            }
+        }
+
+        [UnityTest]
         public IEnumerator O_4_14_KilicDuzVurus_KilicVUROynar()
         {
             foreach (float targetM in BasicStrikeTargetDistancesM)
