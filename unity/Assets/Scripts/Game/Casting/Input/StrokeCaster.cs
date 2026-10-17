@@ -1,3 +1,4 @@
+using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -160,6 +161,15 @@ namespace Dovus.Game.Casting.Input
             }
         }
 
+        public void TickBasicStrikeQueue()
+        {
+            if (_s.Engine == null)
+                return;
+
+            double worldMs = _s.Clock != null ? _s.Clock.Director.WorldTimeMs : 0;
+            _s.BasicTapGate.Tick(worldMs, () => StartBasicStrike(worldMs, fromQueue: true));
+        }
+
         public void TriggerCenter(System.Action syncPlayerState)
         {
             if (_s.Engine == null)
@@ -183,9 +193,23 @@ namespace Dovus.Game.Casting.Input
                 return;
             _s.CenterStrikeArmed = false;
 
+            float clipSec = _s.BasicStrikeClipSec != null ? _s.BasicStrikeClipSec() : 0f;
+            if (clipSec > 0f && !_s.BasicTapGate.TryAcceptTap(worldMs, clipSec))
+                return;
+
+            StartBasicStrike(worldMs, fromQueue: false);
+        }
+
+        void StartBasicStrike(double worldMs, bool fromQueue)
+        {
             int runeId = _s.Tuning.Input.BasicStrikeDot;
             if (!_s.Engine.BeginBasicStrike(runeId, worldMs))
                 return;
+
+            float clipSec = _s.BasicStrikeClipSec != null ? _s.BasicStrikeClipSec() : 0f;
+            if (clipSec > 0f && fromQueue)
+                _s.BasicTapGate.BeginClip(worldMs, clipSec);
+
             _s.Engine.Commit();
             _s.RaiseDotAccepted?.Invoke(0);
             FlushInkBreak();

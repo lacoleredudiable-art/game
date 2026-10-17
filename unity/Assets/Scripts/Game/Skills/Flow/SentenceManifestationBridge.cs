@@ -90,6 +90,7 @@ namespace Dovus.Game.Skills.Flow
                 {
                     _host.SyncVisualDelivery();
                     _host.PlayBasicStrikeVisual(basicDot);
+                    _host.TryBeginBasicStrikeStep();
                     // Düz vuruş yerinde: Kılıç iaido, Yay'da ön sürede hareket yok (04 ritim tablosu).
                     _host.Pose?.PulseRune(sentence.Words[0].Rune, _host.Clock.Director.WorldTimeMs);
                 }
@@ -108,6 +109,12 @@ namespace Dovus.Game.Skills.Flow
             view.Logic.ArmClosing(closing);
 
             float recoverySec = _host.Combat.Sentence.StepForDots(closing.DotCount).RecoverySec;
+            float basicPrefireSec = 0f;
+            bool basicPrefireMoves = true;
+            if (spawnedForBasicStrike
+                && _host.TryBasicStrikeWeaponTiming(
+                    out basicPrefireSec, out float weaponRecoverySec, out basicPrefireMoves))
+                recoverySec = weaponRecoverySec;
             float castMult = 1f;
             SkillResolution armedSkill = SkillResolution.Empty;
             if (!spawnedForBasicStrike && _host.Skills != null)
@@ -135,12 +142,19 @@ namespace Dovus.Game.Skills.Flow
             float atkSpd = teamHub.AttackSpeedMult;
             if (atkSpd > 0f)
                 castMult /= atkSpd;
-            recoverySec *= castMult;
+            if (!spawnedForBasicStrike)
+                recoverySec *= castMult;
 
-            double bangAt = _host.Clock.Director.WorldTimeMs;
+            double nowMs = _host.Clock.Director.WorldTimeMs;
+            double bangAt = spawnedForBasicStrike && basicPrefireSec > 0f
+                ? BasicStrikeCadenceRules.BangAtWorldMs(nowMs, basicPrefireSec)
+                : nowMs;
 
-            _host.Pose?.BeginRecovery(recoverySec, _host.Clock.Director.WorldTimeMs);
+            _host.Pose?.BeginRecovery(recoverySec, nowMs);
             _host.PosedForRecovery = true;
+
+            if (spawnedForBasicStrike && basicPrefireSec > 0f && !basicPrefireMoves)
+                _host.ApplyBasicStrikePrefireLock(basicPrefireSec);
 
             if (!spawnedForBasicStrike && !armedSkill.IsEmpty)
             {

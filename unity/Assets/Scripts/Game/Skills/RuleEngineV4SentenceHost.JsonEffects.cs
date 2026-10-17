@@ -1,9 +1,11 @@
 using Dovus.App.Casting;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Status;
 using Dovus.Game.Actors;
 using Dovus.Game.Casting;
+using Dovus.Game.Skills.RuleEngineV4;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,17 +47,38 @@ namespace Dovus.Game.Skills
 
         internal bool LandingFieldAllows(in SkillResolution skill) => true;
 
+        RuleEngineV4CatalogAccess _basicCadenceCatalog;
+
+        internal bool TryEquippedBasicWeapon(out RuleEngineV4Weapon weapon)
+        {
+            weapon = default;
+            if (_equippedWeapon?.Profile == null)
+                return false;
+            _basicCadenceCatalog ??= new RuleEngineV4CatalogAccess();
+            return _basicCadenceCatalog.Catalog.TryGetWeapon(_equippedWeapon.Profile.Id, out weapon);
+        }
+
         internal bool BasicCadenceReady(double now)
         {
-            if (_combat == null)
+            if (_combat != null && !_combat.EnforceCooldown)
                 return true;
-            double last = SkillWorld.LastBasicStrikeMs;
-            float gapSec = _skillNumbers != null
-                && _skillNumbers.TryGetVerb(1, out _, out float cd, out _, out _, out _, out _)
-                ? cd
-                : (_skillNumbers?.GlobalCooldownSec ?? 1f);
-            double gap = gapSec * Dovus.Core.Shared.Units.SecToMs;
-            return now - last >= gap;
+            if (!TryEquippedBasicWeapon(out RuleEngineV4Weapon weapon))
+                return true;
+            return BasicStrikeCadenceRules.CadenceReady(
+                now,
+                SkillWorld.LastBasicStrikeMs,
+                weapon.PrefireSec,
+                weapon.RecoverySec);
+        }
+
+        internal void ApplyBasicStrikePrefireLock(float prefireSec)
+        {
+            if (_playerStatus == null || prefireSec <= 0f)
+                return;
+            double now = _clock != null ? _clock.Director.WorldTimeMs : 0;
+            _playerStatus.GrantCastMobility(
+                SkillMobility.Rooted,
+                now + prefireSec * Dovus.Core.Shared.Units.SecToMs);
         }
 
         internal int BasicHitsNow() => 1;

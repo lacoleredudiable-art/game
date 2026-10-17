@@ -294,7 +294,11 @@ namespace Dovus.Game.Casting
             _stroke.TickStrokeSettle();
             _pointer.TickSwapHold();
             _stroke.TickDwell();
+            _stroke.TickBasicStrikeQueue();
         }
+
+        /// <summary>Düz vuruş klip süresi (prefire_sec + recovery_sec) — kural-motoru-v4 silah satırından.</summary>
+        public void BindBasicStrikeClipSec(System.Func<float> clipSec) => _session.BasicStrikeClipSec = clipSec;
 
         void SyncPlayerStateFromWorld()
         {

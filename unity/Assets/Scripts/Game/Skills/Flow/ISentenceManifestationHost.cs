@@ -49,5 +49,7 @@ namespace Dovus.Game.Skills.Flow
         bool TryArmSkillTarget(SkillResolution skill);
         void FaceTarget(Transform target);
         void ApplyCastMobility(SkillResolution skill, float durationSec);
+        bool TryBasicStrikeWeaponTiming(out float prefireSec, out float recoverySec, out bool prefireMoves);
+        void ApplyBasicStrikePrefireLock(float prefireSec);
     }
 }

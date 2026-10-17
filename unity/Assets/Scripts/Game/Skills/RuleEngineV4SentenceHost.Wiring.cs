@@ -19,6 +19,7 @@ using Dovus.Game.Data;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using Dovus.Game.Team;
+using Dovus.App.Casting;
 using Dovus.Game.Vfx;
 using UnityEngine;
 
@@ -103,6 +104,12 @@ namespace Dovus.Game.Skills
             _skillPresentation.EnsureCatalog();
             _playerStates = new PlayerStateMachine(_skills.PlayerStates);
             input.BindPlayerStates(_playerStates, () => PendingList.Count > 0);
+            input.BindBasicStrikeClipSec(() =>
+            {
+                if (!TryEquippedBasicWeapon(out Dovus.Core.RuleEngineV4.RuleEngineV4Weapon weapon))
+                    return 0f;
+                return BasicStrikeCadenceRules.ClipSec(weapon.PrefireSec, weapon.RecoverySec);
+            });
             var motorForStates = player != null ? player.GetComponent<KinematicMotorController>() : null;
             motorForStates?.BindPlayerStates(_playerStates);
             _slotPassives = new SlotPassiveDirector();

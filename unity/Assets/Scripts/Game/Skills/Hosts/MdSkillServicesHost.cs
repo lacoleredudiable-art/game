@@ -128,5 +128,21 @@ public sealed class MdSkillServicesHost
         public void FaceTarget(Transform target) => _md.FaceTarget(target);
         public void ApplyCastMobility(SkillResolution skill, float durationSec) =>
             _md.ApplyCastMobility(skill, durationSec);
+
+        public bool TryBasicStrikeWeaponTiming(out float prefireSec, out float recoverySec, out bool prefireMoves)
+        {
+            prefireSec = 0f;
+            recoverySec = 0f;
+            prefireMoves = true;
+            if (!_md.TryEquippedBasicWeapon(out Dovus.Core.RuleEngineV4.RuleEngineV4Weapon weapon))
+                return false;
+            prefireSec = weapon.PrefireSec;
+            recoverySec = weapon.RecoverySec;
+            prefireMoves = weapon.PrefireMoves;
+            return true;
+        }
+
+        public void ApplyBasicStrikePrefireLock(float prefireSec) =>
+            _md.ApplyBasicStrikePrefireLock(prefireSec);
     }
 }
