@@ -55,9 +55,9 @@ Sıra, telefonda en çok fark edilecek olandan en az bağımlılığı olana do�
 
 ### Aşama 1 ✅ — Dodge: "Kalahan affetmez, dodge affeder"
 Kaynak: `13` §3 [K] (dodge'a bağımlı boss; mükemmel dodge [RED]), `09` [K] i-frame, `10` O-4.4–O-4.11.
-1. Mükemmel/kusursuz dodge kodda kaldırılır: hak iadesi, ×1,3 vuruş, 0,2 s ağır çekim, özel ses/titreşim
-   (`PerfectDodgeRule`, `ExchangeResolver`, `DodgeTuning`, `FeelTuning`, `CombatFeelDirector`, panel). Belgede
-   O-4.8, O-10.5, README satırı, `ARCHITECTURE.md` O2 silinir (A-13.13'ün kod/belge listesi bu PR'da çıkar).
+1. Mükemmel/kusursuz dodge kodda kaldırıldı: hak iadesi, ×1,3 vuruş, 0,2 s ağır çekim, özel ses/titreşim
+   (eski `PerfectDodgeRule` yolu ve ilgili tuning/panel). Belgede O-4.8, O-10.5, README, OYUN üretici [RED] ile
+   hizalandı (A-13.13 ✅).
 2. İki faz: patlama 0,25 s + süzülme 0,40 s (O-4.4a; `GlideTailMs` 120 → 400) — envanter D2.
 3. Takla ayağı zemin üstünde (O-4.5; Gözcü `ayak_zemin_alti` 0), iz yalnız süzülmede ve arkada (O-4.10).
 4. I-frame görünür: kor turuncusu parlama (O-4.6a), Hareket skillerinin yolculuğunda da (`09` [K] 12 Ekim).
@@ -68,7 +68,7 @@ dairesinden dodge ile geçince hasar yok; artık "kusursuz dodge" ağır çekimi
 
 ### Aşama 2 ✅ — Temiz ekran
 Kaynak: envanter B3, C2, C3, C4, D9, D10, Y12, Y14, Y15, Y16; video teşhis #196–#222.
-1. `MechanicWorldRuntime` dilimde alan/duvar üretmez (C2); eski motorun ezdiği değerler okunmaz (C3).
+1. `MechanicWorldRuntime` dilim yolundan çıkarıldı; dilimde alan/duvar eski motorla üretilmez (C2); ezilen değerler okunmaz (C3).
 2. Kalan sessiz yedekler `[V4-FALLBACK]` yazar, yedek görüntü oynatmaz (B3; Y12, Y14 MeshCollider, Y15, Y16).
 3. Boss efektleri ekranın %25'inden fazlasını kaplamaz (O-9.1, D10).
 4. Yürürken minyon ve koza da engel (D9).
@@ -84,11 +84,9 @@ Kaynak: envanter C3, C4. Mustafa 15 Ekim'de öne aldı
    ölçülür, PR'a yazılır ve düşmelidir.
 2. Ezilen değerler (C3): `CastSideEffects.cs` arena alanı ezmesi ve eski motorun 0,85 boss çarpışıcısı dilimde
    okunmaz.
-3. v4 `ManifestationDirector`'dan ayrılır: v4'ün kullandığı hasar, şifa, poise, animasyon ve konum sahipliği
-   v4'ün kendi sınıfına taşınır (bugün 9 v4 dosyası `ManifestationDirector` alıyor). Davranış değişmez; O_ ve
-   Gözcü ile gösterilir. Yalnız eski motorda çalışan hücre (ör. 6-x, 9-x, x-6, x-4) bulunursa PR'a yazılır ve
-   silmeden önce Mustafa'ya sorulur.
-4. Bayrak kalkar: `RuleEngineV4Feature` silinir, v4 tek yol olur; bayrak kapalı dalları gider.
+3. v4 eski `ManifestationDirector` yolundan ayrıldı: hasar, şifa, poise, animasyon ve konum sahipliği v4 sınıflarında;
+   davranış değişmedi; O_ ve Gözcü ile gösterildi.
+4. `RuleEngineV4Feature` kaldırıldı; v4 tek yol; bayrak kapalı dallar gitti.
 5. **[K]** Silme: eski motor (`MechanicGrammar`, executor yolu, `element-sistemi.json`, SweepV2/AtomSim/EskiMotor testleri) kaldırıldı; dilim `slice-sentence-grammar.json` + `RuleEngineV4SentenceHost`.
 
 **Telefonda göreceğin:** 3 dk Kılıç + Yay ile dövüş bugünkü gibi çalışıyor (dodge, düz vuruş, dilimdeki skiller,

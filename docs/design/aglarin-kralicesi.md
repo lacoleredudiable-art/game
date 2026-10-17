@@ -64,7 +64,7 @@ Karadul'un konisi; etki listesi `App/Boss/BossMechanicStatusMap` üzerinden (ör
 - Windup 1000 ms: boss çömelir, **iniş noktasında** kırmızı daire (r 3.0 m) belirir. İniş noktası windup başında kilitlenir (oyuncuyu takip etmez; dodge ile kaçılır).
 - Aktif: 0.45 sn havada (spec'te yok), iner, iniş dairesinde 14 hasar.
 - `BossAttackMotion.Leap`: enum'da zaten var; `Root` olan boss bu saldırıyı başlatamaz (mevcut `BossAttackControl.Evaluate` kuralı, ekstra kod yok).
-- **Hareket yolu (AGENTS kural 3):** boss'u yalnız hareket kalıbı taşıyabilir. Bugün boss'ta `MotionTemplateBodyHost` yok (yalnız oyuncuda, `PrototypeBootstrap` L205). Bkz. **Karar 1**.
+- **Hareket yolu (AGENTS kural 3):** boss'u yalnız hareket kalıbı taşıyabilir. Bugün boss'ta `MotionTemplateBodyHost` yok (yalnız oyuncuda, `GameBootstrapHost` kurulumunda). Bkz. **Karar 1**.
 
 ## 4. Arena (25 m yarıçap)
 

@@ -187,7 +187,7 @@ zaten dodge yok) · D-4 birleşme penceresi `= T_tek`; sonrasında basış sıra
   `09`, `06`, `13` §8 coyote) çelişen satırlara dokunmaz. Bu liste çelişkilerin kaydıdır; öncelik bu belgededir.
   Eski satırlar ayrı bir belge PR'ında güncellenir.
 - `plan/asama-1-dodge.md` PR 1.2 eski O-4.5'e göre yazılmış; bu belgeye göre güncellenmeli.
-- O-4.8, O-10.4 (kusursuz dodge titreşimi), O-10.5 hâlâ belgede; [RED] satırına dönecek (A-13.13).
+- O-4.8, O-10.4 (kusursuz dodge titreşimi), O-10.5 `10`'da **[RED]**; A-13.13 ✅ (17 Ekim 2026).
 
 ## 10. Kodlayan ajana yön
 
