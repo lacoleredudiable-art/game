@@ -23,12 +23,30 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
     {
         readonly RuleEngineV4SentenceHost _md;
         Transform _basicImpactTarget;
+        double _basicBangWorldMs;
         LivingEffect _closingLogic;
         SkillResolution _lastCastSkill;
         float _lastCastDealt;
         RuleEngineV4DirectorBridge _ruleEngineV4;
+        RuleEngineV4CombatContext _combatContext;
+
+        /// <summary>CastHost atanmış tek v4 combat bağlamı; silah her erişimde senkron.</summary>
+        internal RuleEngineV4CombatContext CombatContext
+        {
+            get
+            {
+                _combatContext ??= RuleEngineV4ManifestationAdapter.Bind(_md);
+                _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(_combatContext);
+                RuleEngineV4ManifestationAdapter.Refresh(_combatContext, _md);
+                return _combatContext;
+            }
+        }
+
+        internal void SyncCombatFromDirector() =>
+            RuleEngineV4ManifestationAdapter.Refresh(CombatContext, _md);
+
         internal RuleEngineV4DirectorBridge RuleEngineV4Bridge =>
-            _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(RuleEngineV4ManifestationAdapter.Bind(_md));
+            _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(CombatContext);
 
         /// <summary>FireClosing başında yakalanan logic (eski koddaki yerel değişkenle aynı örnek).</summary>
         internal void BeginClosing(LivingEffect logic) => _closingLogic = logic;
@@ -171,10 +189,18 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
                 impactTarget = _md._boss.transform;
             _md.FaceTarget(impactTarget);
             _basicImpactTarget = impactTarget;
+            _basicBangWorldMs = ctx.BangAtWorldMs;
         }
 
         public double WorldTimeMs() =>
-            _md._clock != null ? _md._clock.Director.WorldTimeMs : 0;
+            _basicBangWorldMs > 0 ? _basicBangWorldMs : (_md._clock != null ? _md._clock.Director.WorldTimeMs : 0);
+
+        public float BasicStrikePrefireSec()
+        {
+            if (_md.TryEquippedBasicWeapon(out Dovus.Core.RuleEngineV4.RuleEngineV4Weapon weapon))
+                return weapon.PrefireSec;
+            return 0f;
+        }
 
         public bool BasicCadenceReady(double now) => _md.BasicCadenceReady(now);
 

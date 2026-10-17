@@ -45,16 +45,33 @@ namespace Dovus.Game.Assets
         public static Shader FindShader(string name, Shader fallback)
         {
             if (string.IsNullOrEmpty(name))
-                return fallback;
+                return ResolveShaderFallback(fallback);
 
-            Shader shader = Shader.Find(name);
+            string resourcePath = name.StartsWith("Shaders/", System.StringComparison.Ordinal)
+                ? name
+                : "Shaders/" + name;
+            Shader shader = Resources.Load<Shader>(resourcePath);
+            if (shader != null)
+                return shader;
+
+            shader = Shader.Find(name);
             if (shader != null)
                 return shader;
 
             if (WarnOnceShader(name))
                 LogMissing($"[asset] eksik: {name} (Shader) → yedek");
 
-            return fallback;
+            return ResolveShaderFallback(fallback);
+        }
+
+        static Shader ResolveShaderFallback(Shader fallback)
+        {
+            if (fallback != null)
+                return fallback;
+            Shader urp = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (urp != null)
+                return urp;
+            return Shader.Find("Sprites/Default");
         }
 
         static bool WarnOnceResource(string path, string typeLabel)

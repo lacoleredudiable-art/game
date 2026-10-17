@@ -42,6 +42,7 @@ namespace Dovus.Game.Skills.Effects
         PresentationCatalog PresentationCatalog { get; }
         void SyncVisualDelivery();
         void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing);
+        bool TryBasicStrikeWeaponTiming(out float prefireSec, out float recoverySec, out bool prefireMoves);
         void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words);
 
         void DestroyUnityObject(Object obj);

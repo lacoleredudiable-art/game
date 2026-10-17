@@ -32,7 +32,8 @@ public class WeaponRosterTests
     {
         Assert.That(W(4).Profile.ArcDeg, Is.EqualTo(144f));
         Assert.That(W(4).Profile.BasicHits, Is.EqualTo(3));
-        Assert.That(W(2).Profile.BasicIntervalSec, Is.EqualTo(0.5f));
+        Assert.That(W(2).Profile.BasicIntervalSec, Is.EqualTo(0.55f).Within(1e-5f));
+        Assert.That(W(4).Profile.BasicIntervalSec, Is.EqualTo(0.40f).Within(1e-5f));
         Assert.That(W(2).Profile.BasicKind, Is.EqualTo("volley"));
     }
 

@@ -9,8 +9,10 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
 using Dovus.Core.Data;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
 using Dovus.Game.Data;
+using Dovus.Game.Skills.RuleEngineV4;
 using Dovus.Game.Team;
 using System;
 using UnityEngine;
@@ -109,12 +111,19 @@ namespace Dovus.Game.Skills
 
             float per = _combat != null ? _combat.ClosingDamagePerEffect : 1f;
             float reference = _skillNumbers != null ? _skillNumbers.VerbDamageReference : 0f;
+            bool v4BasicFormula = isBasicStrike && _equippedWeapon?.Profile != null
+                && TryEquippedBasicWeapon(out RuleEngineV4Weapon _);
             bool formula = _combat != null && _combat.UseFormulaDamage
-                && !isBasicStrike && !skill.IsEmpty && skill.Combat.BaseDamage > 0f;
+                && (v4BasicFormula || (!isBasicStrike && !skill.IsEmpty && skill.Combat.BaseDamage > 0f));
 
             float skillPower;
             float runeMult = 1f;
-            if (formula)
+            if (formula && v4BasicFormula)
+            {
+                _basicCadenceCatalog ??= new RuleEngineV4CatalogAccess();
+                skillPower = _basicCadenceCatalog.Catalog.Scale.BaseDamage;
+            }
+            else if (formula)
             {
                 skillPower = skill.Combat.BaseDamage;
                 runeMult = skill.Scaling.DamageMult > 0f ? skill.Scaling.DamageMult : 1f;
@@ -133,10 +142,11 @@ namespace Dovus.Game.Skills
             if (skillPower <= 0f && slashCommitMult > 0f && closing.TotalEffect > 0f)
                 skillPower = closing.TotalEffect * per * slashCommitMult;
 
+            float legacyBasicPower = v4BasicFormula ? 0f : (_combat != null ? _combat.BasicStrikePower : 0f);
             skillPower = DamagePipeline.TuneOutgoingPower(
                 isBasicStrike,
                 skillPower,
-                _combat != null ? _combat.BasicStrikePower : 0f,
+                legacyBasicPower,
                 _combat != null ? _combat.SkillPreArmorScale : 1f);
 
             if (!skill.IsEmpty && !skill.Engine.IsNull && skill.Engine.HasElementMult)

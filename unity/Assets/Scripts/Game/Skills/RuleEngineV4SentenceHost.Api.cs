@@ -23,6 +23,18 @@ namespace Dovus.Game.Skills
         /// <summary>GameBootstrapHost'ın atadığı sabit silah (ör. Alev Kılıcı).</summary>
         public EquipmentItem EquippedWeapon => _equippedWeapon;
 
+        /// <summary>PlayMode / v4 combat: kuşanılı silah numarası (2=Yay, 4=Kılıç).</summary>
+        public int EquippedWeaponNumber()
+        {
+            if (_equippedWeapon?.Profile != null)
+                return _equippedWeapon.Profile.Id;
+            if (_equippedWeapon == null)
+                return 0;
+            string id = _equippedWeapon.Id ?? string.Empty;
+            int colon = id.LastIndexOf(':');
+            return int.TryParse(colon >= 0 ? id.Substring(colon + 1) : id, out int weaponId) ? weaponId : 0;
+        }
+
         public void ConfigureWeaponCycle(IReadOnlyList<EquipmentItem> weapons)
         {
           EnsureSkillServices();

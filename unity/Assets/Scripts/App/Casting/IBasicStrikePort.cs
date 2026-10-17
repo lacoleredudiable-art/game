@@ -14,6 +14,7 @@ namespace Dovus.App.Casting
         void ApplyClosingHeal(TCtx ctx, SkillResolution skill);
 
         double WorldTimeMs();
+        float BasicStrikePrefireSec();
         bool BasicCadenceReady(double now);
         void SetLastBasicStrikeMs(double now);
         int BasicHitsNow();

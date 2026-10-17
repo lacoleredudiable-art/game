@@ -224,7 +224,7 @@ namespace Dovus.Game.Composition.Builders
             director.BindSceneRuntime(runtime);
             director.BindLiveRegistries(runtime.Targetables);
             ctx.RuleEngineV4SentenceHost = director;
-            ctx.RuleEngineV4Combat = RuleEngineV4ManifestationAdapter.Bind(director);
+            ctx.RuleEngineV4Combat = director.EnsureCombatContext();
             director.BindCastPresentation(new CastPresentationListener());
 
             BossEncounterData.ApplyVolley(combat.Boss, tuning.Boss.ActiveBossResourcePath);
@@ -271,8 +271,14 @@ namespace Dovus.Game.Composition.Builders
             buildSelect.Configure(skills, runeManager, input, view, ctx.Clock, director, !tuning.Hud.SkipBuildSelectOnStart);
         }
 
-        static RuleEngineV4CombatContext CombatContext(WorldContext ctx) =>
-            ctx.RuleEngineV4Combat ?? RuleEngineV4ManifestationAdapter.Bind(ctx.RuleEngineV4SentenceHost);
+        static RuleEngineV4CombatContext CombatContext(WorldContext ctx)
+        {
+            if (ctx.RuleEngineV4Combat != null)
+                return ctx.RuleEngineV4Combat;
+            if (ctx.RuleEngineV4SentenceHost == null)
+                return null;
+            return ctx.RuleEngineV4SentenceHost.EnsureCombatContext();
+        }
 
         static void LogDesignWarning(string message) => Debug.LogWarning(message);
 

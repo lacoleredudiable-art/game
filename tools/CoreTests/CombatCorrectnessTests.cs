@@ -302,6 +302,32 @@ public class CombatCorrectnessTests
     }
 
     [Test]
+    public void O103_BossHitPoint_UsesHeadTop_NotBodyRadiusShell()
+    {
+        string feed = Game("Skills/RuleEngineV4SentenceHost.HudFeed.cs");
+        Assert.That(feed, Does.Not.Contain("BodyRadiusM * 2f"));
+        Assert.That(feed, Does.Contain("BossDamageAnchor.HitPoint"));
+        Assert.That(Game("Hud/BossDamageAnchor.cs"), Does.Contain("TryGetHeadTopWorldY"));
+        Assert.That(Game("Hud/BossDamageAnchor.cs"), Does.Contain("BossHeadTopExtraOffsetM"));
+    }
+
+    [Test]
+    public void O103_DamageNumbers_BossGoldPlayerMinus_DualChrome()
+    {
+        string hud = Game("Hud/DamageNumberHud.cs");
+        Assert.That(hud, Does.Contain("AddComponent<Shadow>"));
+        Assert.That(hud, Does.Contain("FontStyle.Bold"));
+        Assert.That(hud, Does.Contain("BossDamageCritColor"));
+        Assert.That(hud, Does.Contain("\"-\" + DamageNumberFormat.Format(amount)"));
+        Assert.That(hud, Does.Contain("EaseOutBack"));
+        Assert.That(hud, Does.Contain("RiseEaseOutPower"));
+        string theme = Game("Hud/HudTheme.cs");
+        Assert.That(theme, Does.Contain("BossDamageColor"));
+        string defaults = Game("Hud/DamageNumberHudDefaults.cs");
+        Assert.That(defaults, Does.Contain("PunchDurationSec"));
+    }
+
+    [Test]
     public void S16_EventsUnsubscribedOnDestroy_AndBlockedIsNotALambda()
     {
         string md = Game("Skills/RuleEngineV4SentenceHost.cs");

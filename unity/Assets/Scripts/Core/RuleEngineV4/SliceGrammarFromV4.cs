@@ -182,7 +182,7 @@ namespace Dovus.Core.RuleEngineV4
             string basicKind = missile ? "volley" : "slash";
             float arc = weapon.Key == "kilic" ? 144f : 0f;
             int hits = missile ? 1 : 3;
-            float interval = missile ? 0.5f : 0.28f;
+            float interval = weapon.PrefireSec + weapon.RecoverySec;
 
             var passive = new Dictionary<string, JsonValue>(StringComparer.Ordinal);
             var swapBonus = new Dictionary<string, JsonValue>(StringComparer.Ordinal);

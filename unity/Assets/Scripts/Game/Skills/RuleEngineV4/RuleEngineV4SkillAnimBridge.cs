@@ -69,6 +69,15 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     combat, slotRune, weaponId, binding, view != null ? view.Animator : null);
 
             combat.EnsureAnimationReady?.Invoke();
+            float prefireSec = 0f;
+            bool prefireMoves = true;
+            if (castHost.CatalogAccess.Catalog.TryGetWeapon(weaponId, out RuleEngineV4Weapon weapon))
+            {
+                prefireSec = weapon.PrefireSec;
+                prefireMoves = weapon.PrefireMoves;
+            }
+            if (!prefireMoves && prefireSec > 0f)
+                view.SetSpeed(0f);
             AnimationBridge anim = combat.AnimationBridge;
             anim.PlaySkillClip(binding.Clip, binding.FallbackAnimatorState, view.Animator);
             if (!anim.LastPlayApplied)
@@ -78,9 +87,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
                     $"tam klip oynamadı, yedek durum '{binding.FallbackAnimatorState}' oynadı",
                     combat, slotRune, weaponId, binding, view.Animator);
             string state = anim.LastExactClipFound ? anim.LastClipName : binding.FallbackAnimatorState;
-            view.SkillClip.Hold(state);
+            view.SkillClip.Hold(state, prefireSec);
             SkillAnimVfxEventHost relay = EnsureRelay(view.Animator.gameObject, out _);
-            relay.BeginBasicStrike(state, binding.Events);
+            relay.BeginBasicStrike(state, binding.Events, prefireSec);
             LastBasicStrikeClip = anim.LastExactClipFound ? anim.LastClipName : string.Empty;
             return true;
         }

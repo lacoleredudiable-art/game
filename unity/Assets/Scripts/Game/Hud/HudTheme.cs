@@ -19,8 +19,14 @@ namespace Dovus.Game.Hud
         [Header("Palet")]
         public Color DamageTextColor = new(0.95f, 0.93f, 0.88f, 1f);
         public Color CritTextColor = new(0.95f, 0.88f, 0.55f, 1f);
+        /// <summary>Bossa vurulan normal hasar (O-10.3 altın-kehribar).</summary>
+        public Color BossDamageColor = new(1f, 0.78f, 0.28f, 1f);
+        /// <summary>Boss kritik / büyük vuruş.</summary>
+        public Color BossDamageCritColor = new(1f, 0.96f, 0.82f, 1f);
+        public Color BossDamageOutlineColor = new(0.18f, 0.08f, 0.02f, 0.92f);
         public Color HealColor = new(0.45f, 0.9f, 0.75f, 1f);
-        public Color PlayerHitColor = new(0.95f, 0.28f, 0.22f, 1f);
+        public Color PlayerHitColor = new(0.98f, 0.12f, 0.14f, 1f);
+        public Color PlayerHitOutlineColor = new(0.12f, 0f, 0.02f, 0.94f);
         /// <summary>Gecikmeli hasar barı. Önerilen.</summary>
         public Color GhostColor = new(1f, 0.93f, 0.78f, 0.9f);
         public Color FlashColor = Color.white;

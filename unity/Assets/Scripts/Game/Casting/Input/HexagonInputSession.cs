@@ -14,6 +14,7 @@ using Dovus.Game.Config;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Feel;
 using Dovus.Game.Hud;
+using Dovus.App.Casting;
 using Dovus.Game.Skills;
 using UnityEngine;
 namespace Dovus.Game.Casting.Input
@@ -61,6 +62,11 @@ namespace Dovus.Game.Casting.Input
         public bool DrawnSentence;
         public bool InkFlashPending;
         public bool CenterStrikeArmed;
+
+        public System.Func<float> BasicStrikeClipSec;
+        public System.Func<float> BasicStrikePrefireSec;
+        readonly BasicStrikeTapGate _basicTapGate = new();
+        internal BasicStrikeTapGate BasicTapGate => _basicTapGate;
 
         public int? DodgeFingerId;
         public bool SwapHoldFired;

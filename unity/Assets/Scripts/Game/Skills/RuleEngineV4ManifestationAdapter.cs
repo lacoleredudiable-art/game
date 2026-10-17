@@ -5,38 +5,48 @@ namespace Dovus.Game.Skills
     /// <summary>RuleEngineV4SentenceHost → v4 combat bağlamı (yalnız eski motor tarafında).</summary>
     public static class RuleEngineV4ManifestationAdapter
     {
-        public static RuleEngineV4CombatContext Bind(RuleEngineV4SentenceHost md)
+        /// <summary>İlk kurulum: CastHost yalnız MdCastPort → DirectorBridge ctor'unda atanır.</summary>
+        public static RuleEngineV4CombatContext Bind(RuleEngineV4SentenceHost md) =>
+            md == null ? null : CreateCombatContext(md);
+
+        /// <summary>Mevcut bağlamı günceller (silah swap, yeni Bind yok).</summary>
+        public static void Refresh(RuleEngineV4CombatContext combat, RuleEngineV4SentenceHost md)
         {
-            if (md == null)
-                return null;
+            if (combat == null || md == null)
+                return;
+            combat.CoroutineHost = md;
+            combat.Player = md.MechanicsPlayer;
+            combat.Visual = md._visual;
+            combat.Clock = md.MechanicsClock;
+            combat.Boss = md.MechanicsBoss;
+            combat.BossVitals = md.MechanicsBossVitals;
+            combat.BossDirector = md.MechanicsBossDirector;
+            combat.Ally = md.MechanicsAlly;
+            combat.DamageHud = md.MechanicsDamageHud;
+            combat.PlayerVitals = md.CachedPlayerVitals;
+            combat.Input = md._input;
+            combat.Targeting = md._targeting;
+            combat.SkillAim = md._skillAim;
+            combat.ClosingQueue = md._closingQueue;
+            combat.LiveTargetables = md._liveTargetables;
+            combat.Colors = md._colors;
+            combat.EquippedWeapon = md.MechanicsEquippedWeapon;
+            combat.AnimationBridge = md._animationBridge;
+            combat.EnsureAnimationReady = md.EnsureLaunchServices;
+            combat.ResolveSkillWords = md.ResolveSkillWords;
+            combat.NotifyCastDealt = dealt => md._castPort?.NotifyRuleEngineV4Dealt(dealt);
+            combat.NotifyBossStruck = md.NotifyBossStruck;
+            combat.BossHitPoint = md.BossHitPoint;
+        }
+
+        static RuleEngineV4CombatContext CreateCombatContext(RuleEngineV4SentenceHost md)
+        {
             var combat = new RuleEngineV4CombatContext
             {
-                CoroutineHost = md,
                 Session = md.RuleEngineV4Session ?? new RuleEngineV4WorldSession(),
-                Player = md.MechanicsPlayer,
-                Visual = md._visual,
-                Clock = md.MechanicsClock,
-                Boss = md.MechanicsBoss,
-                BossVitals = md.MechanicsBossVitals,
-                BossDirector = md.MechanicsBossDirector,
-                Ally = md.MechanicsAlly,
-                DamageHud = md.MechanicsDamageHud,
-                PlayerVitals = md.CachedPlayerVitals,
-                Input = md._input,
-                Targeting = md._targeting,
-                SkillAim = md._skillAim,
-                ClosingQueue = md._closingQueue,
-                LiveTargetables = md._liveTargetables,
-                Colors = md._colors,
-                EquippedWeapon = md.MechanicsEquippedWeapon,
-                AnimationBridge = md._animationBridge,
-                EnsureAnimationReady = md.EnsureLaunchServices,
-                ResolveSkillWords = md.ResolveSkillWords,
-                NotifyCastDealt = dealt => md._castPort?.NotifyRuleEngineV4Dealt(dealt),
-                NotifyBossStruck = md.NotifyBossStruck,
-                BossHitPoint = md.BossHitPoint,
             };
             md.RuleEngineV4Session = combat.Session;
+            Refresh(combat, md);
             return combat;
         }
     }

@@ -178,6 +178,8 @@ namespace Dovus.Game.Actors
             _savedAnimatorSpeed = speed;
 
             ApplyHandProps(animationsKey, force);
+            // Yeni Loko_* ayak yüksekliği eski tabanla çakışmasın (Yay'da uçma / mesh duvara girme).
+            GetComponent<ActorGroundingController>()?.ResetFootPlant();
         }
 
         /// <summary>Elde silah prop'u: sağ/sol el kemiğine takılı mesh, SetWeapon ile birlikte değişir.</summary>

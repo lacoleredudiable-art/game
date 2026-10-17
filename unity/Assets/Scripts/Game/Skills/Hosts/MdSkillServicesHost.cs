@@ -80,8 +80,9 @@ public sealed class MdSkillServicesHost
         public void SyncVisualDelivery() => _md.SyncVisualDelivery();
         public void PlayBasicStrikeVisual(int slotRune)
         {
+            _md.EnsureCastPort();
             RuleEngineV4.RuleEngineV4SkillAnimBridge.PlayBasicStrike(
-                RuleEngineV4ManifestationAdapter.Bind(_md), slotRune);
+                _md._castPort.CombatContext, slotRune);
         }
         public void StopBasicCannonAtFirstBody(LivingEffect logic, Vector3 origin, Vector3 facing) =>
             _md.StopBasicCannonAtFirstBody(logic, origin, facing);
@@ -128,5 +129,21 @@ public sealed class MdSkillServicesHost
         public void FaceTarget(Transform target) => _md.FaceTarget(target);
         public void ApplyCastMobility(SkillResolution skill, float durationSec) =>
             _md.ApplyCastMobility(skill, durationSec);
+
+        public bool TryBasicStrikeWeaponTiming(out float prefireSec, out float recoverySec, out bool prefireMoves)
+        {
+            prefireSec = 0f;
+            recoverySec = 0f;
+            prefireMoves = true;
+            if (!_md.TryEquippedBasicWeapon(out Dovus.Core.RuleEngineV4.RuleEngineV4Weapon weapon))
+                return false;
+            prefireSec = weapon.PrefireSec;
+            recoverySec = weapon.RecoverySec;
+            prefireMoves = weapon.PrefireMoves;
+            return true;
+        }
+
+        public void ApplyBasicStrikePrefireLock(float prefireSec) =>
+            _md.ApplyBasicStrikePrefireLock(prefireSec);
     }
 }

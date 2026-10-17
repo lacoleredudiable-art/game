@@ -256,6 +256,19 @@ public class DamagePipelineTests
     }
 
     [Test]
+    public void O103_HudSettings_MatchFloatingDamageSpec()
+    {
+        string hud = File.ReadAllText(Path.Combine(
+            Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "..", "..", "..", "..", "..")),
+            "unity", "Assets", "Scripts", "Game", "Config", "Sections", "HudSettings.cs"));
+        Assert.That(hud, Does.Contain("DamageFloatFontDp = 28f"));
+        Assert.That(hud, Does.Contain("DamageFloatCritFontDp = 36f"));
+        Assert.That(hud, Does.Contain("DamageFloatRisePx = 64f"));
+        Assert.That(hud, Does.Contain("DamageFloatHoldSec = 0.35f"));
+        Assert.That(hud, Does.Contain("DamageFloatFadeSec = 0.45f"));
+    }
+
+    [Test]
     public void BossProfile_ScalesHp_AndLeavesArmorUnscaled()
     {
         var profile = BossCombatProfile.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());

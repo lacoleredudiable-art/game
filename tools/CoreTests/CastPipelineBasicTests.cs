@@ -16,6 +16,7 @@ public class CastPipelineBasicTests
         nameof(IBasicStrikePort<object>.ResolveSkill),
         nameof(IBasicStrikePort<object>.IsHealSkill),
         nameof(IBasicStrikePort<object>.WorldTimeMs),
+        nameof(IBasicStrikePort<object>.BasicStrikePrefireSec),
         nameof(IBasicStrikePort<object>.BasicCadenceReady),
         nameof(IBasicStrikePort<object>.SetLastBasicStrikeMs),
         nameof(IBasicStrikePort<object>.BasicHitsNow),
@@ -42,6 +43,7 @@ public class CastPipelineBasicTests
         nameof(IBasicStrikePort<object>.ResolveSkill),
         nameof(IBasicStrikePort<object>.IsHealSkill),
         nameof(IBasicStrikePort<object>.WorldTimeMs),
+        nameof(IBasicStrikePort<object>.BasicStrikePrefireSec),
         nameof(IBasicStrikePort<object>.BasicCadenceReady),
         nameof(IBasicStrikePort<object>.SetLastBasicStrikeMs),
         nameof(IBasicStrikePort<object>.BasicHitsNow),
@@ -88,6 +90,12 @@ public class CastPipelineBasicTests
         {
             Record();
             return 1000;
+        }
+
+        public float BasicStrikePrefireSec()
+        {
+            Record();
+            return 0f;
         }
 
         public bool BasicCadenceReady(double now)
@@ -193,6 +201,7 @@ public class CastPipelineBasicTests
             nameof(IBasicStrikePort<object>.ResolveSkill),
             nameof(IBasicStrikePort<object>.IsHealSkill),
             nameof(IBasicStrikePort<object>.WorldTimeMs),
+            nameof(IBasicStrikePort<object>.BasicStrikePrefireSec),
             nameof(IBasicStrikePort<object>.BasicCadenceReady),
         }));
     }
@@ -204,6 +213,19 @@ public class CastPipelineBasicTests
         var outcome = new CastPipeline().RunBasic(0, port);
         Assert.That(outcome.Connected, Is.False);
         Assert.That(port.Calls, Is.EqualTo(ExpectedBasicMissOrder));
+    }
+
+    [Test]
+    public void RunBasic_AlwaysFacesBeforeCapsuleAndReachChecks()
+    {
+        var port = new RecordingBasicPort { StrikeConnects = true };
+        new CastPipeline().RunBasic(0, port);
+        int faceIdx = port.Calls.IndexOf(nameof(IBasicStrikePort<object>.ResolveImpactTarget));
+        int capsuleIdx = port.Calls.IndexOf(nameof(IBasicStrikePort<object>.IsBossInStrikeCapsule));
+        int yawIdx = port.Calls.IndexOf(nameof(IBasicStrikePort<object>.BasicStrikeYawDeg));
+        Assert.That(faceIdx, Is.EqualTo(0), "bang öncesi hedefe dönüş");
+        Assert.That(capsuleIdx, Is.GreaterThan(faceIdx));
+        Assert.That(yawIdx, Is.GreaterThan(capsuleIdx));
     }
 
     [Test]
