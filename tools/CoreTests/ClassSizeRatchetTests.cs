@@ -21,7 +21,7 @@ public sealed class ClassSizeRatchetTests
         ["PortalSystem"] = 979,
         ["MixamoAnimatorBind"] = 843,
         ["BuildSelectHud"] = 836,
-        ["TuningPanelHud"] = 809,
+        ["TuningPanelHud"] = 805,
         ["VitalsHud"] = 753,
         ["TeamComboSystem"] = 721,
         ["TeamComboHost"] = 706,
