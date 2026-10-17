@@ -352,7 +352,7 @@ Hepsi **[K]**. Kod işleri ayrı iş parçalarında; bu bölüm yalnız kayıtt�
   yok; toparlanma silah değişimiyle kesilir, düz vuruşla kesilmez; skill düz vuruşu vuruş karesinden sonra keserse
   etkisi geçer; dodge ve silah değişimi sürerken skill ve düz vuruş çalışmaz.
 - **[K] Deneme döngüsü:** aynı karede boss ve oyuncu ölürse boss ölümü sayılır · "Tekrar"da boss yine uyur ve
-  oyuncu 6 m'ye yaklaşınca 2 s'de uyanır · uyanışın 2 s'sinde oyuncu hasar almaz · ölüm/sonuç ekranında boss canı
+  oyuncu ~~6 m'ye yaklaşınca~~ Z −2 çizgisini geçince (17 Ekim) 2 s'de uyanır · uyanışın 2 s'sinde oyuncu hasar almaz · ölüm/sonuç ekranında boss canı
   büyük yazılır (§5 [Ö] onaylandı).
 - **[K] Boss:** faz eşiğine (%60 / %25) inen vuruş sürmekte olan saldırıyı iptal edip geçişi hemen başlatır ·
   takım görevi sürerken faz 1'de duyurulu saldırı bekler · boss iki "uzun" saldırıyı 6 s içinde arka arkaya atmaz
@@ -364,8 +364,15 @@ Hepsi **[K]**. Kod işleri ayrı iş parçalarında; bu bölüm yalnız kayıtt�
 - **[K] Görsel:** karakter 2048 dokusu için Mustafa orijinal dosyaları verecek · Linear renk uzayına geçiş ayrı
   aşama olarak yapılacak · test cihazı POCO X7 Pro.
 - **[K] Belge temizliği:** eski satırlar `15` ve LED ışığa göre güncellenir (bu değişiklikle).
-- **[AÇIK] Sonuç ekranında "Silah değiştir" (O-17.2/O-17.3)** ve **faz 2 baş erişimi (KE-2.8)** Mustafa'ya yeniden
-  soruldu, cevap bekliyor.
+- **[AÇIK] Sonuç ekranında "Silah değiştir" (O-17.2/O-17.3)** Mustafa'ya yeniden soruldu, cevap bekliyor.
+- **[K] Faz 2 baş erişimi (KE-2.8), 17 Ekim:** menzil parçanın en yakın yüzeyine üç boyutlu ölçülür (KE-2.6); faz 2'de
+  baş Yay ile vurulur, yakın silahlar yalnız sendelemede ulaşır.
+- **[K] Kül Ejderi kesinleşmesi, 17 Ekim:** v2 model esas; Kor Mührü ödülü çökme (kalbe vurulmaz); Kanat Savuruşu'nda
+  kanat güney kenara kadar süpürür; kanat koru faz 2'de; uyanış ilk girişte 4 s, "Tekrar"da 2 s, tetik Z −2 (yukarıdaki
+  "6 m" yerine); faz 3 sabit 40 s döngü; Kül Yağmuru'nda takım cezası yok. Ayrıntı `18` başı.
+- **[AÇIK] Kül Ejderi, v2 modelin açtıkları (K):** faz 2 göğüs Kılıç'a ulaşmıyor (KE-2.10); Kor Halkası kalbin yeni
+  yerinden kısa kalıyor (KE-7.3); çökme ile sendeleme çarpanı (KE-7.8); Kanat Savuruşu'nun pençe yanındaki
+  Z 10–18 şeridi (KE-6.6).
 - **[AÇIK] Dodge sırasında basılan skill/düz vuruş** tampona girip sonra mı çalışır, yoksa tamamen yok mu sayılır?
   (Cevap "çalışmaz"; tampon O-4.12 yalnız toparlanma için yazılı.)
 - **[AÇIK]** `plan/kararlar-2026-10-15.md` 21-29 (dilim dışı): cevap bekliyor.
