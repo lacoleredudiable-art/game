@@ -1,0 +1,43 @@
+using Dovus.Game.Skills.RuleEngineV4;
+
+namespace Dovus.Game.Skills
+{
+    /// <summary>RuleEngineV4SentenceHost → v4 combat bağlamı (yalnız eski motor tarafında).</summary>
+    public static class RuleEngineV4ManifestationAdapter
+    {
+        public static RuleEngineV4CombatContext Bind(RuleEngineV4SentenceHost md)
+        {
+            if (md == null)
+                return null;
+            var combat = new RuleEngineV4CombatContext
+            {
+                CoroutineHost = md,
+                Session = md.RuleEngineV4Session ?? new RuleEngineV4WorldSession(),
+                Player = md.MechanicsPlayer,
+                Visual = md._visual,
+                Clock = md.MechanicsClock,
+                Boss = md.MechanicsBoss,
+                BossVitals = md.MechanicsBossVitals,
+                BossDirector = md.MechanicsBossDirector,
+                Ally = md.MechanicsAlly,
+                DamageHud = md.MechanicsDamageHud,
+                PlayerVitals = md.CachedPlayerVitals,
+                Input = md._input,
+                Targeting = md._targeting,
+                SkillAim = md._skillAim,
+                ClosingQueue = md._closingQueue,
+                LiveTargetables = md._liveTargetables,
+                Colors = md._colors,
+                EquippedWeapon = md.MechanicsEquippedWeapon,
+                AnimationBridge = md._animationBridge,
+                EnsureAnimationReady = md.EnsureLaunchServices,
+                ResolveSkillWords = md.ResolveSkillWords,
+                NotifyCastDealt = dealt => md._castPort?.NotifyRuleEngineV4Dealt(dealt),
+                NotifyBossStruck = md.NotifyBossStruck,
+                BossHitPoint = md.BossHitPoint,
+            };
+            md.RuleEngineV4Session = combat.Session;
+            return combat;
+        }
+    }
+}

@@ -19,7 +19,7 @@ namespace Dovus.Game.Config.Sections
                 public float MoveAccelMps2 = 52f;
                 public float MoveDecelMps2 = 64f;
                 public float TurnRateDegPerSec = 720f;
-                /// <summary>Çubuk ölü bölgenin hemen üstündeyken hız oranı (yürüme); tam çubuk = 1 (koşu). Önerilen.</summary>
+                /// <summary>KULLANILMIYOR (15 Ekim [K]: joystick analog değil, ölü bölge üstü tam hız). Alan dondurulmuş alan listesi için duruyor; silme ayrı iş.</summary>
                 public float MinStickSpeedFrac = 0.42f;
                 /// <summary>Animator Speed parametresi sönümü. Önerilen.</summary>
                 public float AnimSpeedDampSec = 0.08f;

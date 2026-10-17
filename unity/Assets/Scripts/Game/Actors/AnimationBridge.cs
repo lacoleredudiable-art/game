@@ -7,7 +7,7 @@ namespace Dovus.Game.Actors
 {
     /// <summary>
     /// Presentation AnimationFrameNode → Animator.Play + worldMs frame-timer.
-    /// ManifestationDirector.ShoutSkill üzerinden bağlanır (Bağlama 10).
+    /// RuleEngineV4SentenceHost.ShoutSkill üzerinden bağlanır (Bağlama 10).
     /// </summary>
     public sealed class AnimationBridge
     {

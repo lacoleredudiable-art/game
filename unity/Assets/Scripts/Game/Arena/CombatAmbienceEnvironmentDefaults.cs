@@ -27,7 +27,7 @@ namespace Dovus.Game.Arena
         public const float RockJitterSpanM = 10f;
         public const float RockRingScatterMult = 0.8f;
         public const int RockRngSeed = 1337;
-        public const float RockTileDivisor = 7f;
+        public const float RockTileDivisor = 4f;
         public const float TextureDetailScaleMult = 1.35f;
         public const float WalkHalfMinM = 0.1f;
         public const float WallThicknessFallbackM = 1.4f;

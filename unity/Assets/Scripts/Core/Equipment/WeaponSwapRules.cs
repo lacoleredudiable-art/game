@@ -47,9 +47,9 @@ namespace Dovus.Core.Equipment
         }
 
         public static WeaponSwapRules FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static WeaponSwapRules FromDocument(ElementSystemDocument doc) =>
+        public static WeaponSwapRules FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
     }
 }

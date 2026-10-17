@@ -14,8 +14,11 @@ namespace Dovus.Game.Cameras
         readonly CameraBossFade _fade;
         float _heldOffsetDeg;
         float _lastOffsetDeg;
+        float _lastHold;
         bool _hasOffset;
         float _lastShoulderSwitchSec = float.NegativeInfinity;
+        CameraBossBody[] _columns = new CameraBossBody[0];
+        CameraBossFade[] _columnFades = new CameraBossFade[0];
 
         public CameraSliceGuard(CameraSliceRules rules, CameraBossBody body, CameraBossFade fade)
         {
@@ -38,10 +41,17 @@ namespace Dovus.Game.Cameras
         {
             float live = Mathf.DeltaAngle(orbitYawDeg, desiredYawDeg);
             float hold = BossYawHold01(bossTarget, player);
-            if (hold <= 0f || !_hasOffset)
+            if (!_hasOffset || (hold <= 0f && _lastHold <= 0f))
                 _heldOffsetDeg = live;
             else
+            {
                 _heldOffsetDeg = Mathf.DeltaAngle(0f, _heldOffsetDeg + (1f - hold) * Mathf.DeltaAngle(_lastOffsetDeg, live));
+                // Tutulan açının canlıdan farkı, ağırlık düştükçe onunla orantılı erir: 5 m'de ağırlık 0'a inince fark
+                // tek karede silinip hedef yaw sıçramaz (O-5.7 yumuşak geçiş).
+                if (hold < _lastHold)
+                    _heldOffsetDeg = live + Mathf.DeltaAngle(live, _heldOffsetDeg) * (hold / _lastHold);
+            }
+            _lastHold = hold;
             _lastOffsetDeg = live;
             _hasOffset = true;
             return orbitYawDeg + _heldOffsetDeg;
@@ -84,6 +94,45 @@ namespace Dovus.Game.Cameras
         {
             if (_fade != null && _body != null)
                 _fade.Apply(_body.Occludes(character, camPos));
+            for (int i = 0; i < _columns.Length; i++)
+            {
+                if (_columns[i] != null)
+                    _columnFades[i]?.Apply(_columns[i].Occludes(character, camPos));
+            }
+        }
+
+        /// <summary>
+        /// O-5.10 [K 2026-10-15]: sütun kamera ile karakter arasındaysa kamera öne gelmez, sütun boss gibi saydamlaşır
+        /// (O-5.11 opaklığı). Gövde ve saydamlık dizileri aynı sırada.
+        /// </summary>
+        public void BindColumns(CameraBossBody[] columns, CameraBossFade[] fades)
+        {
+            _columns = columns ?? new CameraBossBody[0];
+            _columnFades = fades ?? new CameraBossFade[_columns.Length];
+        }
+
+        /// <summary>Bu dönüşüm bir sütuna (ya da onun bir çocuğuna) mı ait.</summary>
+        public bool IsColumn(Transform t)
+        {
+            for (int i = 0; i < _columns.Length; i++)
+            {
+                Transform root = _columns[i]?.Root;
+                if (root != null && t != null && t.IsChildOf(root))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>Bu dönüşüm (ya da bir çocuğu) şu an saydamlaşmış bir sütunun mu.</summary>
+        public bool IsFadedColumn(Transform t)
+        {
+            for (int i = 0; i < _columns.Length; i++)
+            {
+                Transform root = _columns[i]?.Root;
+                if (root != null && t != null && t.IsChildOf(root))
+                    return _columnFades[i] != null && _columnFades[i].IsFaded;
+            }
+            return false;
         }
     }
 }

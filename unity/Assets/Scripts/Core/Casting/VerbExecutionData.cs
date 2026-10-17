@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Dovus.Core.Data;
 using Dovus.Core.Grammar;
-
 using Dovus.Core.Shared;
 namespace Dovus.Core.Casting
 {
@@ -55,30 +54,33 @@ namespace Dovus.Core.Casting
         }
 
         public static VerbExecutionData FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static VerbExecutionData FromDocument(ElementSystemDocument doc) =>
+        public static VerbExecutionData FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static VerbExecutionData FromJsonRoot(JsonValue root)
         {
             var data = new VerbExecutionData();
-            foreach (KeyValuePair<string, JsonValue> kv in root["hitbox_vfx"]["fiil_hitbox"].AsObject())
+            JsonValue hitboxRoot = root["hitbox_vfx"];
+            if (hitboxRoot.Kind != JsonKind.Object)
+                return data;
+            foreach (KeyValuePair<string, JsonValue> kv in hitboxRoot["fiil_hitbox"].AsObject())
             {
                 if (!int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int verbId))
                     continue;
                 data._hitboxes[verbId] = ParseHitbox(kv.Value);
             }
 
-            foreach (KeyValuePair<string, JsonValue> kv in root["hitbox_vfx"]["sifat_override"].AsObject())
+            foreach (KeyValuePair<string, JsonValue> kv in hitboxRoot["sifat_override"].AsObject())
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int adjectiveId))
                     data._adjectiveSize[adjectiveId] = kv.Value["size_mult"].AsFloat(1f);
 
-            foreach (KeyValuePair<string, JsonValue> kv in root["hitbox_vfx"]["weapon_size_mult"].AsObject())
+            foreach (KeyValuePair<string, JsonValue> kv in hitboxRoot["weapon_size_mult"].AsObject())
                 if (int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int weaponId))
                     data._weaponSize[weaponId] = kv.Value.AsFloat(1f);
 
-            foreach (KeyValuePair<string, JsonValue> kv in root["hitbox_vfx"]["element_color"].AsObject())
+            foreach (KeyValuePair<string, JsonValue> kv in hitboxRoot["element_color"].AsObject())
             {
                 if (!int.TryParse(kv.Key, NumberStyles.Integer, CultureInfo.InvariantCulture, out int elementId))
                     continue;
@@ -89,7 +91,10 @@ namespace Dovus.Core.Casting
                     kv.Value["saturation"].AsFloat(1f));
             }
 
-            foreach (JsonValue row in root["mobility_cc"]["i_frame"].AsArray())
+            JsonValue mobility = root["mobility_cc"];
+            if (mobility.Kind != JsonKind.Object)
+                return data;
+            foreach (JsonValue row in mobility["i_frame"].AsArray())
             {
                 data._iFrames.Add(new IFrameRule(
                     row["source"].AsString(),

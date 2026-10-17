@@ -1,6 +1,6 @@
 namespace Dovus.Game.Skills.State
 {
-    /// <summary>Mekanik JSON / buff zamanlayıcıları — tek kopya (ManifestationDirector tutar).</summary>
+    /// <summary>Mekanik JSON / buff zamanlayıcıları — tek kopya (RuleEngineV4SentenceHost tutar).</summary>
     public sealed class SkillWorldState
     {
         public float SelfDamageBuff { get; set; }

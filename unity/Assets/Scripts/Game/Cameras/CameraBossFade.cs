@@ -19,24 +19,32 @@ namespace Dovus.Game.Cameras
         bool _isFaded;
 
         public CameraBossFade(Transform bossRoot, float opacity)
+            : this(bossRoot, bossRoot != null ? bossRoot.Find(CameraBossFadeDefaults.ModelChildName) : null, opacity, "boss", "O-5.11")
+        {
+        }
+
+        /// <summary>
+        /// Genel kurulum: kökün kendi çizilen gövdesi ve <paramref name="model"/> altındaki mesh'ler saydamlaşır.
+        /// O-5.10 sütunları da bunu kullanır (kök = sütun, model = giydirilmiş görsel çocuk).
+        /// </summary>
+        public CameraBossFade(Transform root, Transform model, float opacity, string label, string rule)
         {
             _opacity = opacity;
             var renderers = new List<Renderer>();
             Shader lit = Shader.Find(CameraBossFadeDefaults.FadeShaderName);
-            if (bossRoot == null || lit == null)
+            if (root == null || lit == null)
             {
-                Debug.LogError($"[V4-FALLBACK] CameraBossFade: boss kökü ya da '{CameraBossFadeDefaults.FadeShaderName}' " +
-                               "yok; boss arada kalınca saydamlaşmaz (O-5.11)");
+                Debug.LogError($"[V4-FALLBACK] CameraBossFade: {label} kökü ya da '{CameraBossFadeDefaults.FadeShaderName}' " +
+                               $"yok; {label} arada kalınca saydamlaşmaz ({rule})");
                 _renderers = renderers.ToArray();
                 _opaque = new Material[0][];
                 _faded = new Material[0][];
                 return;
             }
 
-            Renderer own = bossRoot.GetComponent<Renderer>();
+            Renderer own = root.GetComponent<Renderer>();
             if (own != null && own.enabled)
                 renderers.Add(own);
-            Transform model = bossRoot.Find(CameraBossFadeDefaults.ModelChildName);
             if (model != null)
             {
                 foreach (Renderer r in model.GetComponentsInChildren<Renderer>())
@@ -68,7 +76,7 @@ namespace Dovus.Game.Cameras
                 }
             }
             if (_renderers.Length == 0)
-                Debug.LogError("[V4-FALLBACK] CameraBossFade: boss modelinde çizilen renderer yok; boss saydamlaşmaz (O-5.11)");
+                Debug.LogError($"[V4-FALLBACK] CameraBossFade: {label} modelinde çizilen renderer yok; {label} saydamlaşmaz ({rule})");
         }
 
         public bool IsFaded => _isFaded;

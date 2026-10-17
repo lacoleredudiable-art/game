@@ -41,7 +41,7 @@ namespace Dovus.Tests.PlayMode
         readonly HashSet<GameObject> _preexisting = new();
         readonly List<string> _errors = new();
         string _label = "kurulum";
-        ManifestationDirector _md;
+        RuleEngineV4SentenceHost _md;
         RuleEngineV4CastHost _cast;
         RuleEngineV4PhysicsServices _physics;
         RuleEngineV4CatalogAccess _catalog;
@@ -49,6 +49,18 @@ namespace Dovus.Tests.PlayMode
         Transform _boss;
         SliceLightMinionHost[] _minions;
         Transform[] _allies;
+
+        /// <summary>
+        /// Dev yapısındaki dodge denemesi (asama/1-dodge, DodgePracticeController) boss'u dondurur ve kendi alanıyla
+        /// vurur; kural testleri gerçek boss davranışını ölçer, deneme kapatılır ve donma kalkar.
+        /// </summary>
+        static void DisableDodgePractice()
+        {
+            foreach (var practice in Object.FindObjectsByType<Dovus.Game.DevTools.DodgePracticeController>(FindObjectsSortMode.None))
+                practice.enabled = false;
+            foreach (BossDirector director in Object.FindObjectsByType<BossDirector>(FindObjectsSortMode.None))
+                director.PracticeFrozen = false;
+        }
 
         [UnitySetUp]
         public IEnumerator SetUp()
@@ -64,17 +76,16 @@ namespace Dovus.Tests.PlayMode
             var boot = new GameObject("RuleEngineV4SliceBoot");
             boot.SetActive(false);
             var host = boot.AddComponent<GameBootstrapHost>();
-            host.SceneTuning.RuleEngineV4.Enabled = true;
             host.SceneTuning.RuleEngineV4.SliceScene = true;
             host.SlicePlayerVisualPrefab = LoadSlicePlayerVisual();
             boot.SetActive(true);
             if (!IsGozcuTest())
                 DisableGozcu();
+            DisableDodgePractice();
             yield return new WaitForSecondsRealtime(BootSettleSec);
 
-            _md = Object.FindAnyObjectByType<ManifestationDirector>();
-            Assert.That(_md, Is.Not.Null, "ManifestationDirector");
-            Assert.That(RuleEngineV4Feature.Enabled, Is.True, "RuleEngineV4Feature.Enabled");
+            _md = Object.FindAnyObjectByType<RuleEngineV4SentenceHost>();
+            Assert.That(_md, Is.Not.Null, "RuleEngineV4SentenceHost");
             _player = _md.MechanicsPlayer;
             Assert.That(_player, Is.Not.Null, "oyuncu");
             // Açılışta build seçimi açık ve dünya saati duraklı; varsayılan build ile kapatılır.
@@ -99,7 +110,6 @@ namespace Dovus.Tests.PlayMode
                 if (root != null && !_preexisting.Contains(root))
                     Object.Destroy(root);
             }
-            RuleEngineV4Feature.Enabled = false;
             yield return null;
             Application.logMessageReceived -= OnLog;
             Assert.That(_errors, Is.Empty, "konsol hatası:\n" + string.Join("\n", _errors));

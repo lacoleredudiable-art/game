@@ -77,7 +77,7 @@ namespace Dovus.Game.Boss
 
         /// <summary>Ağ Örme windup başında kilitlenen hedef (3.4 alan sunumu).</summary>
         public Vector3 LastWebFieldTarget { get; private set; }
-
+        public bool PracticeFrozen { get; set; } // Dodge denemesi (yalnız DevTools yazar): boss yürümez, saldırmaz.
         /// <summary>karadul.json faz sırası: 1 = Uyanış, 2 = Öfke (can ≤ %50).</summary>
         public int BossPhase => _phase2Announced ? 2 : 1;
 
@@ -365,7 +365,7 @@ namespace Dovus.Game.Boss
                 return;
             }
 
-            if (_poise != null && _poise.IsStaggered)
+            if (PracticeFrozen || (_poise != null && _poise.IsStaggered)) // deneme donması da sersemleme gibi bekler
             {
                 _telegraph?.Hide();
                 _feel?.ClearThreat();

@@ -34,10 +34,6 @@ public sealed class CoreFileSizeTests
         AssertPartialsAtMost500("Portal", "PortalSystem");
 
     [Test]
-    public void MechanicGrammar_partials_are_at_most_500_lines() =>
-        AssertPartialsAtMost500("Mechanic", "MechanicGrammar");
-
-    [Test]
     public void TeamComboSystem_partials_are_at_most_500_lines() =>
         AssertPartialsAtMost500("Team", "TeamComboSystem");
 

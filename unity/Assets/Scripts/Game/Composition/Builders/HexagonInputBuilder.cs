@@ -1,6 +1,7 @@
 using Dovus.Core.Actors;
 using Dovus.Core.Grammar;
 using Dovus.Core.Element;
+using Dovus.Core.Equipment;
 using Dovus.Game.Actors;
 using Dovus.Game.Cameras;
 using Dovus.Game.Casting;
@@ -45,16 +46,12 @@ namespace Dovus.Game.Composition.Builders
             ctx.OverlayCamera = overlay.Cam;
             AttachOverlayToMain(mainCam, overlay.Cam);
 
-            ElementSystemDesign design = null;
-            ElementSystemAssetCatalog assetCatalog = null;
-            if (ElementSystemJsonLoader.TryLoad(out ElementSystemDesign loaded))
-            {
-                design = loaded;
-                assetCatalog = ElementSystemAssetCatalog.CreateRuntime(design);
-            }
-            ctx.ElementDesign = design;
+            SkillMotor skills = SkillMotorLoader.Load();
+            SliceRuntimeAssetCatalog assetCatalog = null;
+            if (SliceCombatBootstrap.TryLoad(out SkillMotor _, out EquipmentCatalog equipment, out _))
+                assetCatalog = SliceRuntimeAssetCatalog.CreateSliceRuntime(skills, equipment);
+            ctx.SliceEquipment = equipment;
             ctx.AssetCatalog = assetCatalog;
-            SkillMotor skills = design?.SkillMotor ?? SkillMotorLoader.Load();
             ctx.Skills = skills;
             var runeManager = new RuneManager(skills);
             if (!runeManager.TrySelectMainClass(
@@ -68,7 +65,7 @@ namespace Dovus.Game.Composition.Builders
             RuneLoadout loadout = runeManager.Current;
             ctx.RuneLoadout = loadout;
             DebugConfig.DevLog(
-                $"[ElementSystem] mainClass={ctx.PrototypeMainClassId} build=[{string.Join(",", loadout.RuneIds)}] "
+                $"[SliceGrammar] mainClass={ctx.PrototypeMainClassId} build=[{string.Join(",", loadout.RuneIds)}] "
                 + $"passives={loadout.PassiveCount}; SO={assetCatalog?.Runes.Count ?? 0}/"
                 + $"{assetCatalog?.Weapons.Count ?? 0}/{assetCatalog?.Elements.Count ?? 0}");
             var view = root.AddComponent<HexagonView>();
@@ -76,8 +73,6 @@ namespace Dovus.Game.Composition.Builders
             view.BindUiJuice(ctx.Runtime.UiJuice);
             view.Build(_tuning, overlay.Cam, skills, loadout);
             ctx.HexagonView = view;
-            if (follow != null)
-                view.BindLockOn(follow);
 
             var moveInput = player.GetComponent<MoveInputController>();
             if (moveInput != null)

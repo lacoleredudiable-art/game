@@ -36,9 +36,9 @@ namespace Dovus.Core.Casting
         public float AllySkillRangeM { get; internal set; } = SkillNumberFallbacks.AllySkillRangeM;
 
         public static SkillNumberCatalog FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static SkillNumberCatalog FromDocument(ElementSystemDocument doc) =>
+        public static SkillNumberCatalog FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static SkillNumberCatalog FromJsonRoot(JsonValue root) => SkillNumberParser.Parse(root);

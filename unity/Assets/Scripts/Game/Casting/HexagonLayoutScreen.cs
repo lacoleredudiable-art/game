@@ -1,5 +1,6 @@
 using Dovus.Core.Input;
 using Dovus.Game.Config;
+using Dovus.Game.Config.Sections;
 using UnityEngine;
 
 namespace Dovus.Game.Casting
@@ -118,55 +119,6 @@ namespace Dovus.Game.Casting
         public static float DodgeButtonRadiusPx(GameTuning tuning) =>
             DpToPixels(tuning.Input.DodgeButtonRadiusDp);
 
-        /// <summary>Lock-on: dodge'un üstünde, aynı sağ-alt küme içinde.</summary>
-        public static Vector2 LockOnButtonPx(GameTuning tuning, int screenWidth, int screenHeight)
-        {
-            Vector2 dodge = DodgeButtonPx(tuning, screenWidth, screenHeight);
-            float lockR = LockOnButtonRadiusPx(tuning);
-            float dodgeR = DodgeButtonRadiusPx(tuning);
-            float gap = DpToPixels(HexagonLayoutScreenDefaults.LockOnGapDp);
-            Vector2 p = dodge + new Vector2(
-                DpToPixels(tuning.Input.LockOnButtonOffsetXDp),
-                dodgeR + lockR + gap + DpToPixels(tuning.Input.LockOnButtonOffsetYDp));
-
-            ResolveHudButtonAwayFromHexPanel(
-                ref p,
-                lockR,
-                gap,
-                dodge,
-                dodgeR,
-                tuning,
-                screenWidth,
-                screenHeight);
-
-            Rect safe = SafeRectPx();
-            float edge = lockR + DpToPixels(tuning.Input.DodgeButtonScreenMarginDp);
-            ClampHudButtonToSafe(ref p, safe, edge);
-            ResolveHudButtonAwayFromHexPanel(
-                ref p,
-                lockR,
-                gap,
-                dodge,
-                dodgeR,
-                tuning,
-                screenWidth,
-                screenHeight);
-            ClampHudButtonToSafe(ref p, safe, edge);
-            EnforceHudButtonClearance(
-                ref p,
-                lockR,
-                gap,
-                dodge,
-                dodgeR,
-                tuning,
-                screenWidth,
-                screenHeight);
-            return p;
-        }
-
-        public static float LockOnButtonRadiusPx(GameTuning tuning) =>
-            DpToPixels(tuning.Input.LockOnButtonRadiusDp);
-
         /// <summary>
         /// Silah swap: dodge'un altıgene göre simetriği (sol-alt), çizim yarısında kalır.
         /// </summary>
@@ -276,6 +228,23 @@ namespace Dovus.Game.Casting
             float mid = screenWidth * 0.5f;
             return mirrorForLeftHand ? screenPos.x < mid : screenPos.x >= mid;
         }
+
+        /// <summary>
+        /// Sanal çubuk bölgesi (O-4.3): ekranın solundan xFrac genişlik, alttan yFrac yükseklik.
+        /// Unity ekran koordinatı alttan başlar. Ayna açıkken bölge sağ kenara geçer.
+        /// </summary>
+        public static bool IsStickZone(Vector2 screenPos, bool mirrorForLeftHand, int screenWidth, int screenHeight,
+            float xFrac, float yFrac)
+        {
+            bool inX = mirrorForLeftHand
+                ? screenPos.x > screenWidth * (1f - xFrac)
+                : screenPos.x < screenWidth * xFrac;
+            return inX && screenPos.y < screenHeight * yFrac;
+        }
+
+        public static bool IsStickZone(Vector2 screenPos, InputSettings input, int screenWidth, int screenHeight) =>
+            IsStickZone(screenPos, input.MirrorForLeftHand, screenWidth, screenHeight,
+                input.JoystickZoneWidthFrac, input.JoystickZoneHeightFrac);
 
         /// <summary>Safe üst inset — HUD margin ile birlikte.</summary>
         public static float SafeTopInsetPx()

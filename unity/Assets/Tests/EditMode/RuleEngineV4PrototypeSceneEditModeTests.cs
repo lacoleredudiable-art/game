@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Linq;
-using Dovus.Core.RuleEngineV4;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -12,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace Dovus.Tests.EditMode
 {
     /// <summary>
-    /// Prototype sahnesi, GameTuning'de RuleEngineV4.Enabled + SliceScene açıkken Play modunda
+    /// Prototype sahnesi, GameTuning'de SliceScene açıkken Play modunda
     /// bayraklar kapalı oynatıma göre yeni konsol hatası yazmamalı. Bayraklar yalnız bellekteki
     /// sahnede değişir; sahne kaydedilmez. Önceden var olan hatalar TestContext çıktısına yazılır.
     /// </summary>
@@ -23,7 +22,7 @@ namespace Dovus.Tests.EditMode
         const string CaptureKey = "Dovus.RuleEngineV4.PlayCapture";
         const string LogKey = "Dovus.RuleEngineV4.PlayLog";
         const string BaselineKey = "Dovus.RuleEngineV4.PlayBaseline";
-        const string V4OnKey = "Dovus.RuleEngineV4.PlayV4On";
+        const string SliceOnKey = "Dovus.RuleEngineV4.PlaySliceOn";
         const double PlaySec = 6.0;
 
         [InitializeOnLoadMethod]
@@ -48,18 +47,15 @@ namespace Dovus.Tests.EditMode
             SessionState.SetString(LogKey, SessionState.GetString(LogKey, string.Empty) + $"[{type}] {msg}\n");
         }
 
-        static void SetFlags(bool on)
+        static void SetSliceScene(bool on)
         {
             Type hostType = Type.GetType(HostType);
             Assert.That(hostType, Is.Not.Null, HostType);
             Object host = Object.FindAnyObjectByType(hostType);
             Assert.That(host, Is.Not.Null, "Prototype sahnesinde GameBootstrapHost yok");
             var so = new SerializedObject(host);
-            SerializedProperty enabled = so.FindProperty("_tuning.RuleEngineV4.Enabled");
             SerializedProperty slice = so.FindProperty("_tuning.RuleEngineV4.SliceScene");
-            Assert.That(enabled, Is.Not.Null, "_tuning.RuleEngineV4.Enabled");
             Assert.That(slice, Is.Not.Null, "_tuning.RuleEngineV4.SliceScene");
-            enabled.boolValue = on;
             slice.boolValue = on;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -85,10 +81,10 @@ namespace Dovus.Tests.EditMode
             log.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
 
         [UnityTest]
-        public IEnumerator PrototypeScene_V4FlagsOn_PlayModeAddsNoConsoleErrors()
+        public IEnumerator PrototypeScene_SliceSceneOn_PlayModeAddsNoConsoleErrors()
         {
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            SetFlags(false);
+            SetSliceScene(false);
             BeginCapture();
             yield return new EnterPlayMode();
             double offEnd = EditorApplication.timeSinceStartup + PlaySec;
@@ -97,28 +93,36 @@ namespace Dovus.Tests.EditMode
             yield return new ExitPlayMode();
             SessionState.SetString(BaselineKey, EndCapture());
 
-            SetFlags(true);
+            SetSliceScene(true);
             BeginCapture();
             yield return new EnterPlayMode();
             double onEnd = EditorApplication.timeSinceStartup + PlaySec;
             while (EditorApplication.timeSinceStartup < onEnd)
                 yield return null;
-            SessionState.SetBool(V4OnKey, RuleEngineV4Feature.Enabled);
+            Type hostType = Type.GetType(HostType);
+            Object host = hostType != null ? Object.FindAnyObjectByType(hostType) : null;
+            bool sliceOn = false;
+            if (host != null)
+            {
+                var so = new SerializedObject(host);
+                SerializedProperty slice = so.FindProperty("_tuning.RuleEngineV4.SliceScene");
+                sliceOn = slice != null && slice.boolValue;
+            }
+            SessionState.SetBool(SliceOnKey, sliceOn);
             yield return new ExitPlayMode();
-            string withV4 = EndCapture();
-            SetFlags(false);
-            RuleEngineV4Feature.Enabled = false;
+            string withSlice = EndCapture();
+            SetSliceScene(false);
 
             string[] baseline = Lines(SessionState.GetString(BaselineKey, string.Empty));
-            bool v4On = SessionState.GetBool(V4OnKey, false);
+            bool sliceSceneOn = SessionState.GetBool(SliceOnKey, false);
             SessionState.EraseString(BaselineKey);
-            SessionState.EraseBool(V4OnKey);
-            string[] added = Lines(withV4).Except(baseline).ToArray();
+            SessionState.EraseBool(SliceOnKey);
+            string[] added = Lines(withSlice).Except(baseline).ToArray();
             foreach (string line in baseline)
-                TestContext.Out.WriteLine("bayraklar kapalıyken de var: " + line);
+                TestContext.Out.WriteLine("SliceScene kapalıyken de var: " + line);
 
-            Assert.That(v4On, Is.True, "Play modunda RuleEngineV4Feature.Enabled açılmadı");
-            Assert.That(added, Is.Empty, "v4 bayraklarıyla yeni konsol hatası:\n" + string.Join("\n", added));
+            Assert.That(sliceSceneOn, Is.True, "Play modunda SliceScene açılmadı");
+            Assert.That(added, Is.Empty, "SliceScene açıkken yeni konsol hatası:\n" + string.Join("\n", added));
         }
     }
 }

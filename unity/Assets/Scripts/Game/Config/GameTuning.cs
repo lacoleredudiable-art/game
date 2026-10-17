@@ -24,7 +24,7 @@ namespace Dovus.Game.Config
         // tasarımcının bilinçli 0'ı (ör. nabzı kapatmak) artık ezilmez (T8.1).
         [HideInInspector] public int TuningVersion = CurrentVersion;
 
-        const int CurrentVersion = 22;
+        const int CurrentVersion = 25;
 
         /// <summary>Sürümü geçmiş serileşmiş kopyayı bu sürümün varsayılanlarına çeker.</summary>
         public void EnsureRuntimeDefaults()
@@ -123,7 +123,7 @@ namespace Dovus.Game.Config
             if (Camera.CameraLockOnShoulderFlipHysteresis <= 0f) Camera.CameraLockOnShoulderFlipHysteresis = 0.12f;
             if (Input.LockOnButtonRadiusDp <= 0.01f) Input.LockOnButtonRadiusDp = 36f;
             if (Arena.FogDensity <= 0f) Arena.FogDensity = 0.0032f;
-            if (Arena.KeyLightIntensity <= 0f) Arena.KeyLightIntensity = 1.35f;
+            if (Arena.KeyLightIntensity <= 0f) Arena.KeyLightIntensity = new Dovus.Game.Config.Sections.ArenaSettings().KeyLightIntensity;
             if (Arena.BloomThreshold <= 0f) Arena.BloomThreshold = 1.05f;
         }
         /// <summary>Çekirdek rün → tezahür çizgi rengi.</summary>

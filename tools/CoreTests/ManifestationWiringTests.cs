@@ -13,7 +13,7 @@ using System.Collections.Generic;
 namespace CoreTests;
 
 /// <summary>
-/// T7.1: bağlantı katmanı denetimi. Bunlar Core-only testler; ManifestationDirector Unity/Game
+/// T7.1: bağlantı katmanı denetimi. Bunlar Core-only testler; RuleEngineV4SentenceHost Unity/Game
 /// katmanında olduğu için burada derlenmez — bu testler Director'ın dayandığı Core sözleşmesini
 /// (LivingEffect.SetWords/ArmClosing/Tick) doğrudan doğrular. Play mode doğrulaması ayrıca gerekir.
 /// </summary>

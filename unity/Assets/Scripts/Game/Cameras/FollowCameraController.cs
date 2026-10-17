@@ -126,6 +126,7 @@ namespace Dovus.Game.Cameras
         /// <summary>Bağlanmamışsa kilit mesafesi boss merkezinden, çarpışma gövdeyi saymaz.</summary>
         public void BindBossBody(CameraBossBody body) => _collision.BindBossBody(body);
         public CameraBossBody BossBody => _collision.BossBody;
+        public void BindColumns(CameraBossBody[] columns) => _collision.BindColumns(columns);
         public CameraSliceGuard SliceGuard { get => _sliceGuard; set => _sliceGuard = value; }
 
         void Awake()
@@ -274,7 +275,7 @@ namespace Dovus.Game.Cameras
             Vector3 offset = Quaternion.Euler(OrbitPitchDeg, _resolvedYawDeg, 0f) * localOffset;
             Vector3 desired = _target.position + offset + lookAhead + _shakeOffset;
             desired = _collision.Resolve(playerAim, desired, dt, _tuning.Camera);
-            desired = _collision.KeepOutOfBossBody(playerAim, desired, _tuning.Camera);
+            desired = _collision.KeepOutOfBodies(playerAim, desired, _tuning.Camera);
 
             transform.position = Vector3.SmoothDamp(
                 transform.position,
@@ -283,8 +284,8 @@ namespace Dovus.Game.Cameras
                 _tuning.Camera.FollowSmoothTimeSec,
                 Mathf.Infinity,
                 dt);
-            // Yumuşatma kamerayı gövdeye geç bırakabilir; O-5.15 her karedir.
-            transform.position = _collision.KeepOutOfBossBody(playerAim, transform.position, _tuning.Camera);
+            // Yumuşatma kamerayı gövdeye geç bırakabilir; O-5.15 (boss) ve O-5.10 (sütun) her karedir.
+            transform.position = _collision.KeepOutOfBodies(playerAim, transform.position, _tuning.Camera);
             _sliceGuard?.UpdateFade(playerAim, transform.position);
 
             Vector3 lookTarget = playerAim;

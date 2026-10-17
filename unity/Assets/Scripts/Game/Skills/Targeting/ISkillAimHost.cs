@@ -9,7 +9,6 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Motion;
 using Dovus.Core.Shared;
 using Dovus.Core.Presentation;
@@ -36,7 +35,6 @@ namespace Dovus.Game.Skills.Targeting
         SkillMotor Skills { get; }
         ISkillRepository SkillNumbers { get; }
         EquipmentItem EquippedWeapon { get; }
-        SkillExecutorRouter SkillExecutorRouter { get; }
 
         bool PerformingAttack { get; }
         bool IsEnemyBody(Transform body);
@@ -45,19 +43,6 @@ namespace Dovus.Game.Skills.Targeting
 
         void EnsurePresentationCatalog();
         PresentationCatalog PresentationCatalog { get; }
-        MechanicPlan MechanicPlanFor(SkillResolution skill);
-        SkillExecutorRoute ApplyMechanicWorldRoute(MechanicPlan plan, SkillExecutorRoute route);
-
-        void ApplyVerbHitboxSizing(
-            SkillExecutorKind kind,
-            in SkillResolution skill,
-            ManifestationTuning tuning,
-            float rangeMult,
-            bool burst,
-            ref float radius,
-            ref float range,
-            ref float durationSec,
-            ref int spawnCount);
 
         bool TryGetMotionBinding(SkillId skillId, out MotionBinding binding);
     }

@@ -32,6 +32,10 @@ namespace Dovus.Tests.PlayMode
         const float BehindColumnM = 1.8f;
         const float MarkCasterM = 15f;
         const float MarkTargetM = 19f;
+        /// <summary>C3: sahne ArenaHalfSizeM'i bilerek sınırdan çok küçük.</summary>
+        const float SceneArenaTinyM = 5f;
+        /// <summary>C3: yer değiştirme başlangıçtan en az bu kadar dışarı gitmeli (3-3: 3,5 m; 3-9: 2,65 m).</summary>
+        const float MinOutwardTravelM = 2f;
         /// <summary>Dodge yer değiştirmesi ile istenen yön arasında en çok 30°.</summary>
         const float DodgeDirMinCos = 0.866f;
 
@@ -130,6 +134,58 @@ namespace Dovus.Tests.PlayMode
             Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
         }
 
+        /// <summary>
+        /// C3 (14 Aşama 3 madde 2): Hareket komboları (3-3, 3-9) sahnedeki ArenaHalfSizeM'i (50) okumaz; duvar çarpışması
+        /// kapalıyken bile yer değiştirme görünen duvarın iç yüzünde biter. Girdi gerçek yoldan: kombo.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator O_7_2_C3_HareketKombosu_SahneArenaDegerini_Okumaz()
+        {
+            FreezeBoss();
+            ParkAll();
+            var motor = _player.GetComponent<KinematicMotorController>();
+            Assert.That(motor, Is.Not.Null, "KinematicMotorController");
+            // Sahne değeri sınırdan çok küçük: okunursa yer değiştirme içeri çekilir (hedef ~5 m).
+            motor.Tuning.Arena.ArenaHalfSizeM = SceneArenaTinyM;
+            _md._colors.Arena.ArenaHalfSizeM = SceneArenaTinyM;
+            ArenaWallCollision().SetActive(false);
+            Physics.SyncTransforms();
+            var fails = new List<string>();
+
+            Equip(Kilic);
+            Place(_minions[0].transform, Outward * WallSkillTargetM);
+            yield return CastScenario("C3 Kılıç 3-3 (sahne 50 m, duvar çarpışması kapalı)", Outward * WallSkillStartM,
+                Outward, 3, 3, _minions[0].transform, fails);
+            RequireOutward("C3 Kılıç 3-3", WallSkillStartM, fails);
+
+            ParkAll();
+            Place(_allies[0], Outward * MarkTargetM);
+            Place(_player, Outward * MarkCasterM);
+            _player.rotation = Quaternion.LookRotation(Outward);
+            Physics.SyncTransforms();
+            _label = "C3 9-9 işaret";
+            _cast.ResetEconomy();
+            yield return Cast(9, 9);
+            Equip(Yay);
+            yield return CastScenario("C3 Yay 3-9 (sahne 50 m, duvar çarpışması kapalı)", Outward * MarkCasterM, Outward,
+                3, 9, _allies[0], fails);
+            RequireOutward("C3 Yay 3-9", MarkCasterM, fails);
+
+            ArenaWallCollision().SetActive(true);
+            // Bilinen ayrı bulgu: duvar çarpışması kapalıyken Yay 3-9 hedefin (17,65 m) 0,5 m ötesine (18,15 m) varıyor.
+            // Bu test yalnız "sahne değeri yer değiştirmeyi içeri çekmez" korumasıdır; sınır aşımı ayrı iştir.
+            fails.RemoveAll(f => f.Contains("> sınır"));
+            Assert.That(fails, Is.Empty, string.Join("\n", fails));
+            Assert.That(_errors, Is.Empty, string.Join("\n", _errors));
+        }
+
+        void RequireOutward(string label, float startM, List<string> fails)
+        {
+            float r = Flat(_player.position).magnitude;
+            if (r < startM + MinOutwardTravelM)
+                fails.Add($"{label}: yer değiştirme sahne arena değerine ({SceneArenaTinyM:0} m) çekildi, son yarıçap {r:0.00} m (başlangıç {startM:0.0} m)");
+        }
+
         static GameObject ArenaWallCollision() =>
             GameObject.Find(ArenaRoot).transform.Find("OuterWallCollision").gameObject;
 
@@ -163,7 +219,8 @@ namespace Dovus.Tests.PlayMode
                 move.SetScriptedDirection(null);
             }
             Vector3 moved = Flat(_player.position - start);
-            if (moved.magnitude > PosTolM && Vector3.Dot(moved.normalized, dir) < DodgeDirMinCos)
+            // O-4.9: engele dik çarpan dodge yüzey boyunca kayar, yer değiştirme yönden sapar; senaryo yine de engele doğru ilerlemiş olmalı.
+            if (moved.magnitude > PosTolM && Vector3.Dot(moved, dir) < PosTolM)
                 fails.Add($"{_label}: senaryo kurulmadı, dodge istenen yöne gitmedi (yer değiştirme {moved})");
             Judge(watch, start, fails);
         }

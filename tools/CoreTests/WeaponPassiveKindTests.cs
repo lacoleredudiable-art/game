@@ -33,9 +33,9 @@ public class WeaponPassiveKindTests
     [Test]
     public void DocWeapons_PassiveIdsResolveToKind()
     {
-        string json = File.ReadAllText(ElementPath());
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         EquipmentCatalog catalog = EquipmentCatalog.FromJson(json);
-        Assert.That(catalog.Items.Count, Is.EqualTo(10));
+        Assert.That(catalog.Items.Count, Is.EqualTo(2));
         foreach (EquipmentItem item in catalog.Items)
         {
             Assert.That(item.Profile.Passive.Kind, Is.Not.EqualTo(WeaponPassiveKind.None),
@@ -44,15 +44,4 @@ public class WeaponPassiveKindTests
         }
     }
 
-    static string ElementPath()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        if (!File.Exists(path))
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        return path;
-    }
 }

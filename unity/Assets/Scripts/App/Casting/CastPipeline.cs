@@ -9,7 +9,6 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Shared;
 
 namespace Dovus.App.Casting
@@ -57,7 +56,7 @@ namespace Dovus.App.Casting
                 if (port.HasLivingLogic(ctx))
                     port.ApplyBossClosingBasic(ctx);
                 basicDealt = port.ApplyBasicStrikeDamage(
-                    ctx, JsonEffectRules.BasicSubHitScale(basicHits));
+                    ctx, BasicStrikeRules.SubHitScale(basicHits));
                 port.ScheduleBasicSubHits(ctx, basicHits, basicReach);
                 port.ApplyBasicExtras(basicDealt, basicHits);
                 port.TryLandWeaponStunBasic();
@@ -92,29 +91,14 @@ namespace Dovus.App.Casting
                 port.ApplyResourceCost(skill);
                 SkillMotionPlan motionPlan = port.ResolveMotion(skill);
                 port.ApplyMotionIframe(skill, in motionPlan);
-                bool templateOwnsDelivery = port.TryBeginMotionTemplate(skill, ctx);
                 port.NoteSustainedCast(skill);
                 var resolvedId = (SkillId)skill.Identity.Id;
                 port.NotifyCast(resolvedId);
 
-                SkillExecutorRoute executorRoute = port.Route(skill);
-                executorRoute = port.ApplyMechanicWorldRoute(skill, executorRoute);
-                port.SetLastExecutorKind(executorRoute.Kind);
                 port.ApplySelfCastEffects(skill);
                 port.NoteJsonCast(skill, ctx);
-                port.BeginMechanicPlan(ctx, skill);
-                if (templateOwnsDelivery)
-                    port.ArmTemplateDelivery(skill, ctx, in motionPlan);
 
-                bool executorStarted = !templateOwnsDelivery
-                    && executorRoute.Kind != SkillExecutorKind.Fallback
-                    && port.TryLaunchExecutor(executorRoute.Kind, ctx, skill, in motionPlan);
-                if (executorStarted)
-                    port.ScheduleFollowUps(executorRoute.Kind, ctx, skill, in motionPlan);
-
-                float dealt = 0f;
-                if (!executorStarted && !templateOwnsDelivery)
-                    dealt = port.ApplyFallbackDelivery(ctx, skill, in motionPlan, in executorRoute);
+                bool launched = port.TryLaunchSkill(ctx, skill, in motionPlan, out float dealt);
 
                 SkillShoutRequested?.Invoke(new CastSkillShoutRequested(skill, ctx));
                 port.ApplyCooldown(skill, ctx, cosmeticIfDisabled: true);
@@ -123,18 +107,16 @@ namespace Dovus.App.Casting
                 port.SpawnClosingImpact(ctx);
                 port.SetLastResolvedSkillId(resolvedId);
 
-                bool effectApplied = executorStarted
-                    || templateOwnsDelivery
+                bool effectApplied = launched
                     || dealt > 0f
                     || port.IsHealSkill(skill)
-                    || !motionPlan.IsEmpty
-                    || skill.Mechanics.Length > 0;
+                    || !motionPlan.IsEmpty;
                 port.SetLastSkillEffectApplied(effectApplied);
 
                 port.TrySchedulePassiveEcho(ctx, skill, in motionPlan);
 
                 return new CastOutcome(
-                    resolvedId, executorStarted, templateOwnsDelivery, dealt, effectApplied, denied: false);
+                    resolvedId, launched, false, dealt, effectApplied, denied: false);
             }
             finally
             {

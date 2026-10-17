@@ -4,11 +4,12 @@ Kök `AGENTS.md`. Görev dosyayı adlandırmadıkça `docs/` taraması yapma.
 
 | Dosya | Rol |
 |-------|-----|
-| `OYUN.md` | Oyun özeti; sayılar `tools/gen-game-overview.py` |
-| `ARCHITECTURE.md` | Mimari hedef + bugün + isimlendirme/sözlük/skill modeli |
-| `PLAN.md` | Tek iş listesi; açık hatalar bu dosyada |
-| `MAP.md` | Konu → dosya → giriş |
-| `element-sistemi.json` | Spec v6.1.1; Resources kopyası bayt bayt aynı |
-| `design/` | Onaylı boss/tasarım + uygulama notları |
+| `docs/OYUN.md` | Dilim oyun özeti; sayılar `tools/gen-game-overview.py` |
+| `docs/ARCHITECTURE.md` | Core/App/Game, v4.5 yürütme, isimlendirme, veri sözlüğü |
+| `docs/MAP.md` | Konu → dosya → giriş noktası |
+| `docs/unity-notlari.md` | Unity build, sahne, telefon tuzakları |
+| `docs/design/aglarin-kralicesi.md` | Aktif dilim boss (Kraliçe) |
+| `docs/tasarim/00-OKU-BENI.md` | Tasarım önceliği ve yol haritası |
+| `docs/tasarim/14-kodlama-plani.md` | Kodlama aşamaları (iş sırası) |
 
-PLAN'da iş bitince ilgili satırı aynı PR'da `[x]` işaretle.
+Sayılar: `unity/Assets/Resources/RuleEngineV4/kural-motoru-v4.json`.

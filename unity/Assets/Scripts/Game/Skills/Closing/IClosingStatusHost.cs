@@ -6,7 +6,6 @@ using Dovus.Core.Input;
 using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using Dovus.Game.Actors;
@@ -30,7 +29,6 @@ namespace Dovus.Game.Skills.Closing
         PassiveFlowRunner PassiveFlows { get; }
         int SlotQueryCastId { get; }
         GameClockHost Clock { get; }
-        MechanicGrammar MechanicEngine { get; }
         BossVitals BossVitals { get; }
         Transform Boss { get; }
         DamageNumberHud DamageHud { get; }

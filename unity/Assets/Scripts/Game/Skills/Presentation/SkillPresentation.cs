@@ -1,7 +1,6 @@
 using Dovus.Core.Grammar;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Presentation;
 using Dovus.Game.Actors;
 using Dovus.Game.Audio;
@@ -44,7 +43,7 @@ namespace Dovus.Game.Skills.Presentation
             catch (Exception e)
             {
                 Debug.LogWarning(
-                    $"[ManifestationDirector] prezentasyon-katmani okunamadı: {e.Message}");
+                    $"[RuleEngineV4SentenceHost] prezentasyon-katmani okunamadı: {e.Message}");
             }
         }
 
@@ -66,12 +65,6 @@ namespace Dovus.Game.Skills.Presentation
             string bangNote = string.IsNullOrEmpty(adj)
                 ? mech
                 : (string.IsNullOrEmpty(mech) ? adj : mech + " | " + adj);
-            MechanicPlan mechanic = _host.LastMechanicPlan;
-            if (mechanic != null && string.Equals(mechanic.SkillId, skill.Identity.Id, StringComparison.Ordinal))
-            {
-                string title = MechanicDescriber.ShortTitle(mechanic);
-                bangNote = string.IsNullOrEmpty(bangNote) ? title : title + " | " + bangNote;
-            }
             _host.DebugHud?.NoteSkillBang(paintedName, bangNote);
             SkillFeel.CameraKick(skill.Presentation.VerbFamily, _host.Camera, _host.Combat?.Feel);
             _host.SyncVisualDelivery();
@@ -94,8 +87,7 @@ namespace Dovus.Game.Skills.Presentation
             if (skill.IsEmpty || _host.Visual == null || _host.Visual.Animator == null)
                 return;
 
-            if (RuleEngineV4Feature.Enabled
-                && int.TryParse(skill.Identity.Verb, out int v4Verb)
+            if (int.TryParse(skill.Identity.Verb, out int v4Verb)
                 && int.TryParse(skill.Identity.Adjective, out int v4Adj)
                 && RuleEngineV4Slice.IsSliceCombo(v4Verb, v4Adj)
                 && RuleEngineV4Slice.IsSliceWeapon(WeaponNumber(_host.EquippedWeapon?.Id)))

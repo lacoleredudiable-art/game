@@ -1,4 +1,3 @@
-using Dovus.Core.RuleEngineV4;
 using Dovus.App.Casting;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
@@ -41,7 +40,7 @@ namespace Dovus.Game.Skills.Closing
             if (_host.TryHoldForRelease(sentence))
                 return;
             _host.SentenceBridge.OnCompleted(sentence);
-            if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.LaunchOnResolve && _host.Clock != null)
+            if (_host.Clock != null)
                 TickPendingClosings(_host.Clock.Director.WorldTimeMs);
         }
 
@@ -131,47 +130,12 @@ namespace Dovus.Game.Skills.Closing
 
             LivingEffect logic = p.View.Logic;
             Vector3 tip = new Vector3(logic.TipX, ClosingDefaults.ClosingTipGroundYM, logic.TipZ);
-            Vector3 origin = new Vector3(logic.OriginX, ClosingDefaults.ClosingOriginGroundYM, logic.OriginZ);
             string element = _host.SelectedElementPaint?.Name
                 ?? (p.Words != null && p.Words.Count > 0
                     ? RuneInfo.LegacySerializationName(p.Words[0].Rune)
                     : "Ates");
 
-            string impactStyle = "burst_soft";
-            string trailStyle = string.Empty;
-            // Dilimde eski motorun trail yolu çalışmaz (Adım 4); v4 kendi efektini çizer.
-            if (!RuleEngineV4Feature.Enabled && !p.IsBasicStrike && _host.Skills != null && p.Words != null)
-            {
-                SkillResolution skill = ResolveSkillWords(p.Words);
-                _host.EnsurePresentationCatalog();
-                var catalog = _host.PresentationCatalog;
-                if (catalog != null && !skill.IsEmpty)
-                {
-                    LivingEffectPlan plan = SkillWorldPlanner.Build(
-                        skill, catalog,
-                        _host.Combat != null ? _host.Combat.Manifestation : new ManifestationTuning());
-                    if (!string.IsNullOrEmpty(plan.TrajectoryId)
-                        && catalog.TryGetTrajectory(plan.TrajectoryId, out TrajectoryNode traj))
-                    {
-                        trailStyle = traj.GetString("vfx_trail_type", string.Empty);
-                        if (plan.TravelKind == LivingTravelKind.ExpandingRadial
-                            || plan.TrajectoryId is "expanding_wave" or "radial_burst")
-                            impactStyle = "pulse";
-                        else if (plan.TrajectoryId is "raycast" or "instant_hit")
-                            impactStyle = "pierce_hit";
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(trailStyle))
-            {
-                GameObject trail = _host.Placeholders?.CreateTrail(
-                    trailStyle, element, origin, tip, _host.DirectorTransform);
-                if (trail != null)
-                    _host.DestroyUnityObjectAfter(trail, 1.0f);
-            }
-
-            GameObject fx = _host.Placeholders?.CreateImpact(impactStyle, element, tip, _host.DirectorTransform);
+            GameObject fx = _host.Placeholders?.CreateImpact("burst_soft", element, tip, _host.DirectorTransform);
             if (fx != null)
                 _host.DestroyUnityObjectAfter(fx, ClosingDefaults.ImpactFxLifetimeSec);
         }

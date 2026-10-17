@@ -72,9 +72,6 @@ namespace Dovus.Core.Dodge
 
         public DodgeGrade GradeFromGap(int gapMs)
         {
-            // O2: tek mükemmel pencere — PerfectDodgeRule ile aynı sınır (i-frame başı + PerfectWindowMs, hariç).
-            if (gapMs < _dodge.IframeStartMs + _dodge.PerfectWindowMs)
-                return DodgeGrade.Mukemmel;
             if (gapMs <= _grade.HarikaGapMaxMs)
                 return DodgeGrade.Harika;
             if (gapMs <= _grade.TemizGapMaxMs)

@@ -34,7 +34,6 @@ namespace Dovus.Game.Config
             c.Dodge.GlideTailMs = 260;
             p.Player.DodgeGlideSpeedMps = 2.4f;
 
-            c.Dodge.PerfectWindowMs = 170; // O2: tek pencere, < HARİKA
             c.Grade.HarikaGapMaxMs = 190;
             c.Grade.TemizGapMaxMs = 240; // < IframeMs (260)
 
@@ -51,14 +50,10 @@ namespace Dovus.Game.Config
             c.Boss.Damage = 28;
             c.Boss.ApproachSpeedMps = 1.8f;
             p.Boss.BossApproachStopPadM = 0.6f;
-            if (RuleEngineV4Feature.Enabled)
-                Debug.LogError("[V4-FALLBACK] TuningPresets.Agir: PlayerMaxHp 30 uygulanmadı; dilimde oyuncu canı yalnız " +
-                               "kural-motoru-v4.json scale.player_max_hp");
-            else
-                p.Player.PlayerMaxHp = 30;
+            Debug.LogError("[V4-FALLBACK] TuningPresets.Agir: PlayerMaxHp 30 uygulanmadı; oyuncu canı yalnız " +
+                           "kural-motoru-v4.json scale.player_max_hp");
 
             p.Camera.FollowSmoothTimeSec = 0.26f;
-            c.Feel.CameraPerfectZoomKick = 0.18f;
             c.Feel.CameraDodgeZoomKick = 0.11f;
             c.Feel.CameraRollDeg = 2.2f;
             c.Feel.ShakePerfectPx = 9f;
@@ -79,7 +74,6 @@ namespace Dovus.Game.Config
             c.Dodge.GlideTailMs = 150;
             p.Player.DodgeGlideSpeedMps = 4.2f;
 
-            c.Dodge.PerfectWindowMs = 120; // O2: tek pencere, < HARİKA
             c.Grade.HarikaGapMaxMs = 130;
             c.Grade.TemizGapMaxMs = 190; // < IframeMs (260)
 
@@ -98,7 +92,6 @@ namespace Dovus.Game.Config
 
             p.Camera.FollowSmoothTimeSec = 0.10f;
             p.Camera.LookAheadM = 1.8f;
-            c.Feel.CameraPerfectZoomKick = 0.10f;
             c.Feel.CameraDodgeZoomKick = 0.06f;
             c.Feel.ShakePerfectPx = 4f;
             c.Feel.ShakeHitPx = 10f;
@@ -121,7 +114,6 @@ namespace Dovus.Game.Config
             c.Boss.WindupMs = 900;
             c.Boss.RadiusM = 6.5f;
 
-            c.Feel.CameraPerfectZoomKick = 0.25f;
             c.Feel.CameraDodgeZoomKick = 0.18f;
             c.Feel.CameraRollDeg = 4f;
             c.Feel.ShakePerfectPx = 12f;

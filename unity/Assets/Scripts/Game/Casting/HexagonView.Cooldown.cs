@@ -15,7 +15,7 @@ namespace Dovus.Game.Casting
     {
         /// <summary>
         /// Kozmetik soğuma — cast'i engellemez. ui_rules.cooldown_display (radial_overlay + sayı).
-        /// EnforceCooldown=false yolunda ManifestationDirector bunu çağırır.
+        /// EnforceCooldown=false yolunda RuleEngineV4SentenceHost bunu çağırır.
         /// </summary>
         public void BeginCosmeticCooldown(int dot, float durationSec)
         {

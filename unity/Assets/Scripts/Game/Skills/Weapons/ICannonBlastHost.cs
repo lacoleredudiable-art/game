@@ -15,7 +15,6 @@ using Dovus.Game.Boss;
 using Dovus.Game.Casting;
 using Dovus.Game.Platform;
 using Dovus.Game.Data;
-using Dovus.Game.Skills.Execution;
 using Dovus.Game.Weapons;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,6 +42,5 @@ public interface ICannonBlastHost
         WeaponSwapState WeaponSwap { get; }
         GameClockHost Clock { get; }
         IReadOnlyList<TargetableHost> LiveTargetables { get; }
-        IReadOnlyList<SummonExecutor> LiveSummonExecutors { get; }
     }
 }

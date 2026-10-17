@@ -11,8 +11,14 @@ namespace Dovus.Core.RuleEngineV4
         public const string CameraInCollider = "kamera_collider_icinde";
         /// <summary>10-olculer O-5.15 G: kamera boss gövdesinin (dikey silindir) içinde.</summary>
         public const string CameraInBossBody = "kamera_boss_govdesinde";
+        /// <summary>10-olculer O-5.10 G: kamera ile oyuncu arasına çarpışıcılı engel (sütun, duvar) girdi.</summary>
+        public const string PlayerBehindObstacle = "oyuncu_engel_arkasinda";
         public const string PlayerOffScreen = "oyuncu_ekran_disi";
         public const string EffectScreenCover = "efekt_ekran_kaplama";
+        /// <summary>O-4.9: oyuncu konumu, dodge / kalıp / yürüme sahibi olmadan tek karede yürüme hızının katından fazla atladı.</summary>
+        public const string PlayerTeleport = "oyuncu_isinlanma";
+        /// <summary>O-4.9 G: oyuncu merkezi minyon, dost ya da boss silindirinin içinde.</summary>
+        public const string PlayerInBody = "oyuncu_govde_icinde";
         public const string CameraFovInvalid = "kamera_fov_gecersiz";
     }
 }

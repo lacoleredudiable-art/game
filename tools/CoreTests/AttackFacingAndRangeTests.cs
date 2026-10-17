@@ -22,9 +22,8 @@ public class AttackFacingAndRangeTests
     [Test]
     public void BasicStrikeRange_ComesFromVerbHitbox_NotTheOldFallback()
     {
-        string json = File.ReadAllText(JsonPath());
-        var catalog = SkillNumberCatalog.FromJson(json);
-        var boxes = VerbExecutionData.FromJson(json);
+        var catalog = SliceGrammarTestPaths.SliceSkillNumbers();
+        var boxes = SliceGrammarTestPaths.SliceVerbExecution();
         Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec spec), Is.True);
         float reach = HitboxSizing.Resolve(spec, 1f, 1f).ReachM;
 
@@ -54,53 +53,19 @@ public class AttackFacingAndRangeTests
     }
 
     [Test]
-    public void Verb3And7_WrittenSizeIsWidth_GameplayRadiusIsHalf()
+    public void Verb3_DashLine_WrittenSizeIsWidth_GameplayRadiusIsHalf()
     {
-        var boxes = VerbExecutionData.FromJson(File.ReadAllText(JsonPath()));
+        var boxes = SliceGrammarTestPaths.SliceVerbExecution();
         Assert.That(boxes.TryGetHitbox(1, out VerbHitboxSpec jab), Is.True);
         Assert.That(jab.SizeBIsWidth, Is.False, "fiil 1 Play'de yarıçap olarak doğrulandı");
         Assert.That(HitboxSizing.Resolve(jab, 1f, 1f).RadiusM, Is.EqualTo(0.5f).Within(0.001f));
 
         Assert.That(boxes.TryGetHitbox(3, out VerbHitboxSpec line), Is.True);
-        Assert.That(boxes.TryGetHitbox(7, out VerbHitboxSpec capsule), Is.True);
         Assert.That(line.SizeB, Is.EqualTo(0.8f).Within(0.001f));
-        Assert.That(capsule.SizeB, Is.EqualTo(1f).Within(0.001f));
         Assert.That(line.SizeBIsWidth, Is.True);
-        Assert.That(capsule.SizeBIsWidth, Is.True);
         HitboxSize lineSize = HitboxSizing.Resolve(line, 1f, 1f);
-        HitboxSize capsuleSize = HitboxSizing.Resolve(capsule, 1f, 1f);
         Assert.That(lineSize.RadiusM * 2f, Is.EqualTo(0.8f).Within(0.001f), "çizgi genişliği 0.8 m");
-        Assert.That(capsuleSize.RadiusM * 2f, Is.EqualTo(1f).Within(0.001f), "kapsül genişliği 1 m");
         Assert.That(lineSize.ReachM, Is.EqualTo(3f).Within(0.001f));
-        Assert.That(capsuleSize.ReachM, Is.EqualTo(3f).Within(0.001f));
-    }
-
-    [Test]
-    public void BasicStrikeRange_MissingHitbox_WarnsOnceAndKeepsFallback()
-    {
-        string json = File.ReadAllText(JsonPath());
-        int marker = json.IndexOf("\"fiil_hitbox\"", System.StringComparison.Ordinal);
-        int entry = json.IndexOf("\"1\":", marker, System.StringComparison.Ordinal);
-        int next = json.IndexOf("\"2\":", entry, System.StringComparison.Ordinal);
-        Assert.That(marker, Is.GreaterThan(0));
-        Assert.That(next, Is.GreaterThan(entry));
-        string broken = json.Remove(entry, next - entry);
-
-        var catalog = SkillNumberCatalog.FromJson(broken);
-        Assert.That(catalog.RangeM(1), Is.EqualTo(SkillNumberFallbacks.RangeM).Within(0.001f));
-        Assert.That(DesignWarnings.WasWarned("verb_base.1.hitbox"), Is.True);
-
-        DesignWarnings.ResetForTests();
-        int warnings = 0;
-        DesignWarnings.Warned += message =>
-        {
-            if (message != null && message.Contains("verb_base.1", System.StringComparison.Ordinal))
-                warnings++;
-        };
-        SkillNumberCatalog.FromJson(broken);
-        SkillNumberCatalog.FromJson(broken);
-        Assert.That(warnings, Is.EqualTo(1), "eksik menzil bir kez uyarır");
-        Assert.That(DesignWarnings.WasWarned("verb_base.1.hitbox"), Is.True);
     }
 
     [Test]
@@ -124,13 +89,4 @@ public class AttackFacingAndRangeTests
             "dash seçili hedefe yapışmaz");
     }
 
-    static string JsonPath()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..",
-            "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json"));
-        Assert.That(File.Exists(path), Is.True, path);
-        return path;
-    }
 }

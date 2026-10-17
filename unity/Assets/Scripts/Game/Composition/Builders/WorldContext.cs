@@ -48,8 +48,9 @@ namespace Dovus.Game.Composition.Builders
         public TeamComboAccess TeamAccess;
         public TeamComboHost TeamComboHost;
         public SfxDirector Sfx;
-        public ElementRadialMenuHud ElementMenu;
         public GameObject Arena;
+        /// <summary>v4 dilim sütunlarının kökü (her çocuk bir sütun); dilim dışı null. Kamera O-5.10 için okur.</summary>
+        public Transform SliceColumns;
         public float WalkHalf;
         public float SpawnMaxR;
 
@@ -94,12 +95,13 @@ namespace Dovus.Game.Composition.Builders
         public SkillMotor Skills;
         public RuneManager RuneManager;
         public RuneLoadout RuneLoadout;
-        public ElementSystemDesign ElementDesign;
-        public ElementSystemAssetCatalog AssetCatalog;
+        public EquipmentCatalog SliceEquipment;
+        public SliceRuntimeAssetCatalog AssetCatalog;
         public SkillFactory SkillFactory;
         public EquipmentItem EquippedWeapon;
         public EquipmentBonusResolver EquipmentBonus;
-        public ManifestationDirector ManifestationDirector;
+        public RuleEngineV4SentenceHost RuleEngineV4SentenceHost;
+        public RuleEngineV4CombatContext RuleEngineV4Combat;
         public BossDirector BossDirector;
         public CombatFeelDirector CombatFeelDirector;
         public GroundScarFieldView GroundScars;

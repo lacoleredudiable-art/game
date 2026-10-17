@@ -43,7 +43,7 @@ namespace Dovus.Tests.PlayMode
             Application.logMessageReceived -= OnLog;
 
             Assert.That(UnityEngine.Object.FindAnyObjectByType<GameBootstrapHost>(), Is.Not.Null, "GameBootstrapHost");
-            Assert.That(UnityEngine.Object.FindAnyObjectByType<ManifestationDirector>(), Is.Not.Null, "ManifestationDirector");
+            Assert.That(UnityEngine.Object.FindAnyObjectByType<RuleEngineV4SentenceHost>(), Is.Not.Null, "RuleEngineV4SentenceHost");
             Assert.That(UnityEngine.Object.FindAnyObjectByType<BossDirector>(), Is.Not.Null, "BossDirector");
             Assert.That(UnityEngine.Object.FindAnyObjectByType<PlayerVitalsHost>(), Is.Not.Null, "PlayerVitalsHost");
             Assert.That(UnityEngine.Object.FindAnyObjectByType<HexagonInputController>(), Is.Not.Null, "HexagonInputController");

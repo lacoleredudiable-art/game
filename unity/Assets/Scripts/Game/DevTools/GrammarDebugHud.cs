@@ -21,7 +21,7 @@ namespace Dovus.Game.DevTools
         public static bool IsOpen { get; private set; }
 
         HexagonInputController _input;
-        ManifestationDirector _manifestation;
+        RuleEngineV4SentenceHost _manifestation;
         BuildSelectHud _buildSelect;
         PlayerVitalsHost _vitals;
         IDebugFlags _debugFlags;
@@ -34,7 +34,7 @@ namespace Dovus.Game.DevTools
 
         public void Configure(
             HexagonInputController input,
-            ManifestationDirector manifestation,
+            RuleEngineV4SentenceHost manifestation,
             BuildSelectHud buildSelect,
             Transform canvasRoot,
             PlayerVitalsHost vitals,
@@ -210,7 +210,7 @@ namespace Dovus.Game.DevTools
                 _weapon.text = "Silah: —";
                 return;
             }
-            string route = Dovus.Core.Casting.SkillExecutorRouter.IsRangedWeapon(weapon)
+            string route = string.Equals(weapon.Type, "ranged", System.StringComparison.OrdinalIgnoreCase)
                 ? "projectile"
                 : "melee";
             _weapon.text = $"Silah: {weapon.Name} ({route})";

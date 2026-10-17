@@ -29,6 +29,10 @@ public partial class TeamComboTests
         return new SkillEngineModifiers(entry.Engine);
     }
 
+    /// <summary>Sınır modu — v4 dilimde border_mode artık skill kataloğunda değil; test yalnız tier_20 etiketini doğrular.</summary>
+    static SkillEngineModifiers Tier20BorderEngine() =>
+        new SkillEngineModifiers(MiniJson.Parse("""{"border_mode":"tier_20"}"""));
+
     static PortalSystem JsonPortal() =>
         new PortalSystem(PortalOpTable.FromMotor(SkillMechanicTagTests.LoadMotorPublic()));
 
@@ -38,7 +42,7 @@ public partial class TeamComboTests
     static void AssertTier(string skill, float below, float threshold, float attack, float life, float damage)
     {
         var mode = new BorderMode();
-        var engine = BorderEngine(skill);
+        var engine = Tier20BorderEngine();
         Assert.That(mode.OnSkill(1, (SkillId)skill, engine, threshold), Is.False, skill + " eşikte açılmaz");
         Assert.That(mode.OnSkill(1, (SkillId)skill, engine, below), Is.True, skill);
         Assert.That(mode.Threshold(1), Is.EqualTo(threshold).Within(0.001f));

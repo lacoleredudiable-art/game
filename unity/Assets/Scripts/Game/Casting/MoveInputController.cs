@@ -22,10 +22,7 @@ namespace Dovus.Game.Casting
         Vector2 _knobOffsetPx;
 
         Vector2? _scriptedDirection;
-        ElementRadialMenuHud _elementMenu;
         IDebugPanelInputState _debugPanel;
-
-        public void BindElementMenu(ElementRadialMenuHud menu) => _elementMenu = menu;
 
         public void ConfigureDebugPanel(IDebugPanelInputState debugPanel) => _debugPanel = debugPanel;
 
@@ -80,8 +77,7 @@ namespace Dovus.Game.Casting
         void Update()
         {
             // T10: panel açıkken hareket girdisi de susar (bkz. HexagonInputController.PanelBlocking).
-            if ((_debugPanel?.TuningPanelOpen ?? false) || BuildSelectHud.IsOpen
-                || (_elementMenu != null && _elementMenu.IsMenuOpen))
+            if ((_debugPanel?.TuningPanelOpen ?? false) || BuildSelectHud.IsOpen)
             {
                 if (_stickFingerId.HasValue)
                 {
@@ -117,13 +113,12 @@ namespace Dovus.Game.Casting
 
         void OnFingerDown(Finger finger)
         {
-            if (_stickFingerId.HasValue || (_debugPanel?.TuningPanelOpen ?? false) || BuildSelectHud.IsOpen
-                || (_elementMenu != null && _elementMenu.HitHoldChipAt(finger.screenPosition)))
+            if (_stickFingerId.HasValue || (_debugPanel?.TuningPanelOpen ?? false) || BuildSelectHud.IsOpen)
                 return;
 
             Vector2 pos = finger.screenPosition;
-            // Çubuk yarısı = çizim yarısının tersi (aynı IsRightHalf yardımcısı; MirrorForLeftHand).
-            if (HexagonLayoutScreen.IsRightHalf(pos, _tuning.Input.MirrorForLeftHand, Screen.width))
+            // O-4.3: çubuk yalnız sol-alt başparmak bölgesinde doğar.
+            if (!HexagonLayoutScreen.IsStickZone(pos, _tuning.Input, Screen.width, Screen.height))
                 return;
 
             _stickFingerId = finger.index;
@@ -164,7 +159,8 @@ namespace Dovus.Game.Casting
                 return;
             }
 
-            _moveDirection = clamped / maxRadiusPx;
+            // Analog değil (15 Ekim [K]): ölü bölge geçilince büyüklük tam 1, yalnız yön taşınır (O-1.17, O-4.2).
+            _moveDirection = clamped.normalized;
         }
     }
 }

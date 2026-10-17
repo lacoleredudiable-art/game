@@ -103,15 +103,8 @@ namespace Dovus.Game.Actors
                 return;
             TryTrigger(clip.Trigger);
             bool played = PlayAction(clip.State);
-            if (!played && Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled) // B3: dilimde yedek klip yok, eksik klip log'a düşer
+            if (!played) // B3: yedek klip yok, eksik klip log'a düşer
                 Debug.LogError($"[V4-FALLBACK] hareket klibi: Animator state yok '{clip.State}' (anahtar={clip.Key}); yedek klip oynatılmadı");
-            else if (!played)
-            {
-                DesignWarnings.Once("motion.anim.state." + clip.State,
-                    "Animator state yok: " + clip.State + ". Yedek locomotion/saldırı klibi.");
-                if (!PlayAction(clip.Fallback ? MotionAnimTable.AttackFallbackState : MotionAnimTable.FallbackState))
-                    PlayAction(MotionAnimTable.FallbackState);
-            }
 
             float rate = animSpeed > ActorViewDefaults.MinPlaybackRate ? animSpeed : 1f;
             if (spin || !MotionAnimTable.IsLocomotionKey(clip.Key))

@@ -54,7 +54,6 @@ namespace Dovus.Game.Composition
             _tuning ??= new GameTuning();
             _tuning.EnsureRuntimeDefaults();
             _tuning.RuleEngineV4.ApplySliceBuild();
-            RuleEngineV4Feature.Enabled = _tuning.RuleEngineV4.Enabled;
             HexagonLayoutScreen.FitShortSideDp = _tuning.Input.HudFitShortSideDp;
 #if !UNITY_EDITOR
             Debug.developerConsoleVisible = false;
@@ -81,8 +80,7 @@ namespace Dovus.Game.Composition
             var tuningConfig = TuningConfig.Create(combat, _tuning);
             if (DebugConfig.Enabled)
                 tuningConfig.TryLoad();
-            TuningSourceLog.Write(
-                tuningConfig, RuleEngineV4Feature.Enabled ? RuleEngineV4Catalog : null, tuningConfig.LastLoadReadFile);
+            TuningSourceLog.Write(tuningConfig, RuleEngineV4Catalog, tuningConfig.LastLoadReadFile);
 
             var ctx = new WorldContext(this)
             {
@@ -126,7 +124,7 @@ namespace Dovus.Game.Composition
 
         RuleEngineV4Catalog _ruleEngineV4Catalog;
 
-        /// <summary>kural-motoru-v4.json; yalnız RuleEngineV4Feature.Enabled iken okunur.</summary>
+        /// <summary>kural-motoru-v4.json; can ve dilim ayarlarının tek kaynağı.</summary>
         internal RuleEngineV4Catalog RuleEngineV4Catalog
         {
             get
@@ -144,29 +142,12 @@ namespace Dovus.Game.Composition
         internal RuleEngineV4Scale RuleEngineV4Scale => RuleEngineV4Catalog.Scale;
 
         internal int AllyDummyHp(AssetCatalog assets) =>
-            RuleEngineV4Feature.Enabled
-                ? Mathf.Max(1, Mathf.RoundToInt(RuleEngineV4Scale.AllyDummyMaxHp))
-                : ScaledPlayerHp(assets);
+            Mathf.Max(1, Mathf.RoundToInt(RuleEngineV4Scale.AllyDummyMaxHp));
 
-        internal int ScaledPlayerHp(AssetCatalog assets)
-        {
-            if (RuleEngineV4Feature.Enabled)
-                return Mathf.Max(1, Mathf.RoundToInt(RuleEngineV4Scale.PlayerMaxHp));
-            if (Data.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-            {
-                float hp = BossCombatProfile.FromDocument(design.Document).PlayerMaxHp;
-                return Mathf.Max(1, Mathf.RoundToInt(hp));
-            }
-            return Mathf.Max(1, CombatScale.MagnitudeInt(_tuning.Player.PlayerMaxHp));
-        }
+        internal int ScaledPlayerHp(AssetCatalog assets) =>
+            Mathf.Max(1, Mathf.RoundToInt(RuleEngineV4Scale.PlayerMaxHp));
 
-        internal float ScaledBossHp(AssetCatalog assets, float tuningMaxHp)
-        {
-            if (RuleEngineV4Feature.Enabled)
-                return Mathf.Max(1f, RuleEngineV4Scale.BossMaxHp);
-            if (Data.ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
-                return Mathf.Max(1f, BossCombatProfile.FromDocument(design.Document).BossMaxHp);
-            return Mathf.Max(1f, CombatScale.Magnitude(tuningMaxHp));
-        }
+        internal float ScaledBossHp(AssetCatalog assets, float tuningMaxHp) =>
+            Mathf.Max(1f, RuleEngineV4Scale.BossMaxHp);
     }
 }

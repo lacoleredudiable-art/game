@@ -30,6 +30,12 @@ static class RepoPaths
 
     public static string UnityGame => Path.Combine(UnityAssets, "Scripts", "Game");
 
-    public static string ResourcesElementSystem =>
-        Path.Combine(UnityAssets, "Resources", "ElementSystem");
+    public static string RuleEngineV4Json =>
+        Path.Combine(UnityAssets, "Resources", "RuleEngineV4", "kural-motoru-v4.json");
+
+    public static string BuildSliceGrammarJson()
+    {
+        string v4 = File.ReadAllText(RuleEngineV4Json);
+        return Dovus.Core.RuleEngineV4.SliceGrammarDefaults.BuildGrammarJson(v4);
+    }
 }

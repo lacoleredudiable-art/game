@@ -1,7 +1,6 @@
 using Dovus.Core.Motion;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
-using Dovus.Game.Skills;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
@@ -10,21 +9,21 @@ namespace Dovus.Game.Skills.RuleEngineV4
     public static class RuleEngineV4WorldGuard
     {
         public static bool ApplyBossDamageToAlly(
-            ManifestationDirector director,
+            RuleEngineV4CombatContext combat,
             Transform ally,
             float raw,
             System.Func<float, bool> applyToAlly)
         {
-            if (!RuleEngineV4Feature.Enabled || director == null || ally == null || raw <= 0)
+            if (combat == null || ally == null || raw <= 0)
                 return applyToAlly(raw);
 
-            RuleEngineV4WorldSession session = director.RuleEngineV4Session;
-            Transform player = director.MechanicsPlayer;
-            double ms = director.MechanicsClock != null ? director.MechanicsClock.Director.WorldTimeMs : 0;
+            RuleEngineV4WorldSession session = combat.Session;
+            Transform player = combat.Player;
+            double ms = combat.WorldTimeMs;
             if (session == null || player == null || !session.GuardActive(ms, player))
                 return applyToAlly(raw);
 
-            Transform boss = director.MechanicsBoss != null ? director.MechanicsBoss.transform : null;
+            Transform boss = combat.Boss != null ? combat.Boss.transform : null;
             if (boss == null || !IsIntercepting(player, boss.position, ally.position))
                 return applyToAlly(raw);
 
@@ -34,7 +33,7 @@ namespace Dovus.Game.Skills.RuleEngineV4
             if (toAlly > 0)
                 applyToAlly(toAlly);
             if (toPlayer > 0)
-                director.CachedPlayerVitals()?.ApplyDamage(Mathf.RoundToInt(toPlayer));
+                combat.PlayerVitals?.Invoke()?.ApplyDamage(Mathf.RoundToInt(toPlayer));
             return true;
         }
 

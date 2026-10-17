@@ -36,32 +36,15 @@ public class CastPipelinePresentationTests
         public void ApplyResourceCost(SkillResolution skill) { }
         public SkillMotionPlan ResolveMotion(SkillResolution skill) => SkillMotionPlan.None;
         public void ApplyMotionIframe(SkillResolution skill, in SkillMotionPlan motion) { }
-        public bool TryBeginMotionTemplate(SkillResolution skill, int ctx) => false;
         public void NoteSustainedCast(SkillResolution skill) { }
         public void NotifyCast(SkillId skillId) { }
-        public SkillExecutorRoute Route(SkillResolution skill) =>
-            new(SkillExecutorKind.MeleeHitbox, false, string.Empty);
-        public SkillExecutorRoute ApplyMechanicWorldRoute(SkillResolution skill, SkillExecutorRoute route) => route;
-        public void SetLastExecutorKind(SkillExecutorKind kind) { }
         public void ApplySelfCastEffects(SkillResolution skill) { }
         public void NoteJsonCast(SkillResolution skill, int ctx) { }
-        public void BeginMechanicPlan(int ctx, SkillResolution skill) { }
-        public void ArmTemplateDelivery(SkillResolution skill, int ctx, in SkillMotionPlan motion) { }
-        public bool TryLaunchExecutor(
-            SkillExecutorKind kind,
-            int ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion) => false;
-        public void ScheduleFollowUps(
-            SkillExecutorKind kind,
-            int ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion) { }
-        public float ApplyFallbackDelivery(
-            int ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion,
-            in SkillExecutorRoute route) => 0f;
+        public bool TryLaunchSkill(int ctx, SkillResolution skill, in SkillMotionPlan motion, out float dealt)
+        {
+            dealt = 0f;
+            return false;
+        }
         public void ApplyCooldown(SkillResolution skill, int ctx, bool cosmeticIfDisabled) { }
         public void SpawnClosingImpact(int ctx) { }
         public void SetLastResolvedSkillId(SkillId skillId) { }
@@ -72,7 +55,7 @@ public class CastPipelinePresentationTests
     }
 
     [Test]
-    public void RunSkill_PresentationEvents_FireInManifestationDirectorOrder()
+    public void RunSkill_PresentationEvents_FireInRuleEngineV4SentenceHostOrder()
     {
         var order = new List<string>();
         var pipeline = new CastPipeline();
@@ -121,46 +104,5 @@ public class CastPipelinePresentationTests
         pipeline.CompatibilityPublished += _ => count++;
         pipeline.RunSkill(0, new GameplayPort());
         Assert.That(count, Is.EqualTo(1));
-    }
-
-    [Test]
-    public void RunBasic_Heal_EmitsSkillShout()
-    {
-        var shouted = false;
-        var pipeline = new CastPipeline();
-        pipeline.SkillShoutRequested += _ => shouted = true;
-
-        var port = new HealBasicPort();
-        var outcome = pipeline.RunBasic(0, port);
-
-        Assert.That(shouted, Is.True);
-        Assert.That(outcome.Connected, Is.False);
-    }
-
-    sealed class HealBasicPort : IBasicStrikePort<int>
-    {
-        public void ResolveImpactTarget(int ctx) { }
-        public void ResetClosingChainBonus() { }
-        public SkillResolution ResolveSkill(int ctx) => CompleteStrike((SkillId)"1-1");
-        public bool IsHealSkill(SkillResolution skill) => true;
-        public void ApplyClosingStatuses(int ctx, SkillResolution skill) { }
-        public void ApplyClosingHeal(int ctx, SkillResolution skill) { }
-        public double WorldTimeMs() => 0;
-        public bool BasicCadenceReady(double now) => true;
-        public void SetLastBasicStrikeMs(double now) { }
-        public int BasicHitsNow() => 1;
-        public float BasicStrikeReachM() => 1f;
-        public bool IsBossInStrikeCapsule(int ctx, float reachM) => false;
-        public bool EvaluateBasicInReach(float reachM) => false;
-        public float BasicStrikeArcDeg() => 0f;
-        public float BasicStrikeYawDeg() => 0f;
-        public bool HasLivingLogic(int ctx) => false;
-        public void ApplyBossClosingBasic(int ctx) { }
-        public float ApplyBasicStrikeDamage(int ctx, float effectScale) => 0f;
-        public void ScheduleBasicSubHits(int ctx, int hits, float reach) { }
-        public void ApplyBasicExtras(float dealt, int hits) { }
-        public void TryLandWeaponStunBasic() { }
-        public void SpawnClosingImpact(int ctx) { }
-        public void TryCannonBlast(int ctx) { }
     }
 }

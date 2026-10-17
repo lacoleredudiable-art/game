@@ -60,6 +60,44 @@ namespace Dovus.Game.Composition.Builders
                 return;
             var fade = new CameraBossFade(ctx.Boss.transform, rules.Value.BossOccludedOpacity);
             follow.SliceGuard = new CameraSliceGuard(rules.Value, body, fade);
+            BindColumns(ctx, follow, rules.Value.BossOccludedOpacity);
+        }
+
+        /// <summary>
+        /// O-5.10 [K 2026-10-15]: sütun kamera ile karakter arasındaysa kamera öne gelmez, sütun O-5.11 opaklığıyla
+        /// saydamlaşır; kamera sütunun içine girmez. Gövde: dikey silindir, yarıçap fizik gövdesinden, boy ölçekten
+        /// (ilkel boyu 2 birim, kök ortada).
+        /// </summary>
+        static void BindColumns(WorldContext ctx, FollowCameraController follow, float opacity)
+        {
+            if (ctx.SliceColumns == null)
+                return;
+            int n = ctx.SliceColumns.childCount;
+            var bodies = new CameraBossBody[n];
+            var fades = new CameraBossFade[n];
+            for (int i = 0; i < n; i++)
+            {
+                Transform col = ctx.SliceColumns.GetChild(i);
+                var host = col.GetComponent<RuleEngineV4PhysicsBodyHost>();
+                if (host == null)
+                {
+                    Debug.LogError($"[V4-FALLBACK] CameraBuilder.BindColumns: {col.name} fizik gövdesi yok; kamera bu sütunu saymaz (O-5.10)");
+                    continue;
+                }
+                bodies[i] = new CameraBossBody(col, host.BodyRadiusM, col.lossyScale.y);
+                Transform model = null;
+                foreach (Transform child in col)
+                {
+                    if (child.name.StartsWith(RuleEngineV4SliceArenaVisualsBuilderDefaults.VisualChildPrefix))
+                    {
+                        model = child;
+                        break;
+                    }
+                }
+                fades[i] = new CameraBossFade(col, model, opacity, col.name, "O-5.10");
+            }
+            follow.BindColumns(bodies);
+            follow.SliceGuard.BindColumns(bodies, fades);
         }
 
         public void ApplyAtmosphere(WorldContext ctx)

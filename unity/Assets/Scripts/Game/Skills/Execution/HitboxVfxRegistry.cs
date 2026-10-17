@@ -1,4 +1,3 @@
-using Dovus.Core.Mechanic;
 using Dovus.Game.Vfx;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,7 +9,7 @@ namespace Dovus.Game.Skills.Execution
     /// <summary>
     /// hitbox_vfx.vfx_prefab_naming registry. Art prefabı yoksa geometriyi element rengiyle
     /// görünür kılan collider'sız, hafif primitive üretir. Primitive'in üstüne gramer planından
-    /// doğan reçete oynatılır (<see cref="ComposedSkillVfxView"/>); fiil maddesi bağlı değilse teslim
+    /// Fiil maddesi bağlı değilse teslim
     /// yolu giydirmesine düşer (<c>Delivery/{executor}/{şekil}</c> → <c>Delivery/{executor}</c>
     /// → <c>Delivery/{şekil}</c>). Giydirme varsa primitive yalnız hitbox/collider taşıyıcısı kalır.
     /// </summary>
@@ -43,38 +42,13 @@ namespace Dovus.Game.Skills.Execution
             if (fromKey || go == null)
                 return go;
 
-            SkillExecutorController executor = parent != null ? parent.GetComponent<SkillExecutorController>() : null;
-            bool dressed = executor != null && TryCompose(executor, go.transform, position, direction, colorHex);
+            bool dressed = false;
             if (!dressed)
-                dressed = SpawnDelivery(executor != null ? executor.Kind.ToString() : null, shape, colorHex,
+                dressed = SpawnDelivery(null, shape, colorHex,
                     go.transform, direction, radiusM, reachM, parent) != null;
             if (dressed && shape != "cylinder" && go.TryGetComponent(out MeshRenderer primitive))
                 primitive.enabled = false;
             return go;
-        }
-
-        readonly Dictionary<MechanicPlan, VisualRecipe> Recipes = new();
-
-        /// <summary>Madde (fiil) × yol (silah) × silüet (sıfat): reçete yalnız gramer planından doğar.</summary>
-        bool TryCompose(SkillExecutorController executor, Transform anchor, Vector3 origin, Vector3 direction,
-            string colorHex)
-        {
-            MechanicPlan plan = executor.Plan;
-            if (plan == null)
-                return false;
-            VfxLibrary lib = Lib;
-            string key = "Substance/" + plan.Verb.ToString(CultureInfo.InvariantCulture);
-            if (!lib.TryResolve(key, out _, out _))
-                return false;
-            if (!Recipes.TryGetValue(plan, out VisualRecipe recipe))
-            {
-                recipe = MechanicVisualComposer.Compose(plan, lib.Composition);
-                Recipes[plan] = recipe;
-            }
-            if (recipe == null || recipe.Pieces.Count == 0)
-                return false;
-            ComposedSkillVfxView.Play(Lib, recipe, key, anchor, executor.CastOwner, origin, direction, colorHex);
-            return true;
         }
 
         GameObject SpawnDelivery(string role, string shape, string colorHex, Transform anchor,

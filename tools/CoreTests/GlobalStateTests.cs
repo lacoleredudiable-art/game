@@ -30,16 +30,14 @@ public sealed class GlobalStateTests
     {
         "Composition/AssetCatalog.cs",
         "Vfx/VfxLibraryStandalone.cs",
-        "Data/ElementSystemRuntimeCache.cs",
     };
 
     [Test]
     public void Allowlisted_asset_statics_only()
     {
-        Assert.That(AllowMutableStaticFields, Has.Count.EqualTo(3));
+        Assert.That(AllowMutableStaticFields, Has.Count.EqualTo(2));
         Assert.That(Game("Composition/AssetCatalog.cs"), Does.Contain("Standalone"));
         Assert.That(Game("Vfx/VfxLibraryStandalone.cs"), Does.Contain("Shared"));
-        Assert.That(Game("Data/ElementSystemRuntimeCache.cs"), Does.Contain("class ElementSystemRuntimeCache"));
     }
 
     [Test]

@@ -66,7 +66,7 @@ namespace Dovus.Game.Skills.Weapons
             _host.LastFactorySkill = null;
             _host.WeaponSwap?.ReplaceActive(_host.EquippedWeapon);
 
-            string routeType = SkillExecutorRouter.IsRangedWeapon(_host.EquippedWeapon)
+            string routeType = string.Equals(_host.EquippedWeapon?.Type, "ranged", StringComparison.OrdinalIgnoreCase)
                 ? "ranged"
                 : "melee";
             string numericId = _host.EquippedWeapon.Id;

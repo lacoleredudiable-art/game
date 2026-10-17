@@ -62,13 +62,7 @@ namespace Dovus.Game.Vfx
             }
 
             WarnMissingOnce("trail", styleId);
-            if (RuleEngineV4Feature.Enabled)
-                return null;
-            Color color = ResolveElementColor(elementName);
-            bool useLine = TrailUsesLine.TryGetValue(styleId, out bool line) ? line : true;
-            return useLine
-                ? CreateLinePlaceholder($"PlaceholderTrail_{styleId}", color, from, to, parent)
-                : CreateSpherePlaceholder($"PlaceholderTrail_{styleId}", color, Mid(from, to), parent);
+            return null;
         }
 
         /// <summary>
@@ -97,10 +91,7 @@ namespace Dovus.Game.Vfx
             }
 
             WarnMissingOnce("impact", styleId);
-            if (RuleEngineV4Feature.Enabled)
-                return null;
-            Color color = ResolveElementColor(elementName);
-            return CreateSpherePlaceholder($"PlaceholderImpact_{styleId}", color, position, parent);
+            return null;
         }
 
         /// <summary>
@@ -173,17 +164,7 @@ namespace Dovus.Game.Vfx
             if (!WarnedMissing.Add(key))
                 return;
 
-            if (RuleEngineV4Feature.Enabled)
-            {
-                // Dilimde yedek primitive çizilmez (B3); eksik efekt görünür ve log'a düşer.
-                Debug.LogError($"[V4-FALLBACK] efekt: VFX asset yok ({kind}/{styleId}); yedek primitive çizilmedi");
-                return;
-            }
-
-            // prezentasyon-katmani.json implementation_notes.asset_missing_handling.log_warning
-            Debug.LogWarning(
-                $"[PlaceholderFactory] VFX asset missing ({kind}/{styleId}); " +
-                "using element_color primitive placeholder.");
+            Debug.LogError($"[V4-FALLBACK] efekt: VFX asset yok ({kind}/{styleId}); yedek primitive çizilmedi");
         }
 
         Color ResolveElementColor(string elementName)

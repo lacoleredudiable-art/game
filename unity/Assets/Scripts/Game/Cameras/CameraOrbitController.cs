@@ -26,9 +26,6 @@ namespace Dovus.Game.Cameras
         float _yawDeg;
         float _pitchDeg;
         bool _eventsHooked;
-        ElementRadialMenuHud _elementMenu;
-
-        public void BindElementMenu(ElementRadialMenuHud menu) => _elementMenu = menu;
 
         public float YawDeg => _yawDeg;
         public float PitchDeg => _pitchDeg;
@@ -92,7 +89,6 @@ namespace Dovus.Game.Cameras
             if (kb != null && kb.tabKey.wasPressedThisFrame)
             {
                 _camera.LockOnActive = !_camera.LockOnActive;
-                _hexView?.RefreshLockOnVisual();
             }
         }
 
@@ -127,12 +123,11 @@ namespace Dovus.Game.Cameras
             if (_orbitFingerId.HasValue || IsClaimedElsewhere(finger.index) || BuildSelectHud.IsOpen)
                 return;
 
-            // Sol yarı stick'e ait — orbit alma.
+            // Stick bölgesi dışında her yer kamera; altıgen/dodge/swap üstü kameraya geçmez.
             Vector2 pos = finger.screenPosition;
-            bool mirror = _tuning != null && _tuning.Input.MirrorForLeftHand;
-            if (!HexagonLayoutScreen.IsRightHalf(pos, mirror, Screen.width))
+            if (_tuning != null && HexagonLayoutScreen.IsStickZone(pos, _tuning.Input, Screen.width, Screen.height))
                 return;
-            if (_elementMenu != null && (_elementMenu.IsMenuOpen || _elementMenu.HitHoldChipAt(pos)))
+            if (_hexagonInput != null && _hexagonInput.IsCombatControlAt(pos))
                 return;
 
             _orbitFingerId = finger.index;

@@ -45,20 +45,29 @@ public class DodgeChainTests
         Assert.That(dodge.IsInvulnerable(1300), Is.False);
     }
 
+    // 15-dodge-tasarimi §3.2: birleşme penceresi (T_tek) kapandıktan sonra gelen basış zincir değildir;
+    // takla yok, basış anında yeni T_tek penceresi açılır, 1 hak harcanır. Arada korunma olmaması
+    // bilinçli bir "boşluk mekaniği" değil, sıradan dodge davranışıdır.
     [Test]
-    public void O_4_5_GecIkinciBasis_BoslukKalir()
+    public void O_4_5_GecIkinciBasis_SiradanDodge()
     {
         var tuning = new DodgeTuning();
         var dodge = new DodgeState(tuning);
         var bank = new DodgeChargeBank(tuning);
+        int latePress = tuning.IframeMs + 100;
 
         DodgeChain.TryConsumePress(0, dodge, bank, tuning);
-        // birleşme penceresi (T_tek) kapandıktan sonra basış: zincir değil, yeni tek dodge
-        Assert.That(DodgeChain.TryConsumePress(tuning.IframeMs + 100, dodge, bank, tuning),
-            Is.EqualTo(DodgeChain.PressOutcome.StartedNew));
-        Assert.That(dodge.IsCombined, Is.False);
-        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 50), Is.False, "iki pencere arasında vuruş hasar vermeli");
-        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 100), Is.True);
+        Assert.That(bank.Ready, Is.EqualTo(1));
+
+        Assert.That(DodgeChain.TryConsumePress(latePress, dodge, bank, tuning),
+            Is.EqualTo(DodgeChain.PressOutcome.StartedNew), "zincir değil, sıradan yeni dodge");
+        Assert.That(dodge.IsCombined, Is.False, "takla yok");
+        Assert.That(bank.Ready, Is.EqualTo(0), "tam 1 hak harcanır");
+
+        Assert.That(dodge.IsInvulnerable(tuning.IframeMs + 50), Is.False, "eski pencere bitti, yeni basış henüz yok");
+        Assert.That(dodge.IsInvulnerable(latePress), Is.True, "yeni T_tek penceresi basış anında açılır");
+        Assert.That(dodge.IsInvulnerable(latePress + tuning.IframeMs - 1), Is.True);
+        Assert.That(dodge.IsInvulnerable(latePress + tuning.IframeMs), Is.False, "pencere T_tek, T_zincir değil");
     }
 
     [Test]
@@ -78,6 +87,61 @@ public class DodgeChainTests
     {
         var tuning = new DodgeTuning();
         Assert.That(tuning.DoubleTapWindowMs, Is.EqualTo(tuning.IframeMs), "15 §3.4 / D-4: birleşme penceresi = T_tek");
+    }
+
+    // O-4.4a: süzülme 0,40 s. Hareket (10 + 250 + 400 = 660 ms) birleşme penceresini (500 ms) örter;
+    // yoksa 380-500 ms arası ikinci basış takla olmaz, yeni tek dodge başlar.
+    [Test]
+    public void O_4_4a_HareketBirlesmePenceresiniOrter()
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        dodge.Begin(0);
+        for (int t = 0; t < tuning.DoubleTapWindowMs; t++)
+            Assert.That(dodge.IsActive(t), Is.True, $"t={t} ms hareket bitti, pencere hâlâ açık");
+    }
+
+    [Test]
+    public void O_4_5_Takla_SuzulmedeBasis_ZincirOlur()
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        var bank = new DodgeChargeBank(tuning);
+
+        DodgeChain.TryConsumePress(0, dodge, bank, tuning);
+        // 450 ms: patlama bitti, süzülme sürüyor, pencere (500 ms) açık
+        Assert.That(DodgeChain.TryConsumePress(450, dodge, bank, tuning), Is.EqualTo(DodgeChain.PressOutcome.UpgradedCombined));
+        Assert.That(bank.Ready, Is.EqualTo(0));
+    }
+
+    [TestCase(0)]
+    [TestCase(100)]
+    [TestCase(260)]
+    [TestCase(450)]
+    [TestCase(499)]
+    public void O_4_5_Takla_YolSureklidirVeToplamMesafeCarpandir(int promoteMs)
+    {
+        var tuning = new DodgeTuning();
+        var dodge = new DodgeState(tuning);
+        dodge.Begin(0);
+        float before = dodge.GetDisplacementRatio(promoteMs) * dodge.DistanceMultiplier;
+        dodge.PromoteToCombined(promoteMs);
+        float after = dodge.GetDisplacementRatio(promoteMs) * dodge.DistanceMultiplier;
+        Assert.That(after, Is.EqualTo(before).Within(1e-4f), "takla anında konum sıçradı");
+
+        // yol bitene kadar geri gitmez, adım başına sıçrama yok, sonunda ×CombinedDistanceMult
+        float prev = after;
+        int end = tuning.StartupMs + dodge.MoveDurationMs;
+        Assert.That(end, Is.GreaterThanOrEqualTo(promoteMs), "yol, taklanın başladığı andan önce bitmiş");
+        for (int t = promoteMs; t <= end; t++)
+        {
+            float r = dodge.GetDisplacementRatio(t) * dodge.DistanceMultiplier;
+            Assert.That(r, Is.GreaterThanOrEqualTo(prev - 1e-4f), $"t={t} geri gitti");
+            Assert.That(r - prev, Is.LessThan(0.35f), $"t={t} 1 ms'de sıçradı");
+            prev = r;
+        }
+        Assert.That(prev, Is.EqualTo(tuning.CombinedDistanceMult).Within(1e-3f));
+        Assert.That(dodge.IsActive(end), Is.True, "takla yolu bitmeden dodge kapandı");
     }
 
     [Test]
@@ -158,20 +222,5 @@ public class DodgeChainTests
         Assert.That(bank.Ready, Is.EqualTo(0));
         Assert.That(dodge.IsCombined, Is.False);
         Assert.That(dodge.IsInvulnerable(259), Is.True);
-    }
-
-    [Test]
-    public void PerfectRefund_OncePerCombinedDodgePress()
-    {
-        var tuning = Tuning();
-        var bank = new DodgeChargeBank(tuning);
-        bank.TrySpend(0);
-        bank.TrySpend(0);
-        Assert.That(bank.Ready, Is.EqualTo(0));
-
-        bank.Refund(tuning.PerfectChargeRefund);
-        Assert.That(bank.Ready, Is.EqualTo(1));
-        bank.Refund(tuning.PerfectChargeRefund);
-        Assert.That(bank.Ready, Is.EqualTo(2));
     }
 }

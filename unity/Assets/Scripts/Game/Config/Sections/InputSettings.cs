@@ -8,6 +8,10 @@ namespace Dovus.Game.Config.Sections
                 [Header("Sanal çubuk")]
                 public float JoystickMaxRadiusDp = 72f;
                 public float JoystickDeadZone = 0.12f;
+                /// <summary>O-4.3 (ölçüm): joystick yalnız ekranın solundan bu oranda genişlikte doğar. Başlangıç tahmini.</summary>
+                [Range(0f, 1f)] public float JoystickZoneWidthFrac = 0.35f;
+                /// <summary>O-4.3 (ölçüm): joystick yalnız ekranın altından bu oranda yükseklikte doğar (0,55–0,60 arası; başlangıç 0,60).</summary>
+                [Range(0f, 1f)] public float JoystickZoneHeightFrac = 0.60f;
 
                 // Altıgen ekrana sabit (§2). Yarıçap/konum spec'te sayı yok — varsayılan; durum.md'ye geçildi.
                 // T6.2: merkez X, dodge düğmesi sağ kenardan taşmasın diye 0.78'den içeri alındı.
@@ -19,7 +23,7 @@ namespace Dovus.Game.Config.Sections
                 /// </summary>
                 public float HudFitShortSideDp = 600f;
                 // Sağ-alt köşeye yaslı: boss ekran ortasında görünür kalsın.
-                public float HexagonCenterXNorm = 0.78f;
+                public float HexagonCenterXNorm = 0.81f;
                 // Sağ-alt; FittedRadiusPx alt rünleri safe içinde tutar.
                 public float HexagonCenterYNorm = 0.30f;
                 // Komşu rün kenar boşluğu ≈ radius − 2·dotR (≥40dp çizim koridoru).

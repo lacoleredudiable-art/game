@@ -60,8 +60,6 @@ namespace Dovus.Game.Casting
                 _dodgeLabel.fontSize = Mathf.RoundToInt(dodgeR * 0.38f);
             _dodge.SetAsLastSibling();
             LayoutWeaponSwapButton(w, h);
-            LayoutLockOnButton(w, h);
-            RefreshLockOnVisual();
             LayoutCombatTray(c, dotR);
         }
 

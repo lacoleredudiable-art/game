@@ -22,10 +22,10 @@ namespace Dovus.Core.Presentation
         {
             if (string.IsNullOrWhiteSpace(json))
                 throw new ArgumentException("JSON boş.", nameof(json));
-            return FromDocument(ElementSystemDocument.Parse(json));
+            return FromDocument(GrammarJsonDocument.Parse(json));
         }
 
-        public static AnimationDatabase FromDocument(ElementSystemDocument doc) =>
+        public static AnimationDatabase FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static AnimationDatabase FromJsonRoot(JsonValue root)

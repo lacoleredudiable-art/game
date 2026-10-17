@@ -15,10 +15,10 @@ namespace Dovus.Core.Passives
         {
             if (string.IsNullOrWhiteSpace(json))
                 return false;
-            return RequiresWeaponCompatibility(ElementSystemDocument.Parse(json).Root);
+            return RequiresWeaponCompatibility(GrammarJsonDocument.Parse(json).Root);
         }
 
-        public static bool RequiresWeaponCompatibility(ElementSystemDocument doc)
+        public static bool RequiresWeaponCompatibility(GrammarJsonDocument doc)
         {
             if (doc == null)
                 return false;

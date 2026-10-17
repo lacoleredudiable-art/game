@@ -7,7 +7,6 @@ using Dovus.Core.Hud;
 using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
 using NUnit.Framework;
@@ -23,16 +22,10 @@ namespace CoreTests;
 public class BossStatusTruthTests
 {
     SkillMotor _motor = null!;
-    MechanicGrammar _grammar = null!;
 
     [OneTimeSetUp]
-    public void Load()
-    {
-        string path = ElementPath();
-        string json = File.ReadAllText(path);
-        _motor = SkillMotor.FromJson(json);
-        _grammar = new MechanicGrammar(MechanicRules.FromJson(json));
-    }
+    public void Load() =>
+        _motor = SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
 
     [Test]
     public void BossTuning_UsesKaradulDamage_NotZero()
@@ -72,40 +65,6 @@ public class BossStatusTruthTests
     }
 
     [Test]
-    public void X7_AccuracyDebuff_BecomesBlindChance_NotASureMiss()
-    {
-        var boss = new StatusBoard();
-        StatusApplicator.ApplySkill(_motor.Resolve(new[] { 1, 7 }), new StatusBoard(), boss, new StatusTuning());
-        Assert.That(boss.HasBlind, Is.True);
-        Assert.That(boss.BlindMissChance, Is.EqualTo(0.3f).Within(0.001f));
-
-        MechanicEffect kor = _grammar.Compose(1, 7, 1).Find("kor", "dusman");
-        Assert.That(kor, Is.Not.Null);
-        Assert.That(kor!.Amount, Is.EqualTo(0.3).Within(0.001));
-        Assert.That(kor.DurationSec, Is.GreaterThan(0));
-        Assert.That(BossStatusMath.BlindChanceFromAccuracy((float)kor.Amount), Is.EqualTo(0.3f).Within(0.001f));
-    }
-
-    [Test]
-    public void Rune7_Bulandirma_BlindUsesAccuracyAndLifetime()
-    {
-        Assert.That(_motor.TryGetAdjective("7", out AdjectiveNode adjective), Is.True);
-        var director = new SlotPassiveDirector();
-        director.OpenCast();
-        Assert.That(_motor.TryGetRune(7, out RuneDefinition rune), Is.True);
-        director.Activate(7, rune.AdjectiveFace, rune.PassiveDurationDefault, adjective.Engine, 0);
-        director.CloseCast();
-        int later = director.OpenCast();
-        Assert.That(director.AccuracyDebuffFor(later), Is.EqualTo(0.3f).Within(0.001f));
-        double ms = BossStatusMath.BlindDurationMs(1400, director.AccuracyLifetimeAddSecFor(later));
-        Assert.That(ms, Is.EqualTo(4400d).Within(0.01));
-        var boss = new StatusBoard();
-        boss.Apply(StatusKind.Blind, ms, BossStatusMath.BlindChanceFromAccuracy(director.AccuracyDebuffFor(later)));
-        Assert.That(boss.BlindMissChance, Is.EqualTo(0.3f).Within(0.001f));
-        Assert.That(BossStatusMath.Misses(boss, 0.1f), Is.True);
-    }
-
-    [Test]
     public void Silence_BlocksSpecials_Disarm_BlocksBasics()
     {
         var silenced = new StatusBoard();
@@ -140,24 +99,6 @@ public class BossStatusTruthTests
         Assert.That(BossStatusMath.OutgoingDamage(18f, board), Is.EqualTo(15.3f).Within(0.001f));
         board.Tick(2500, new StatusTuning());
         Assert.That(BossStatusMath.OutgoingDamage(22f, board), Is.EqualTo(22f).Within(0.001f));
-    }
-
-    [Test]
-    public void HasarBuffOnEnemy_BecomesWeaken_For8_2_And8_10()
-    {
-        MechanicEffect drain = _grammar.Compose(8, 2, 4).Find("hasar_buff", "dusman");
-        Assert.That(drain, Is.Not.Null);
-        Assert.That(drain!.Amount, Is.LessThan(0));
-        Assert.That(BossStatusMath.TryEnemyDamageDebuff(drain.Amount, drain.DurationSec, out float drainMult, out double drainMs), Is.True);
-        Assert.That(drainMult, Is.LessThan(1f));
-        Assert.That(drainMs, Is.GreaterThan(0));
-
-        MechanicEffect mirror = _grammar.Compose(8, 10, 4).Find("hasar_buff", "dusman");
-        Assert.That(mirror, Is.Not.Null);
-        Assert.That(mirror!.Has("ters_kopya"), Is.True);
-        Assert.That(BossStatusMath.TryEnemyDamageDebuff(mirror.Amount, mirror.DurationSec, out float mirrorMult, out _), Is.True);
-        Assert.That(mirrorMult, Is.LessThan(1f));
-        Assert.That(BossStatusMath.WeakenOutgoingMult(-0.2), Is.EqualTo(0.8f).Within(0.001f));
     }
 
     [Test]
@@ -242,32 +183,6 @@ public class BossStatusTruthTests
     }
 
     [Test]
-    public void GuardTrigger_PaysOnce_TemplateDoesNotAlsoHeal()
-    {
-        var once = new GuardTriggerDelivery.Once();
-        (int verb, string stat)[] rows = { (2, "can"), (4, "kalkan"), (8, "hasar_buff") };
-        foreach ((int verb, string stat) in rows)
-        {
-            MechanicPlan plan = _grammar.Compose(verb, 9, 1);
-            Assert.That(GuardTriggerDelivery.Owns(plan, stat), Is.True, verb + "-9");
-            Assert.That(GuardTriggerDelivery.AllowImmediate(plan, stat), Is.False, verb + "-9 kalıp susar");
-
-            MechanicEffect effect = plan.Effects.First(e => e.Stat == stat && e.Has("koruyucu_tetik"));
-            int id = verb * 10 + 9;
-            float immediate = GuardTriggerDelivery.AllowImmediate(plan, stat) ? (float)effect.Amount : 0f;
-            float first = once.TryApply(id) ? (float)Math.Abs(effect.Amount) : 0f;
-            float second = once.TryApply(id) ? (float)Math.Abs(effect.Amount) : 0f;
-            Assert.That(immediate, Is.EqualTo(0f));
-            Assert.That(first, Is.GreaterThan(0f));
-            Assert.That(second, Is.EqualTo(0f), verb + "-9 ikinci ödeme yok");
-            Assert.That(immediate + first + second, Is.EqualTo(first).Within(0.001f));
-        }
-
-        MechanicPlan plain = _grammar.Compose(2, 1, 1);
-        Assert.That(GuardTriggerDelivery.AllowImmediate(plain, "can"), Is.True);
-    }
-
-    [Test]
     public void ShieldReflectAndRedirect_FireWhenBossDamageLands()
     {
         DamageOutcome soaked = DamagePipeline.Resolve(new DamageQuery
@@ -292,7 +207,7 @@ public class BossStatusTruthTests
     }
 
     [Test]
-    public void ElementStatus_BurnAndWeakenHitTheBoss_SelfStatusesDoNot()
+    public void ElementStatus_BurnHitsTheBoss()
     {
         ElementPaintNode fire = _motor.ElementPaints.First(e => e.Id == 1);
         Assert.That(fire.Status, Is.EqualTo("burn"));
@@ -301,34 +216,5 @@ public class BossStatusTruthTests
         Assert.That(burn.Kind, Is.EqualTo(StatusKind.Burn));
         Assert.That(burn.DurationMs, Is.EqualTo(4000d).Within(0.01));
         Assert.That(burn.Magnitude, Is.EqualTo(3f).Within(0.001f));
-
-        ElementPaintNode dark = _motor.ElementPaints.First(e => e.Id == 6);
-        Assert.That(dark.Status, Is.EqualTo("weaken"));
-        Assert.That(ElementBossStatusRules.TryForBoss(dark.Status, dark.StatusEffect, dark.StatusDurationSec, out ElementBossStatus weaken), Is.True);
-        Assert.That(weaken.Kind, Is.EqualTo(StatusKind.Weaken));
-        Assert.That(weaken.DurationMs, Is.EqualTo(3000d).Within(0.01));
-        Assert.That(weaken.Magnitude, Is.EqualTo(0.85f).Within(0.001f));
-
-        ElementPaintNode water = _motor.ElementPaints.First(e => e.Id == 2);
-        Assert.That(ElementBossStatusRules.TryForBoss(water.Status, water.StatusEffect, water.StatusDurationSec, out _), Is.False);
-        ElementPaintNode light = _motor.ElementPaints.First(e => e.Id == 5);
-        Assert.That(ElementBossStatusRules.TryForBoss(light.Status, light.StatusEffect, light.StatusDurationSec, out _), Is.False);
-    }
-
-    static string ElementPath()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..",
-            "docs", "element-sistemi.json"));
-        if (!File.Exists(path))
-        {
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..",
-                "docs", "element-sistemi.json"));
-        }
-        Assert.That(File.Exists(path), Is.True, path);
-        return path;
     }
 }

@@ -108,7 +108,7 @@ public class FileLayoutTests
                 problems.Add($"{path}: file {expectedTypeName} vs type {nonPartial[0].Name}");
             if (nonPartial.Count == 0 && types.Count > 0)
             {
-                // partial-only file (e.g. ManifestationDirector.Topic.cs) — name must match stem
+                // partial-only file (e.g. RuleEngineV4SentenceHost.Topic.cs) — name must match stem
                 if (types[0].Name != expectedTypeName)
                     problems.Add($"{path}: partial type {types[0].Name} vs file {expectedTypeName}");
             }

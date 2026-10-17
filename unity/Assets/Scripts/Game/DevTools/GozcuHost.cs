@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using Dovus.Core.RuleEngineV4;
 using Dovus.Game.Actors;
-using Dovus.Game.Skills;
+using Dovus.Game.Cameras;
+using Dovus.Game.Skills.RuleEngineV4;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -24,6 +25,7 @@ namespace Dovus.Game.DevTools
         readonly HumanBodyBones[] _footBones =
             { HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot, HumanBodyBones.LeftToes, HumanBodyBones.RightToes };
         readonly Collider[] _overlap = new Collider[OverlapCapacity];
+        readonly RaycastHit[] _lineHits = new RaycastHit[OverlapCapacity];
         readonly List<AnimatorClipInfo> _clipInfos = new();
         readonly GozcuScreenCover _cover = new();
         readonly List<(string line, float until)> _shown = new();
@@ -32,7 +34,7 @@ namespace Dovus.Game.DevTools
         GozcuReporter _reporter;
         Transform _player;
         Camera _camera;
-        ManifestationDirector _director;
+        System.Func<int> _equippedWeaponNumber;
         KinematicMotorController _motor;
         Animator _animator;
         CapsuleCollider _probe;
@@ -44,17 +46,23 @@ namespace Dovus.Game.DevTools
         bool _hasCameraRotation;
         bool _noCameraWarned;
         int _fallbackLogs;
+        Vector3 _lastPlayerXZ;
+        bool _hasLastPlayer;
+        DodgeMotionController _dodge;
+        MotionTemplateBodyHost _templateBody;
+        const float TeleportStepFactor = 2f;
+        const float InBodyMinDepthM = 0.05f;
         GUIStyle _style;
 
         public int ReportedCount => _reporter?.Reported ?? 0;
 
-        public void Configure(RuleEngineV4Gozcu rules, Transform player, Camera camera, ManifestationDirector director)
+        public void Configure(RuleEngineV4Gozcu rules, Transform player, Camera camera, System.Func<int> equippedWeaponNumber)
         {
             _rules = rules;
             _reporter = new GozcuReporter(rules.LogIntervalSec);
             _player = player;
             _camera = camera;
-            _director = director;
+            _equippedWeaponNumber = equippedWeaponNumber;
             _motor = player != null ? player.GetComponent<KinematicMotorController>() : null;
 
             // Gövde yoklaması: oyuncunun collider'ı yok. Yalnız ComputePenetration anında açılır,
@@ -98,6 +106,8 @@ namespace Dovus.Game.DevTools
             CheckFeet();
             CheckBody();
             CheckClip();
+            CheckPlayerTeleport();
+            CheckPlayerInBody();
             if (_fallbackLogs > _rules.FallbackLogMax)
                 Report(GozcuRule.Fallback, _fallbackLogs.ToString(CultureInfo.InvariantCulture));
             Camera cam = GameCamera();
@@ -109,6 +119,7 @@ namespace Dovus.Game.DevTools
             CheckCameraSpeed(cam);
             CheckCameraInCollider(cam);
             CheckCameraInBossBody(cam);
+            CheckPlayerBehindObstacle(cam);
             // Oyunun ana kamerası FOV'u eşiğin altına düşmemeli; düşerse ihlal, izdüşüm anlamsız olduğundan
             // ekran ölçümleri (oyuncu ekranda mı, efekt kaplaması) o kare yapılmaz.
             if (cam.fieldOfView < _rules.CameraFovMinDeg)
@@ -196,9 +207,9 @@ namespace Dovus.Game.DevTools
         void CheckClip()
         {
             Animator anim = PlayerAnimator();
-            if (anim == null || anim.runtimeAnimatorController == null || _director == null)
+            if (anim == null || anim.runtimeAnimatorController == null || _equippedWeaponNumber == null)
                 return;
-            int weapon = _director.EquippedWeaponNumber();
+            int weapon = _equippedWeaponNumber();
             for (int layer = 0; layer < anim.layerCount; layer++)
             {
                 float layerWeight = layer == 0 ? 1f : anim.GetLayerWeight(layer);
@@ -243,6 +254,41 @@ namespace Dovus.Game.DevTools
             }
         }
 
+        /// <summary>
+        /// O-5.10: kamera → oyuncu gövdesi doğrusu çarpışıcılı bir engeli (sütun, duvar) kesiyorsa oyuncu engelin
+        /// arkasında kalıyor demektir. Oyuncu ve boss kökleri (O-5.11: boss arada kalabilir), sütunlar
+        /// (O-5.10, saydamlaşır) ve tetikler sayılmaz.
+        /// Değer: engelin adı.
+        /// </summary>
+        void CheckPlayerBehindObstacle(Camera cam)
+        {
+            Vector3 from = cam.transform.position;
+            Vector3 body = _player.position + Vector3.up * (KinematicMotorControllerDefaults.CapsuleTopLiftM * 0.5f);
+            Vector3 delta = body - from;
+            float dist = delta.magnitude;
+            if (dist <= 0f)
+                return;
+            int n = Physics.RaycastNonAlloc(new Ray(from, delta / dist), _lineHits, dist, ~0, QueryTriggerInteraction.Ignore);
+            var follow = cam.GetComponent<FollowCameraController>();
+            for (int i = 0; i < n; i++)
+            {
+                Collider col = _lineHits[i].collider;
+                if (col == null || col == _probe || col.transform.IsChildOf(_player)
+                    || (_bossBody != null && col.transform.IsChildOf(_bossBody)))
+                    continue;
+                // Hareketli gövdeler (minyon, dost) engel değil; yalnız sabit gövdeli yapılar (sütun, koza) ve duvar.
+                var host = col.GetComponentInParent<RuleEngineV4PhysicsBodyHost>();
+                if (host != null && host.WeightTier != RuleEngineV4WeightTier.Anchored)
+                    continue;
+                // O-5.10 [K 2026-10-15]: arada kalan sütun kural gereği saydamlaşır (doğruluğu O_5_10 PlayMode testinde);
+                // kamera ona göre öne gelmez, bu yüzden engel sayılmaz.
+                if (follow != null && follow.SliceGuard != null && follow.SliceGuard.IsColumn(col.transform))
+                    continue;
+                Report(GozcuRule.PlayerBehindObstacle, col.name);
+                return;
+            }
+        }
+
         /// <summary>Boss gövdesi tetik çarpıştırıcı; collider yoklaması onu görmez. Değer: kenardan içeri derinlik.</summary>
         void CheckCameraInBossBody(Camera cam)
         {
@@ -253,6 +299,66 @@ namespace Dovus.Game.DevTools
             float depth = _bossBodyRadiusM - new Vector2(p.x - c.x, p.z - c.z).magnitude;
             if (depth > 0f && p.y < c.y + _bossBodyTopAboveRootM)
                 Report(GozcuRule.CameraInBossBody, Cm(depth));
+        }
+
+        /// <summary>
+        /// Sahipsiz atlama: dodge ve kalıp yer değiştirmesi yokken kare adımı yürüme hızı × dt × 2'yi aşarsa ışınlanma.
+        /// Dodge / kalıp kare adımı bilgidir, engel değil (eşik ölçülünce konur).
+        /// </summary>
+        void CheckPlayerTeleport()
+        {
+            Vector3 now = new Vector3(_player.position.x, 0f, _player.position.z);
+            if (!_hasLastPlayer)
+            {
+                _hasLastPlayer = true;
+                _lastPlayerXZ = now;
+                return;
+            }
+            float step = (now - _lastPlayerXZ).magnitude;
+            _lastPlayerXZ = now;
+            if (_dodge == null)
+                _dodge = _player.GetComponent<DodgeMotionController>();
+            if (_templateBody == null)
+                _templateBody = _player.GetComponent<MotionTemplateBodyHost>();
+            if ((_dodge != null && _dodge.IsDisplacing) || (_templateBody != null && _templateBody.IsDisplacing)
+                || _motor == null)
+                return;
+            float limit = _motor.Tuning.Player.WalkSpeedMps * Time.deltaTime * TeleportStepFactor
+                          + KinematicMotorControllerDefaults.MoveStopInsetM;
+            if (step > limit)
+                Report(GozcuRule.PlayerTeleport, string.Format(CultureInfo.InvariantCulture,
+                    "adim={0:0.00}m,sahip=yok", step));
+        }
+
+        /// <summary>O-4.9 G: oyuncu merkezi minyon / dost / boss silindirinin içinde (derinlik &gt; 5 cm).</summary>
+        void CheckPlayerInBody()
+        {
+            if (_motor == null)
+                return;
+            var wp = RuleEngineV4WorldPhysicsRuntime.Active;
+            float playerR = _motor.BodyRadiusM;
+            Vector3 p = _player.position;
+            foreach (RuleEngineV4PhysicsBodyHost body in FindObjectsByType<RuleEngineV4PhysicsBodyHost>(FindObjectsSortMode.None))
+            {
+                if (body.transform == _player || body.transform.IsChildOf(_player))
+                    continue;
+                if (body.TryGetComponent(out TargetableHost mark) && !mark.IsAvailable)
+                    continue;
+                float bodyR;
+                if (body.WeightTier == RuleEngineV4WeightTier.Boss)
+                    bodyR = _bossBodyRadiusM;
+                else if (body.TryGetComponent(out AllyDummyController _))
+                    bodyR = wp.BodyRadiusPlayerM;
+                else if (body.TryGetComponent(out SliceLightMinionHost _))
+                    bodyR = wp.BodyRadiusCreatureM;
+                else
+                    continue;
+                Vector3 c = body.transform.position;
+                float dist = new Vector2(p.x - c.x, p.z - c.z).magnitude;
+                float depth = playerR + bodyR - dist;
+                if (depth > InBodyMinDepthM)
+                    Report(GozcuRule.PlayerInBody, Cm(depth) + "@" + body.name);
+            }
         }
 
         void CheckPlayerOnScreen(Camera cam)

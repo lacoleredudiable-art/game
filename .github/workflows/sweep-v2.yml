@@ -4,9 +4,6 @@ on:
   pull_request:
   push:
     branches: [master]
-  schedule:
-    # Pazartesi 03:00 UTC: eski motor testleri + SweepV2.
-    - cron: "0 3 * * 1"
   workflow_dispatch:
 
 env:
@@ -32,8 +29,8 @@ jobs:
       - name: OYUN.md üretim kontrolü
         run: python tools/gen-game-overview.py --check
 
-      - name: Core testleri (EskiMotor hariç)
-        run: dotnet test tools/CoreTests --filter "TestCategory!=EskiMotor"
+      - name: Core testleri
+        run: dotnet test tools/CoreTests
 
       - name: Integration testleri
         run: dotnet test tools/IntegrationTests
@@ -41,79 +38,9 @@ jobs:
       - name: GameCompile (Game katmanı derlemesi)
         run: python tools/GameCompile/check.py
 
-  # Eski motoru korur; her PR'da koşmaz, engellemez (taşıma bitince kaldırılacak).
-  eski-motor:
-    name: Eski motor (haftalık, engellemez)
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: EskiMotor testleri
-        id: eskimotor
+      - name: Bağımlılık haritası (C4, engellemez)
         continue-on-error: true
         run: |
-          set -o pipefail
-          mkdir -p sweep-out
-          dotnet test tools/CoreTests --filter "TestCategory=EskiMotor" 2>&1 | tee sweep-out/eskimotor.log
-
-      - name: Başsız Play taraması (1440 kombo, kapı)
-        id: sweep
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          mkdir -p sweep-out
-          dotnet run --project tools/SweepV2 -c Release -- \
-            --all --gate --quiet \
-            --compare docs/play-sweep/pr35-final-4x.csv \
-            --expect-sha256 @docs/play-sweep/headless-baseline.sha256 \
-            --out sweep-out --label headless-tum 2>&1 | tee sweep-out/sweep.log
-
-      - name: Skor tablosu
-        if: always()
-        env:
-          ESKIMOTOR_OUTCOME: ${{ steps.eskimotor.outcome }}
-          SWEEP_OUTCOME: ${{ steps.sweep.outcome }}
-        run: |
-          {
-            echo "## EskiMotor testleri: ${ESKIMOTOR_OUTCOME} (engellemez)"
-            echo
-            echo '```'
-            grep -E "(Passed!|Failed!|Başarılı!|Başarısız!)" sweep-out/eskimotor.log || echo "Test özeti yok."
-            grep -E "^\s+(Failed|Başarısız) " sweep-out/eskimotor.log || true
-            echo '```'
-            echo
-            echo "## SweepV2 kapısı: ${SWEEP_OUTCOME} (engellemez)"
-            echo
-            if [ -f sweep-out/sweep.log ]; then
-              echo '```'
-              grep -A 20 -E "Normalize sweep hash uyuşmuyor" sweep-out/sweep.log || echo "Normalize sweep hash: eşleşti"
-              grep -A 50 -E "^KAPI KALDI:" sweep-out/sweep.log || grep -E "^KAPI GEÇTİ" sweep-out/sweep.log || echo "Kapı sonucu yok (tarama tamamlanmadı)"
-              echo '```'
-            else
-              echo "sweep.log yok: tarama başlamadı."
-            fi
-            echo
-            if [ -f sweep-out/headless-tum-ozet.md ]; then
-              cat sweep-out/headless-tum-ozet.md
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "${ESKIMOTOR_OUTCOME}" = "failure" ]; then
-            echo "::warning title=EskiMotor::Eski motor testleri kaldı (engellemez). Ayrıntı job summary'de."
-          fi
-          if [ "${SWEEP_OUTCOME}" = "failure" ]; then
-            echo "::warning title=SweepV2::Hash/144 kapısı kaldı (engellemez). Ayrıntı job summary'de."
-          fi
-
-      - name: CSV + detay
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: eski-motor
-          path: sweep-out/
-          if-no-files-found: warn
+          python -m unittest discover -s tools/DepMap -p 'test_*.py'
+          python tools/DepMap/depmap.py --out depmap.txt
+          { echo '### Bağımlılık haritası (C4)'; head -4 depmap.txt; } >> "$GITHUB_STEP_SUMMARY"

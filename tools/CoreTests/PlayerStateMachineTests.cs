@@ -20,20 +20,7 @@ namespace CoreTests;
 [TestFixture]
 public class PlayerStateMachineTests
 {
-    static SkillMotor LoadFull()
-    {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        if (!File.Exists(path))
-        {
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        }
-        Assert.That(File.Exists(path), Is.True, $"element-sistemi.json bulunamadı: {path}");
-        return SkillMotor.FromJson(File.ReadAllText(path));
-    }
+    static SkillMotor LoadFull() => SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
 
     static PlayerStateNode Require(PlayerStateMachine sm, string id)
     {
@@ -138,7 +125,7 @@ public class PlayerStateMachineTests
         sm.SyncWorld(false, false, false, false, false, isDrawing: true, false);
         Assert.That(sm.CurrentId, Is.EqualTo("drawing"));
         Assert.That(sm.AllowsDraw, Is.True);
-        Assert.That(sm.BlocksMove, Is.True);
+        Assert.That(sm.BlocksMove, Is.False, "v4: çizerken tam hız");
     }
 
     [Test]

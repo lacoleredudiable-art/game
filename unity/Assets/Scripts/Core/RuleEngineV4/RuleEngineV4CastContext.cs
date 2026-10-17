@@ -1,3 +1,5 @@
+using Dovus.Core.Grammar;
+
 namespace Dovus.Core.RuleEngineV4
 {
     /// <summary>Katman 1 girdisi: hedef seçimi ve menzil (fizik-komutlari.md §1.2).</summary>
@@ -41,5 +43,16 @@ namespace Dovus.Core.RuleEngineV4
                 hasValidTarget: true,
                 targetInWeaponRange: true,
                 hasUsableMark: adjectiveRune == 9);
+
+        /// <summary>Fiil+sıfat tamamlanmadıysa (dotCount &lt; <see cref="VerbAdjectiveComboLen"/>) merkezde kalkış iptal eder.</summary>
+        public static bool ShouldAbortSentenceOnCenterRelease(int dotCount) =>
+            dotCount < VerbAdjectiveComboLen;
+
+        public static bool ShouldAbortSentenceOnCenterRelease(bool releasedOnCenter, SentenceState sentence) =>
+            releasedOnCenter
+            && sentence != null
+            && sentence.Phase == SentencePhase.Building
+            && sentence.Words != null
+            && ShouldAbortSentenceOnCenterRelease(sentence.Words.Count);
     }
 }

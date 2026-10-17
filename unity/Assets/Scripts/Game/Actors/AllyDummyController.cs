@@ -164,7 +164,7 @@ namespace Dovus.Game.Actors
                 Shield = _statusBoard.ShieldRemaining,
                 Invulnerable = BossStatusMath.DamageInvulnerable(_statusBoard.IsInvulnerable),
                 Poise = scaledRaw,
-                ScaleMagnitudes = RuleEngineV4Feature.ScaleCombatMagnitudes
+                ScaleMagnitudes = false
             });
             if (outcome.ShieldAbsorbed > 0f)
                 _statusBoard.ConsumeShield(Mathf.Min(_statusBoard.ShieldRemaining, outcome.ShieldAbsorbed));
@@ -283,7 +283,7 @@ namespace Dovus.Game.Actors
                 {
                     SkillPower = payload,
                     CanCrit = false,
-                    ScaleMagnitudes = RuleEngineV4Feature.ScaleCombatMagnitudes,
+                    ScaleMagnitudes = false,
                     Poise = payload
                 });
                 ApplyDamage(Mathf.CeilToInt(hit.Amount));
@@ -294,7 +294,7 @@ namespace Dovus.Game.Actors
                 {
                     Heal = true,
                     HealPower = -payload,
-                    ScaleMagnitudes = RuleEngineV4Feature.ScaleCombatMagnitudes
+                    ScaleMagnitudes = false
                 });
                 ApplyHeal(Mathf.CeilToInt(heal.Amount));
             }

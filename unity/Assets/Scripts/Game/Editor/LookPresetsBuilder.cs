@@ -91,28 +91,32 @@ namespace Dovus.Game.Editor
         {
             // task-look-v2b problem 2: A/B ayrımı modest kaldı (gameplay |A-B| 18.4, hedef >=20) —
             // kontrast/SMH/vinyet daha güçlü, bloom daha çekingen (daha "keskin", daha az yumuşak parlama).
+            if (profile.TryGet(out WhiteBalance wb))
+                wb.temperature.Override(0f);
+
             if (profile.TryGet(out ColorAdjustments colorAdj))
             {
-                colorAdj.contrast.Override(27f);
-                colorAdj.postExposure.Override(0.2f);
-                colorAdj.saturation.Override(-14f);
-                colorAdj.colorFilter.Override(new Color(0.87f, 0.92f, 1.05f));
+                colorAdj.contrast.Override(10f);
+                colorAdj.postExposure.Override(0.3f);
+                colorAdj.saturation.Override(-5f);
+                colorAdj.colorFilter.Override(new Color(1f, 1f, 1f));
             }
 
             if (profile.TryGet(out ShadowsMidtonesHighlights smh))
             {
-                smh.shadows.Override(new Vector4(0.72f, 0.79f, 1.11f, -0.37f));
-                smh.midtones.Override(new Vector4(0.91f, 0.94f, 1.04f, 0.03f));
-                smh.highlights.Override(new Vector4(1.1f, 1.08f, 0.95f, 0.15f));
+                smh.shadows.Override(new Vector4(0.9f, 0.92f, 1f, -0.1f));
+                smh.midtones.Override(new Vector4(1f, 1f, 1f, 0.03f));
+                smh.highlights.Override(new Vector4(1.05f, 1.04f, 1f, 0.1f));
             }
 
             if (profile.TryGet(out Vignette vignette))
-                vignette.intensity.Override(0.36f);
+                vignette.intensity.Override(0.18f);
 
             if (profile.TryGet(out Bloom bloom))
             {
-                bloom.threshold.Override(1.3f);
-                bloom.intensity.Override(0.28f);
+                bloom.threshold.Override(0.95f);
+                bloom.tint.Override(new Color(1f, 0.97f, 0.92f));
+                bloom.intensity.Override(0.55f);
             }
         }
 

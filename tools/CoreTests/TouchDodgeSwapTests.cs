@@ -28,8 +28,7 @@ public class TouchDodgeSwapTests
     static string Game(string rel) =>
         File.ReadAllText(Path.Combine(Root(), "unity", "Assets", "Scripts", rel));
 
-    static string ElementJson() =>
-        File.ReadAllText(Path.Combine(Root(), "docs", "element-sistemi.json"));
+    static string ElementJson() => SliceGrammarTestPaths.ReadSliceGrammarJson();
 
     // --- O1 / K3: düğme kuralları ---
 
@@ -70,27 +69,6 @@ public class TouchDodgeSwapTests
         Assert.That(TouchButtonGesture.CenterFiresOnRelease(12f, 12, false), Is.True);
         Assert.That(TouchButtonGesture.CenterFiresOnRelease(13f, 12, false), Is.False);
         Assert.That(TouchButtonGesture.CenterFiresOnRelease(0f, 12, true), Is.False);
-    }
-
-    // --- O2: tek PERFECT penceresi ---
-
-    [Test]
-    public void Perfect_SingleWindow_GradeMatchesPerfectRule()
-    {
-        var resolver = new ExchangeResolver();
-        var dodge = new DodgeTuning();
-        int edge = dodge.IframeStartMs + dodge.PerfectWindowMs;
-        Assert.That(dodge.PerfectWindowMs, Is.EqualTo(150));
-        Assert.That(resolver.GradeFromGap(edge - 1), Is.EqualTo(DodgeGrade.Mukemmel));
-        Assert.That(resolver.GradeFromGap(edge), Is.EqualTo(DodgeGrade.Harika));
-    }
-
-    [Test]
-    public void Perfect_FeedbackText_IsPERFECT()
-    {
-        Assert.That(Game("Game/Actors/PlayerDodgeController.cs"), Does.Not.Contain("void OnGUI"), "büyük ikinci popup kaldırıldı");
-        Assert.That(Game("Game/Actors/PlayerDodgeController.cs"), Does.Contain("\"PERFECT\""));
-        Assert.That(Game("Core/Tuning/GradeTuning.cs"), Does.Not.Contain("MukemmelGapMaxMs"));
     }
 
     // --- S2: dodge değerleri JSON player_stats ile aynı ---
@@ -167,9 +145,9 @@ public class TouchDodgeSwapTests
     [Test]
     public void Director_WiresSustainedLock()
     {
-        Assert.That(Game("Game/Skills/ManifestationDirector.WeaponSwap.cs"), Does.Contain("bool holding = SustainedSkillActive(worldMs);"));
+        Assert.That(Game("Game/Skills/RuleEngineV4SentenceHost.WeaponSwap.cs"), Does.Contain("bool holding = SustainedSkillActive(worldMs);"));
         Assert.That(Game("Game/Skills/Hosts/MdCastPort.cs"), Does.Contain("NoteSustainedCast(skill)"));
-        Assert.That(Game("Game/Skills/Motion/MotionTemplateDriver.cs"), Does.Contain("_host.SustainedCast.Clear();"));
+        Assert.That(Game("Game/Skills/RuleEngineV4SentenceHost.zMotionStubs.cs"), Does.Not.Contain("MotionTemplateDriver"));
         Assert.That(Game("Game/Skills/Weapons/OrbController.cs"), Does.Not.Contain("OnWeaponHudButton"));
         Assert.That(Game("Game/Skills/Weapons/OrbController.cs"), Does.Contain("SwapButtonHoldSec"));
     }

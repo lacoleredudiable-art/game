@@ -25,6 +25,11 @@ namespace Dovus.Core.RuleEngineV4
 
         public static string ComboKey(int verb, int adjective) => verb + "-" + adjective;
 
+        /// <summary>Fedakarlık sıfatı (rün 8): kural kitabı K 22:15 "Fedakarlık mana ödemez"; canı öder, bekleme yine işler.</summary>
+        public const int SacrificeAdjective = 8;
+
+        public static bool IsManaFree(int adjective) => adjective == SacrificeAdjective;
+
         public float Mana(double worldMs)
         {
             Regen(worldMs);
@@ -36,22 +41,23 @@ namespace Dovus.Core.RuleEngineV4
                 ? (readyAt - worldMs) / Units.SecToMs
                 : 0;
 
-        public RuleEngineV4CastDenial Check(string comboKey, double worldMs)
+        public RuleEngineV4CastDenial Check(string comboKey, double worldMs, bool manaFree = false)
         {
             if (CooldownRemainingSec(comboKey, worldMs) > 0)
                 return RuleEngineV4CastDenial.Cooldown;
-            return Mana(worldMs) < _scale.ManaCostPerSkill
+            return !manaFree && Mana(worldMs) < _scale.ManaCostPerSkill
                 ? RuleEngineV4CastDenial.Mana
                 : RuleEngineV4CastDenial.None;
         }
 
-        /// <summary>Mana yetmez ya da bekleme sürüyorsa false; aksi halde mana harcanır, tam bekleme başlar.</summary>
-        public bool TryBegin(string comboKey, double worldMs, out RuleEngineV4CastDenial denial)
+        /// <summary>Mana yetmez ya da bekleme sürüyorsa false; aksi halde mana harcanır (manaFree ise harcanmaz), tam bekleme başlar.</summary>
+        public bool TryBegin(string comboKey, double worldMs, out RuleEngineV4CastDenial denial, bool manaFree = false)
         {
-            denial = Check(comboKey, worldMs);
+            denial = Check(comboKey, worldMs, manaFree);
             if (denial != RuleEngineV4CastDenial.None)
                 return false;
-            _mana -= _scale.ManaCostPerSkill;
+            if (!manaFree)
+                _mana -= _scale.ManaCostPerSkill;
             _readyAtMs[comboKey] = worldMs + _scale.CooldownSec * Units.SecToMs;
             return true;
         }

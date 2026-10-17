@@ -18,7 +18,7 @@ using UnityEngine;
 namespace Dovus.Game.Vfx
 {
     /// <summary>
-    /// Dövüş olaylarını efekt + sese bağlar: boss windup/vuruş/kükreme, dodge, perfect dodge,
+    /// Dövüş olaylarını efekt + sese bağlar: boss windup/vuruş/kükreme, dodge,
     /// oyuncu isabeti, UI dokunuşu. Yalnız dinler; oyun durumuna yazmaz.
     /// </summary>
     public sealed class PresentationFxView : MonoBehaviour
@@ -123,9 +123,7 @@ namespace Dovus.Game.Vfx
 
         void OnExchange(ExchangeResult result)
         {
-            if (result.Outcome == ExchangeOutcome.Dodged && result.Grade == DodgeGrade.Mukemmel)
-                _sfx?.Play(SfxLibrary.PerfectDodge);
-            else if (result.Outcome == ExchangeOutcome.Hit)
+            if (result.Outcome == ExchangeOutcome.Hit)
                 _sfx?.Play(SfxLibrary.PlayerHurt);
         }
 

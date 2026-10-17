@@ -1,5 +1,4 @@
 using Dovus.Core.RuleEngineV4;
-using Dovus.Game.Skills;
 using UnityEngine;
 
 namespace Dovus.Game.Skills.RuleEngineV4
@@ -11,9 +10,9 @@ namespace Dovus.Game.Skills.RuleEngineV4
         public RuleEngineV4DeliveryEvaluator(RuleEngineV4PhysicsServices physics) =>
             _physics = physics;
 
-        public bool EvaluateDelivery(ManifestationDirector director, CommandPlan plan, Transform focus)
+        public bool EvaluateDelivery(RuleEngineV4CombatContext combat, CommandPlan plan, Transform focus)
         {
-            Transform caster = director.MechanicsPlayer;
+            Transform caster = combat?.Player;
             if (caster == null)
                 return false;
             float casterR = _physics.BodyRadius(caster);

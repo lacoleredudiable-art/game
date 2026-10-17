@@ -1,3 +1,4 @@
+using Dovus.Game.Diagnostics;
 using Dovus.Core.Boss;
 using Dovus.Core.Dodge;
 using Dovus.Core.Damage;
@@ -58,6 +59,7 @@ namespace Dovus.Game.Casting.Input
             bool stateAllows = _s.PlayerStates == null || _s.PlayerStates.AllowsDodgeGate;
             if (!stateAllows || !DodgeCancelRules.Allowed(dead, stun, freeze, knockdown))
             {
+                DebugConfig.DevLog($"[DODGE] t={worldMs} sonuc=Reddedildi(kapi) olu={dead} sersem={stun} donma={freeze} yikilma={knockdown} durumKapisi={stateAllows}");
                 _s.Readout?.NoteDenied("dodge yok");
                 _s.Syllable?.PlayDenied();
                 return;
@@ -68,6 +70,7 @@ namespace Dovus.Game.Casting.Input
                 _s.Charges.RechargeMult = _s.Dodge.CooldownMult;
                 DodgeChain.PressOutcome outcome = DodgeChain.TryConsumePress(
                     worldMs, _s.Dodge, _s.Charges, _s.Combat.Dodge);
+                DebugConfig.DevLog($"[DODGE] t={worldMs} sonuc={outcome} hak={_s.Charges.Ready}/{_s.Charges.Max}");
                 if (outcome == DodgeChain.PressOutcome.DeniedNoCharge)
                 {
                     _s.Readout?.NoteDenied("dodge yok");

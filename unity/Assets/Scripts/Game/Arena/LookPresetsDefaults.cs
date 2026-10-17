@@ -7,7 +7,7 @@ namespace Dovus.Game.Arena
         public const float BaseBgPresetCLerp = 0.55f;
         public const float FogDensityPresetBMult = 0.38f;
         public const float FogDensityPresetCMult = 0.28f;
-        public const float SkyPresetBLerp = 0.35f;
+        public const float SkyPresetBLerp = 0f;
         public const float SkyPresetCLerp = 0.25f;
         public const float DefaultPresetBlueChan = 0.42f;
         public const float DefaultPresetLerpWeight = 0.42f;
@@ -15,7 +15,7 @@ namespace Dovus.Game.Arena
         public const float FogBaseDensity = 0.0032f;
         public const float FsrSharpness = 0.82f;
         public const float SunIntensityMult = 0.82f;
-        public const float SunIntensityPresetBMult = 1.26f;
+        public const float SunIntensityPresetBMult = 1f;
         public const float SunIntensityPresetDefaultMult = 1.1f;
         public const int MainLightShadowMapResPx = 2048;
         public const int ShadowMapResMobilePx = 2048;
@@ -25,6 +25,6 @@ namespace Dovus.Game.Arena
         public const float PresetBShadowDistanceM = 27f;
         public const float ShadowDistanceDefaultM = 32f;
         public const float ShadowNormalBias = 0.28f;
-        public const float ShadowStrength = 0.95f;
+        public const float ShadowStrength = 0.75f;
     }
 }

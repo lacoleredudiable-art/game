@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Dovus.Core.RuleEngineV4;
 using NUnit.Framework;
 
@@ -18,22 +20,14 @@ public sealed class RuleEngineV4PlannerTests
 
     static RuleEngineV4Planner Planner()
     {
-        string json = File.ReadAllText(JsonPath());
+        string json = System.IO.File.ReadAllText(JsonPath());
         return new RuleEngineV4Planner(RuleEngineV4Catalog.FromJson(json));
-    }
-
-    [Test]
-    public void FeatureFlag_DefaultOff()
-    {
-        RuleEngineV4Feature.Enabled = false;
-        Assert.That(RuleEngineV4Feature.Enabled, Is.False);
-        Assert.That(RuleEngineV4Feature.FlagName, Is.EqualTo("kural_motoru_v4"));
     }
 
     [Test]
     public void SliceRunes_AreSharedBetweenVerbAndAdjective()
     {
-        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        var catalog = RuleEngineV4Catalog.FromJson(System.IO.File.ReadAllText(JsonPath()));
         Assert.That(catalog.SliceRunes, Is.EquivalentTo(new[] { 1, 2, 3, 4, 6, 9 }));
         Assert.That(RuleEngineV4Slice.Runes, Is.EquivalentTo(catalog.SliceRunes));
     }
@@ -41,12 +35,15 @@ public sealed class RuleEngineV4PlannerTests
     [Test]
     public void SliceRunes_ReadFromJson_ChangingDataChangesRunes()
     {
-        string json = File.ReadAllText(JsonPath());
-        const string original = "\"slice_runes\": [1, 2, 3, 4, 6, 9]";
-        Assert.That(json, Does.Contain(original), "slice_runes JSON'da yok");
+        string json = System.IO.File.ReadAllText(JsonPath());
+        var root = JsonNode.Parse(json)!.AsObject();
+        Assert.That(root.ContainsKey("slice_runes"), Is.True, "slice_runes JSON'da yok");
+        var alteredRoot = root.DeepClone().AsObject();
+        alteredRoot["slice_runes"] = new JsonArray(1, 3);
+        string altered = alteredRoot.ToJsonString();
         try
         {
-            RuleEngineV4Catalog.FromJson(json.Replace(original, "\"slice_runes\": [1, 3]"));
+            RuleEngineV4Catalog.FromJson(altered);
             Assert.That(RuleEngineV4Slice.Runes, Is.EqualTo(new[] { 1, 3 }));
             Assert.That(RuleEngineV4Slice.IsSliceCombo(1, 3), Is.True);
             Assert.That(RuleEngineV4Slice.IsSliceCombo(2, 1), Is.False, "2 artık dilimde değil");
@@ -64,7 +61,7 @@ public sealed class RuleEngineV4PlannerTests
     [TestCase(9)]
     public void Zaman_BelowMinComboLen_PlansNothing(int adj)
     {
-        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        var catalog = RuleEngineV4Catalog.FromJson(System.IO.File.ReadAllText(JsonPath()));
         Assert.That(catalog.TryGetVerb(12, out RuleEngineV4Verb zaman), Is.True);
         Assert.That(zaman.MinComboLen, Is.EqualTo(3), "zaman min_combo_len");
         var planner = new RuleEngineV4Planner(catalog);
@@ -81,7 +78,7 @@ public sealed class RuleEngineV4PlannerTests
     [Test]
     public void MinComboLen_OnlyGatesVerbsThatDeclareIt()
     {
-        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        var catalog = RuleEngineV4Catalog.FromJson(System.IO.File.ReadAllText(JsonPath()));
         var planner = new RuleEngineV4Planner(catalog);
         var twoDots = new RuleEngineV4CastContext(hasValidTarget: true, targetInWeaponRange: true, comboLength: 2);
         foreach (int verb in catalog.SliceRunes)
@@ -101,7 +98,7 @@ public sealed class RuleEngineV4PlannerTests
         Assert.That(RuleEngineV4Slice.IsSliceWeapon(6), Is.False, "Çekiç dilimde");
         Assert.That(RuleEngineV4Slice.IsSliceWeapon(2), Is.True, "Yay dilimde değil");
         Assert.That(RuleEngineV4Slice.IsSliceWeapon(4), Is.True, "Kılıç dilimde değil");
-        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        var catalog = RuleEngineV4Catalog.FromJson(System.IO.File.ReadAllText(JsonPath()));
         Assert.That(catalog.TryGetWeapon(6, out _), Is.True, "Çekiç silah kuralı JSON'dan silinmiş");
         Assert.That(new RuleEngineV4Planner(catalog).Plan(1, 2, 6).IsValid, Is.True, "Çekiç planı");
         Assert.That(catalog.SkillAnim.Resolve(1, 2, 6).Clip, Is.EqualTo("Cekic_VUR"), "Çekiç skill_anim");
@@ -110,7 +107,7 @@ public sealed class RuleEngineV4PlannerTests
     [Test]
     public void Scale_FromData_PlayerHp1000_BaseDamage100()
     {
-        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        var catalog = RuleEngineV4Catalog.FromJson(System.IO.File.ReadAllText(JsonPath()));
         RuleEngineV4Scale s = catalog.Scale;
         Assert.That(s.PlayerMaxHp, Is.EqualTo(1000));
         Assert.That(s.AllyDummyMaxHp, Is.EqualTo(1000));
@@ -129,25 +126,8 @@ public sealed class RuleEngineV4PlannerTests
     [Test]
     public void Scale_HundredDamage_IsTenPercentOfPlayerHp()
     {
-        RuleEngineV4Scale s = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath())).Scale;
+        RuleEngineV4Scale s = RuleEngineV4Catalog.FromJson(System.IO.File.ReadAllText(JsonPath())).Scale;
         Assert.That(s.BaseDamage / s.PlayerMaxHp, Is.EqualTo(0.1f).Within(1e-6f));
-    }
-
-    [Test]
-    public void Feature_ScaleCombatMagnitudes_OnlyWhenFlagOff()
-    {
-        bool was = RuleEngineV4Feature.Enabled;
-        try
-        {
-            RuleEngineV4Feature.Enabled = false;
-            Assert.That(RuleEngineV4Feature.ScaleCombatMagnitudes, Is.True, "bayrak kapalı: eski ölçek");
-            RuleEngineV4Feature.Enabled = true;
-            Assert.That(RuleEngineV4Feature.ScaleCombatMagnitudes, Is.False, "bayrak açık: ham sayı");
-        }
-        finally
-        {
-            RuleEngineV4Feature.Enabled = was;
-        }
     }
 
     [Test]
@@ -229,7 +209,7 @@ public sealed class RuleEngineV4PlannerTests
     [Test]
     public void YayHareket_RopeOnlyWhenMarked_ElseShortBackstep()
     {
-        var catalog = RuleEngineV4Catalog.FromJson(File.ReadAllText(JsonPath()));
+        var catalog = RuleEngineV4Catalog.FromJson(System.IO.File.ReadAllText(JsonPath()));
         Assert.That(catalog.TryGetWeapon(2, out RuleEngineV4Weapon yay), Is.True);
         Assert.That(yay.MotionRopeAdjectiveRune, Is.EqualTo(9), "ip yalnız İşaretli-Hareket");
         var planner = new RuleEngineV4Planner(catalog);

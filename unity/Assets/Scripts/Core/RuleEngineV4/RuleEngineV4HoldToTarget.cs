@@ -1,6 +1,6 @@
 namespace Dovus.Core.RuleEngineV4
 {
-    /// <summary>Basılı tutarak hedef seçme kuralı (yalnız <see cref="RuleEngineV4Feature.Enabled"/>).</summary>
+    /// <summary>Basılı tutarak hedef seçme kuralı (RuleEngineV4).</summary>
     public static class RuleEngineV4HoldToTarget
     {
         /// <summary>2. rün konduktan beri geçen süre eşiği geçti mi.</summary>

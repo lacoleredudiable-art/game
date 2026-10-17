@@ -1,0 +1,134 @@
+using Dovus.Core.Boss;
+using Dovus.Core.Dodge;
+using Dovus.Core.Damage;
+using Dovus.Core.Casting;
+using Dovus.Core.Input;
+using Dovus.Core.Hud;
+using Dovus.Core.Passives;
+using Dovus.Core.Equipment;
+using Dovus.Core.Data;
+using Dovus.Core.Grammar;
+using Dovus.Game.Actors;
+using Dovus.Game.Boss;
+using Dovus.Game.Cameras;
+using Dovus.Game.Casting;
+using Dovus.Core.Presentation;
+using Dovus.Game.Platform;
+using Dovus.Game.Config;
+using Dovus.Game.Data;
+using Dovus.Game.Diagnostics;
+using Dovus.Game.Hud;
+using Dovus.Game.Team;
+using Dovus.Game.Vfx;
+using UnityEngine;
+
+namespace Dovus.Game.Skills
+{
+    public sealed partial class RuleEngineV4SentenceHost
+    {
+        public void Bind(
+            GameClockHost clock,
+            HexagonInputController input,
+            Transform player,
+            ActorPoseView pose,
+            BossReactorController boss,
+            BossVitals bossVitals,
+            GroundScarFieldView scars,
+            GameTuning colors,
+            DamageNumberHud damageHud = null,
+            BossDirector bossDirector = null,
+            ActorStatusHost playerStatus = null,
+            ActorStatusHost bossStatus = null,
+            ISentenceDebugSink debugHud = null,
+            ReactionReadoutHud readout = null,
+            FollowCameraController camera = null,
+            AllyDummyController ally = null,
+            HexagonView hexagonView = null,
+            PassiveHud passiveHud = null,
+            EquipmentItem equippedWeapon = null,
+            EquipmentBonusResolver equipmentBonus = null,
+            SkillMotor skills = null,
+            SkillFactory skillFactory = null,
+            AnimationDatabase animationDatabase = null)
+        {
+            _clock = clock;
+            if (_input != null)
+                _input.SkillCancelledByDodge -= CancelActiveSkillForDodge;
+            _input = input;
+            if (_input != null)
+            {
+                _input.SkillCancelledByDodge -= CancelActiveSkillForDodge;
+                _input.SkillCancelledByDodge += CancelActiveSkillForDodge;
+            }
+            _engine = input.Engine;
+            _combat = input.Combat;
+            _colors = colors;
+            _player = player;
+            _pose = pose;
+            _visual = player != null ? player.GetComponent<ActorView>() : null;
+            _boss = boss;
+            WireBossVitalsEvents(_bossVitals, bossVitals);
+            _scars = scars;
+            _damageHud = damageHud;
+            _bossDirector = bossDirector;
+            _motor = player.GetComponent<KinematicMotorController>();
+            if (_playerStatus != null)
+            {
+                _playerStatus.DamageTaken -= OnPlayerDamageTaken;
+                _playerStatus.DamageBlocked -= OnPlayerDamageBlocked;
+            }
+            _playerStatus = playerStatus;
+            WireBossStatusDot(_bossStatus, bossStatus);
+            _debugHud = debugHud;
+            _readout = readout;
+            _camera = camera;
+            _ally = ally;
+            _ally?.BindStatusClock(clock, _combat != null ? _combat.Status : null);
+            EnsureMotionReady();
+            _passiveHud = passiveHud;
+            _hexagonView = hexagonView;
+            _equippedWeapon = equippedWeapon;
+          RefreshDefenderArmor();
+            EnsureBossArmor();
+            _equipmentBonus = equipmentBonus;
+            _playerResource = player != null ? player.GetComponent<PlayerResourceHost>() : null;
+            _playerCooldown = player != null ? player.GetComponent<PlayerCooldownHost>() : null;
+            _skills = skills ?? SkillMotorLoader.Load();
+            _skillFactory = skillFactory ?? new SkillFactory(_skills, _equipmentBonus);
+            _animationDatabase = animationDatabase ?? LoadAnimationDatabase();
+          EnsureCoreServices();
+          EnsureSkillServices();
+            _weaponLoadout.ResetElementPaintIndex();
+          EnsureLaunchServices();
+            _skillPresentation.EnsureCatalog();
+            _playerStates = new PlayerStateMachine(_skills.PlayerStates);
+            input.BindPlayerStates(_playerStates, () => PendingList.Count > 0);
+            var motorForStates = player != null ? player.GetComponent<KinematicMotorController>() : null;
+            motorForStates?.BindPlayerStates(_playerStates);
+            _slotPassives = new SlotPassiveDirector();
+            _slotPassiveNeedsWeapon = false;
+            if (TrySliceDocument(out GrammarJsonDocument slotDoc))
+                _slotPassiveNeedsWeapon = PassiveSlotPolicy.RequiresWeaponCompatibility(slotDoc);
+            CastSession.ClosingChainBonus = 1f;
+            if (_playerStatus != null)
+            {
+                _playerStatus.SlotPassiveDirector = _slotPassives;
+                _playerStatus.ReflectBossVitals = bossVitals;
+                _playerStatus.IncomingDamageRedirect = null;
+                _playerStatus.ReflectSink = ApplyReflectedDamage;
+                _playerStatus.DamageTaken += OnPlayerDamageTaken;
+                _playerStatus.DamageBlocked += OnPlayerDamageBlocked;
+            }
+
+            if (_engine != null && !_hooked)
+            {
+                _engine.SentenceCompleted += OnSentenceCompleted;
+                _hooked = true;
+            }
+          SyncVisualDelivery();
+            EnsureClosingServices();
+          EnsureLaunchServices();
+            _skillPresentation.EnsureCatalog();
+        }
+    }
+}

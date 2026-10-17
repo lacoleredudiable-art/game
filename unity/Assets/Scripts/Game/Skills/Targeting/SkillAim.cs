@@ -257,22 +257,10 @@ namespace Dovus.Game.Skills.Targeting
             ManifestationTuning tuning = _host.Combat != null
                 ? _host.Combat.Manifestation
                 : new ManifestationTuning();
-            SkillExecutorRoute route = _host.SkillExecutorRouter.Route(skill, _host.EquippedWeapon);
-            route = _host.ApplyMechanicWorldRoute(_host.MechanicPlanFor(skill), route);
             LivingEffectPlan plan = SkillWorldPlanner.Build(skill, _host.PresentationCatalog, tuning);
             float rangeMult = _host.EquippedWeapon != null ? _host.EquippedWeapon.RangeMult : 1f;
-            bool burst = string.Equals(skill.Identity.Verb, "5", StringComparison.Ordinal);
             float radius = plan.BangRadiusM > 0f ? plan.BangRadiusM : tuning.TravelHitRadiusM;
-            if (route.Kind == SkillExecutorKind.MeleeHitbox && !burst)
-                radius = tuning.TravelHitRadiusM;
-            float range = route.Kind == SkillExecutorKind.MeleeHitbox
-                ? tuning.BasicStrikeRangeM * rangeMult
-                : Mathf.Max(radius, plan.MaxRangeM * rangeMult);
-            float duration = tuning.BangDurationSec;
-            int spawnCount = 1;
-            _host.ApplyVerbHitboxSizing(
-                route.Kind, skill, tuning, rangeMult, burst,
-                ref radius, ref range, ref duration, ref spawnCount);
+            float range = Mathf.Max(radius, plan.MaxRangeM * rangeMult);
             float edge = Mathf.Max(SkillAimDefaults.MinRadiusM, range);
             if (!skill.IsEmpty
                 && _host.TryGetMotionBinding(skill.Identity.Id, out MotionBinding motion)

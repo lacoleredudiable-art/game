@@ -39,10 +39,10 @@ namespace Dovus.Core.Damage
         {
             if (string.IsNullOrWhiteSpace(json))
                 return Default;
-            return FromDocument(ElementSystemDocument.Parse(json));
+            return FromDocument(GrammarJsonDocument.Parse(json));
         }
 
-        public static CritSystem FromDocument(ElementSystemDocument doc) =>
+        public static CritSystem FromDocument(GrammarJsonDocument doc) =>
             FromJson(doc.Root);
 
         public static CritSystem FromJson(JsonValue root)

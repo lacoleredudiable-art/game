@@ -64,14 +64,9 @@ public class RootAndSkillNumberTests
     [Test]
     public void SkillNumbers_ComeFromCanonicalJson()
     {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..",
-            "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json"));
-        Assert.That(File.Exists(path), Is.True, path);
-        string json = File.ReadAllText(path);
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         JsonValue root = MiniJson.Parse(json);
-        var catalog = SkillNumberCatalog.FromJson(json);
+        var catalog = SliceGrammarTestPaths.SliceSkillNumbers();
 
         float damage = root["verb_base"]["1"]["base_damage"].AsFloat(0f);
         float cooldown = root["verb_base"]["6"]["base_cooldown"].AsFloat(0f);
@@ -86,7 +81,7 @@ public class RootAndSkillNumberTests
         Assert.That(c6, Is.EqualTo(cooldown).Within(0.001f));
         Assert.That(m6, Is.EqualTo(mana).Within(0.001f));
         Assert.That(dur6, Is.EqualTo(duration).Within(0.001f));
-        Assert.That(range6, Is.EqualTo(4f).Within(0.001f), "kontrol konisi 4m");
+        Assert.That(range6, Is.EqualTo(catalog.RangeM(6)).Within(0.001f), "verb 6 menzil katalogdan");
         Assert.That(radius6, Is.GreaterThan(0f));
         Assert.That(catalog.GlobalCooldownSec, Is.EqualTo(gcd).Within(0.001f));
         Assert.That(catalog.MaxMana, Is.EqualTo(maxMana).Within(0.001f));
@@ -96,7 +91,8 @@ public class RootAndSkillNumberTests
         var tuning = new StatusTuning();
         int oldRoot = tuning.RootMs;
         SkillNumberTuningApplier.ApplyCcDurations(catalog, tuning);
-        int jsonRootMs = (int)System.Math.Round(root["mobility_cc"]["cc_priority"].AsArray()[1]["duration_sec"].AsFloat(0f) * 1000.0);
+        MobilityCcData mobility = SliceGrammarTestPaths.SliceMobilityCc();
+        int jsonRootMs = (int)mobility.CcDurationsMs[StatusKind.Root];
         Assert.That(tuning.RootMs, Is.EqualTo(jsonRootMs));
         Assert.That(tuning.RootMs, Is.Not.EqualTo(oldRoot));
 

@@ -155,7 +155,7 @@ namespace Dovus.Game.Casting
 
         /// <summary>
         /// v6 ladder smoke path: aynı SentenceEngine event zincirinden iki rün cast eder.
-        /// ManifestationDirector normal cast gibi alır; ayrı hasar/skill yolu yoktur.
+        /// RuleEngineV4SentenceHost normal cast gibi alır; ayrı hasar/skill yolu yoktur.
         /// </summary>
         public bool TryDebugCastSkill(int verbRuneId, int adjectiveRuneId)
         {
@@ -220,7 +220,7 @@ namespace Dovus.Game.Casting
             _session.Skills = skills ?? _session.Skills;
             _session.Combat ??= new CombatTuning();
             if (_session.Skills != null && _session.Skills.MaxComboLength > 0)
-                _session.Combat.Sentence.MaxSentenceDots = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.SentenceDotCap(_session.Skills.MaxComboLength);
+                _session.Combat.Sentence.MaxSentenceDots = Dovus.Core.RuleEngineV4.RuleEngineV4CastContext.VerbAdjectiveComboLen;
             if (_session.SentenceHooked && _session.Engine != null)
             {
                 _session.Engine.SentenceCompleted -= OnSentenceCompleted;
@@ -339,7 +339,7 @@ namespace Dovus.Game.Casting
             return _pointer.IsCombatControlAt(pos);
         }
 
-        /// <summary>Sol yarı sanal çubuktur; oradaki dokunuş hedef seçmez.</summary>
+        /// <summary>Sol-alt sanal çubuk bölgesi (O-4.3); oradaki dokunuş hedef seçmez.</summary>
         public bool IsStickHalf(Vector2 pos)
         {
             EnsureServices();
@@ -383,7 +383,7 @@ namespace Dovus.Game.Casting
             {
                 _gate.EnsureSkills();
                 if (_session.Skills != null && _session.Skills.MaxComboLength > 0)
-                    _session.Combat.Sentence.MaxSentenceDots = Dovus.Core.RuleEngineV4.RuleEngineV4Feature.SentenceDotCap(_session.Skills.MaxComboLength);
+                    _session.Combat.Sentence.MaxSentenceDots = Dovus.Core.RuleEngineV4.RuleEngineV4CastContext.VerbAdjectiveComboLen;
                 _session.Engine = new SentenceEngine(
                     _session.Combat.Sentence,
                     _session.Skills?.DefaultLoadout ?? RuneLoadout.Sequential);

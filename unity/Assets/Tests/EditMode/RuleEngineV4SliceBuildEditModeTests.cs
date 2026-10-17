@@ -9,20 +9,19 @@ using UnityEngine;
 namespace Dovus.Tests.EditMode
 {
     /// <summary>
-    /// v4 dilim APK'sı: kural_motoru_v4 bayrakları yalnız -dovusV4Slice ile eklenen define'la açılır;
-    /// define yokken (repo, editör, normal APK) varsayılan kapalı kalır.
+    /// v4 dilim APK'sı: SliceScene yalnız -dovusV4Slice ile eklenen define'la açılır;
+    /// define yokken (repo, editör, normal APK) SliceScene kapalı kalır.
     /// </summary>
     public sealed class RuleEngineV4SliceBuildEditModeTests
     {
         [Test]
-        public void NoDefine_FlagsStayOff()
+        public void NoDefine_SliceSceneStaysOff()
         {
             Assert.That(RuleEngineV4Settings.IsSliceBuild, Is.False, $"editörde {RuleEngineV4Settings.SliceBuildDefine} tanımlı");
             var settings = new GameTuning().RuleEngineV4;
-            Assert.That(settings.Enabled, Is.False, "varsayılan Enabled");
+            Assert.That(settings.Enabled, Is.True, "motor her zaman v4");
             Assert.That(settings.SliceScene, Is.False, "varsayılan SliceScene");
             settings.ApplySliceBuild();
-            Assert.That(settings.Enabled, Is.False, "define yokken ApplySliceBuild Enabled açtı");
             Assert.That(settings.SliceScene, Is.False, "define yokken ApplySliceBuild SliceScene açtı");
         }
 

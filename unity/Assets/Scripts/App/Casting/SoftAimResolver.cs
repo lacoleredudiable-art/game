@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Yumuşak nişan: bakış (ya da hareket yönü) koni içindeyse boss'a döner. Eski
-    /// ManifestationDirector.ResolveAimFacing ile birebir (hız yönü önce normalize edilir, sonra bakış bir kez daha normalize edilir).
+    /// RuleEngineV4SentenceHost.ResolveAimFacing ile birebir (hız yönü önce normalize edilir, sonra bakış bir kez daha normalize edilir).
     /// </summary>
     public static class SoftAimResolver
     {

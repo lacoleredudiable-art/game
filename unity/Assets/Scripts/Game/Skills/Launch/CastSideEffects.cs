@@ -61,13 +61,7 @@ namespace Dovus.Game.Skills.Launch
 
         public void RefreshBuildingMobility(IReadOnlyList<SentenceWord> words)
         {
-            if (words == null || words.Count < 3 || _host.Skills == null
-                || Dovus.Core.RuleEngineV4.RuleEngineV4Feature.DrawingKeepsMovement)
-                return;
-            SkillResolution skill = _host.ResolveSkillWords(words);
-            if (skill.IsEmpty)
-                return;
-            ApplyCastMobility(skill, CastSideEffectsDefaults.CastMobilityDurationSec);
+            // v4: çizim (drawing) hareketi köklemiyor; eski cast mobility yolu kapalı.
         }
 
         public void ApplyCooldown(SkillResolution skill, IReadOnlyList<SentenceWord> words, bool cosmeticIfDisabled)
@@ -119,7 +113,8 @@ namespace Dovus.Game.Skills.Launch
                 return SkillMotionPlan.None;
 
             var t = _host.Combat.SkillMotion;
-            t.ArenaHalfSizeM = _host.Colors != null ? _host.Colors.Arena.ArenaHalfSizeM : t.ArenaHalfSizeM;
+            // Sınır tek kaynaktan (O-7.2): sahnedeki ArenaHalfSizeM okunmaz (C3).
+            t.ArenaHalfSizeM = Dovus.Game.Actors.ArenaBoundary.RadiusM(t);
 
             UnityEngine.Vector3 face = _host.Player.forward;
             face.y = 0f;

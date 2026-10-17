@@ -16,7 +16,6 @@ using Dovus.Game.Platform;
 using Dovus.Game.Data;
 using Dovus.Game.Actors;
 using Dovus.Game.Boss;
-using Dovus.Core.Mechanic;
 using Dovus.Game.Diagnostics;
 using Dovus.Game.Hud;
 using System.Collections.Generic;
@@ -43,7 +42,6 @@ namespace Dovus.Game.Skills.Launch
         VerbExecutionData VerbData { get; }
         ElementPaintNode? SelectedElementPaint { get; }
         Skill LastFactorySkill { get; set; }
-        MechanicPlan LastMechanicPlan { get; }
         ISentenceDebugSink DebugHud { get; }
 
         bool TryTakeFreeMana();

@@ -59,7 +59,7 @@ public class CastGateComboGateTests
     public void CastGate_EnforceResourceCostTrue_BlocksVerbWhenManaZero()
     {
         var (session, gate, _) = CreateGateHarness(maxMana: 0f, enforceResourceCost: true, enforceCooldown: false);
-        session.Skills = SkillMotor.FromJson(System.IO.File.ReadAllText(RepoPaths.Docs("element-sistemi.json")));
+        session.Skills = SkillMotor.FromJson(RepoPaths.BuildSliceGrammarJson());
 
         Assert.That(gate.TryAllowSentenceStart(verbDot: 1), Is.False);
         Assert.That(session.Engine.State.Phase, Is.EqualTo(SentencePhase.Idle));
@@ -69,7 +69,7 @@ public class CastGateComboGateTests
     public void CastGate_EnforceCooldownTrue_BlocksSecondDotWhileComboOnCooldown()
     {
         var (session, gate, clock) = CreateGateHarness(maxMana: 100f, enforceResourceCost: false, enforceCooldown: true);
-        string json = System.IO.File.ReadAllText(RepoPaths.Docs("element-sistemi.json"));
+        string json = RepoPaths.BuildSliceGrammarJson();
         session.Skills = SkillMotor.FromJson(json);
 
         session.Engine.OnDotTouched(1, 0);

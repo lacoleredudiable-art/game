@@ -29,7 +29,7 @@ public sealed class GameIdentifierLanguageTests
     {
         "Kalkan", "Yay", "Asa", "Kilic", "Mizrak", "HavaPin", "ToprakKnock", "ToprakShake",
         "GenisYay", "KarsiSaldiri", "KosuAtisi", "CaprazAtes", "Surekli", "Yakin",
-        "ManifestationDirectorDefaults",
+        "RuleEngineV4SentenceHostDefaults",
         "Cekic", "Tilsim", "Kitap", "Kure",
     };
 

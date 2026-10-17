@@ -1,15 +1,12 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Repo doğrulama: GameCompile, CoreTests, AtomSim, SweepV2 kapısı.
+  Repo doğrulama: GameCompile, CoreTests, IntegrationTests, OYUN.md üretimi.
 .PARAMETER Skip
-  Virgülle ayrılmış adımlar: gamecompile, unitycompile, coretests, integration, atomsim, sweep
-.PARAMETER Quick
-  Sweep adımını atla.
+  Virgülle ayrılmış adımlar: gamecompile, unitycompile, coretests, integration, oyungen
 #>
 param(
-    [string[]] $Skip = @(),
-    [switch] $Quick
+    [string[]] $Skip = @()
 )
 
 $ErrorActionPreference = 'Continue'
@@ -162,52 +159,7 @@ if (-not (Test-StepSkipped 'integration')) {
     }
 }
 
-# (d) AtomSim
-if (-not (Test-StepSkipped 'atomsim')) {
-    $results += Invoke-VerifyStep -Key 'atomsim' -Title 'AtomSim' -Run {
-        dotnet run --project (Join-Path $RepoRoot 'tools\AtomSim')
-    } -NoteFromLog {
-        param($t, $code)
-        if ($code -ne 0) { return "exit $code" }
-        $literal = ($t -match '0 hata')
-        $gate = ($t -match '(?m)^A\s+[^:]+:\s*0\s*$') -and ($t -match '(?m)^B\s+.*imza grubu:\s*0\s*$') -and ($t -match '(?m)^D\s+[^:]+:\s*0\s*$')
-        if ($literal) { return '0 hata' }
-        if ($gate) { return 'gramer kapı (A/B/D=0)' }
-        return 'kapı satırı bulunamadı'
-    }
-}
-
-# (e) SweepV2
-$runSweep = (-not $Quick) -and (-not (Test-StepSkipped 'sweep'))
-if ($runSweep) {
-    $sweepOut = Join-Path $OutDir 'sweep'
-    $results += Invoke-VerifyStep -Key 'sweep' -Title 'SweepV2' -Run {
-        dotnet run -c Release --project (Join-Path $RepoRoot 'tools\SweepV2') -- `
-            --all --gate --quiet `
-            --compare (Join-Path $RepoRoot 'docs\play-sweep\pr35-final-4x.csv') `
-            --expect-sha256 '@docs/play-sweep/headless-baseline.sha256' `
-            --out $sweepOut `
-            --label verify
-    } -NoteFromLog {
-        param($t, $code)
-        $ozet = Join-Path $sweepOut 'verify-ozet.md'
-        $line = ''
-        if (Test-Path $ozet) {
-            $lines = Get-Content -Path $ozet -Encoding UTF8
-            foreach ($l in $lines) {
-                if ($l -match 'toplam|Toplam|1440|/\s*144') { $line = $l.Trim(); break }
-            }
-            if (-not $line -and $lines.Count -gt 0) {
-                $line = ($lines | Select-Object -Last 3) -join ' | '
-            }
-        }
-        if (-not $line) { $line = "exit $code" }
-        if ($code -ne 0) { return "FAIL $line" }
-        return $line
-    }
-}
-
-# (f) OYUN.md üretici
+# (d) OYUN.md üretici
 if (-not (Test-StepSkipped 'oyungen')) {
     $py = Get-PythonCommand
     if (-not $py) {

@@ -11,6 +11,7 @@ using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
 using Dovus.Core.Motion;
+using Dovus.Core.RuleEngineV4;
 using Dovus.Core.Shared;
 using Dovus.Core.Status;
 using Dovus.Game.Assets;
@@ -52,7 +53,7 @@ namespace Dovus.Game.Composition.Builders
             var passiveHud = ctx.PassiveHud;
             var skills = ctx.Skills;
             var runeManager = ctx.RuneManager;
-            var design = ctx.ElementDesign;
+            var sliceEquipment = ctx.SliceEquipment;
             var assetCatalog = ctx.AssetCatalog;
             var playerStatus = ctx.PlayerStatus;
             var bossStatus = ctx.BossStatus;
@@ -103,15 +104,11 @@ namespace Dovus.Game.Composition.Builders
             var directorGo = ctx.Boss.gameObject;
             var bossDir = directorGo.AddComponent<BossDirector>();
             // kural_motoru_v4: denge çubuğu tavanı scale.boss_poise_bar (dünyaya özel CombatTuning örneği).
-            BossAttackDamage? sliceBossDamage = null;
-            if (Dovus.Core.RuleEngineV4.RuleEngineV4Feature.Enabled)
-            {
-                combat.Boss.PoiseMax = ctx.Host.RuleEngineV4Scale.BossPoiseBar;
-                sliceBossDamage = RuleEngineV4BossDamage.Resolve(
-                    ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss, combat.Status);
-                RuleEngineV4BossDamage.ApplyPoisonBreathShape(ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss);
-                RuleEngineV4BossDamage.DisableLegacyPoisonCombo(combat.Status);
-            }
+            combat.Boss.PoiseMax = ctx.Host.RuleEngineV4Scale.BossPoiseBar;
+            BossAttackDamage? sliceBossDamage = RuleEngineV4BossDamage.Resolve(
+                ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss, combat.Status);
+            RuleEngineV4BossDamage.ApplyPoisonBreathShape(ctx.Host.RuleEngineV4Catalog.SliceBossAttacks, combat.Boss);
+            RuleEngineV4BossDamage.DisableLegacyPoisonCombo(combat.Status);
             bossDir.Bind(ctx.Clock, combat, tuning, boss, input, player, vitals, ctx.BossVitals, telegraph, feel, sliceBossDamage);
             bossDir.BindTeam(ctx.TeamAccess);
             if (bossStatus != null)
@@ -144,7 +141,7 @@ namespace Dovus.Game.Composition.Builders
                     alive: () => !ctx.AllyDummyController.IsDown,
                     stealthed: () => ctx.AllyDummyController.Board != null && ctx.AllyDummyController.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
-                        ctx.ManifestationDirector,
+                        CombatContext(ctx),
                         ctx.AllyDummyController.transform,
                         raw,
                         ctx.AllyDummyController.ApplyBossDamage));
@@ -159,7 +156,7 @@ namespace Dovus.Game.Composition.Builders
                     alive: () => !ctx.AllyDummy2Controller.IsDown,
                     stealthed: () => ctx.AllyDummy2Controller.Board != null && ctx.AllyDummy2Controller.Board.IsStealthed,
                     damage: raw => RuleEngineV4WorldGuard.ApplyBossDamageToAlly(
-                        ctx.ManifestationDirector,
+                        CombatContext(ctx),
                         ctx.AllyDummy2Controller.transform,
                         raw,
                         ctx.AllyDummy2Controller.ApplyBossDamage));
@@ -197,14 +194,14 @@ namespace Dovus.Game.Composition.Builders
 
             EquipmentBonusResolver equipmentBonus;
             EquipmentItem equippedWeapon;
-            if (design != null && assetCatalog != null)
+            if (sliceEquipment != null && assetCatalog != null)
             {
-                equipmentBonus = new EquipmentBonusResolver(design.Equipment);
+                equipmentBonus = new EquipmentBonusResolver(sliceEquipment);
                 equippedWeapon = assetCatalog.FindWeapon(4)?.ToEquipmentItem();
             }
             else
             {
-                equipmentBonus = LoadPrototypeEquipment(out equippedWeapon);
+                equipmentBonus = LoadSliceEquipment(out equippedWeapon);
             }
             ctx.EquipmentBonus = equipmentBonus;
             ctx.EquippedWeapon = equippedWeapon;
@@ -212,24 +209,22 @@ namespace Dovus.Game.Composition.Builders
                 DebugConfig.DevLog($"[Equipment] prototip silah={equippedWeapon.Name}; v6 fiil uyumu etkin.");
             var skillFactory = new SkillFactory(skills, equipmentBonus);
             ctx.SkillFactory = skillFactory;
-            VerifyBindingPipeline(design, assetCatalog, runeManager, skillFactory, equippedWeapon);
+            VerifyBindingPipeline(sliceEquipment, assetCatalog, runeManager, skillFactory, equippedWeapon);
 
             var manGo = new GameObject("Manifestation");
             manGo.transform.SetParent(ctx.SceneRoot, false);
-            var director = manGo.AddComponent<ManifestationDirector>();
+            var director = manGo.AddComponent<RuleEngineV4SentenceHost>();
             var targeting = ctx.Player.GetComponent<PlayerTargetingController>();
-            director.Bind(ctx.Clock, input, player, ctx.PlayerPose, boss, ctx.BossVitals, scars, tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, ctx.AllyDummyController, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, design?.Animations);
+            director.Bind(ctx.Clock, input, player, ctx.PlayerPose, boss, ctx.BossVitals, scars, tuning, damageHud, bossDir, playerStatus, bossStatus, debug, readout, follow, ctx.AllyDummyController, view, passiveHud, equippedWeapon, equipmentBonus, skills, skillFactory, null);
             director.BindCombatFeel(feel);
             director.BindTeam(ctx.TeamAccess);
             director.BindSfx(sfx);
             director.BindTargeting(targeting);
             director.BindHostileTargets(hostileTargets);
             director.BindSceneRuntime(runtime);
-            director.BindLiveRegistries(runtime.Targetables, runtime.SummonExecutors);
-            ctx.ManifestationDirector = director;
-            TextAsset motionTemplates = AssetLoader.Load<TextAsset>("ElementSystem/motion-templates", null);
-            if (motionTemplates != null && !string.IsNullOrWhiteSpace(motionTemplates.text))
-                director.ConfigureMotionTemplates(MotionTemplateCatalog.FromJson(motionTemplates.text));
+            director.BindLiveRegistries(runtime.Targetables);
+            ctx.RuleEngineV4SentenceHost = director;
+            ctx.RuleEngineV4Combat = RuleEngineV4ManifestationAdapter.Bind(director);
             director.BindCastPresentation(new CastPresentationListener());
 
             BossEncounterData.ApplyVolley(combat.Boss, tuning.Boss.ActiveBossResourcePath);
@@ -237,8 +232,6 @@ namespace Dovus.Game.Composition.Builders
             projectileHost.Bind(ctx.Clock, hostileTargets, player, playerStatus, vitals, ctx.Boss.transform, boss.BodyRadiusM);
             projectileHost.BindMainCamera(ctx.MainCamera, follow);
             bossDir.BindProjectiles(projectileHost);
-            director.BindProjectiles(projectileHost);
-
             ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.Bind(
                 ctx.Clock, ArenaBoundary.RadiusM(combat.SkillMotion), boss.BodyRadiusM);
             ctx.Boss.GetComponent<MotionTemplateBodyHost>()?.BindFollowCamera(follow);
@@ -247,21 +240,22 @@ namespace Dovus.Game.Composition.Builders
             webFields.Bind(ctx.Clock, combat, bossDir, ctx.BossVitals, player, playerStatus);
             if (ctx.AllyDummyController != null)
                 webFields.RegisterAlly(ctx.AllyDummyController);
-            director.ConfigureWeaponCycle(design?.Equipment.Items);
-            if (design != null)
+            director.ConfigureWeaponCycle(sliceEquipment?.Items);
+            string sliceJson = SliceCombatBootstrap.GrammarJson;
+            TextAsset v4Asset = AssetLoader.Load<TextAsset>(RuleEngineV4CatalogAccess.JsonResource, null);
+            if (!string.IsNullOrWhiteSpace(sliceJson) && v4Asset != null && !string.IsNullOrWhiteSpace(v4Asset.text))
             {
-                DesignWarnings.Warned -= LogDesignWarning;
-                DesignWarnings.Warned += LogDesignWarning;
-                SkillNumberCatalog numbers = SkillNumberCatalog.FromDocument(design.Document);
+                RuleEngineV4Catalog catalog = RuleEngineV4Catalog.FromJson(v4Asset.text);
+                GrammarJsonDocument grammar = GrammarJsonDocument.Parse(sliceJson);
+                SkillNumberCatalog numbers = SliceCastingFromV4.SkillNumbers(catalog, grammar.Root);
                 SkillNumberTuningApplier.ApplyCcDurations(numbers, combat.Status);
                 SkillNumberTuningApplier.ApplyBasicStrikeRange(numbers, combat.Manifestation);
                 director.ConfigureSkillNumbers(numbers);
                 resource.Bind(numbers.MaxMana, numbers.ManaRegenPerSec, numbers.ManaRegenDelaySec);
                 cooldown.Bind(numbers.GlobalCooldownSec, numbers.MaxConcurrentCasts);
-                director.ConfigureWeaponSwap(WeaponSwapRules.FromDocument(design.Document));
-                director.ConfigureVerbExecution(VerbExecutionData.FromDocument(design.Document));
-                MobilityCcData mobilityCc = MobilityCcData.FromDocument(design.Document);
-                director.ConfigureMobilityCc(mobilityCc);
+                director.ConfigureWeaponSwap(WeaponSwapRules.FromJson(sliceJson));
+                director.ConfigureVerbExecution(SliceCastingFromV4.VerbExecution(catalog));
+                director.ConfigureMobilityCc(SliceCastingFromV4.MobilityCc(catalog));
             }
             view.BindWeaponSwap(director, ctx.Clock);
             input.WeaponSwapRequested += () => director.TryRequestWeaponSwap();
@@ -275,69 +269,58 @@ namespace Dovus.Game.Composition.Builders
 
             var buildSelect = root.AddComponent<BuildSelectHud>();
             buildSelect.Configure(skills, runeManager, input, view, ctx.Clock, director, !tuning.Hud.SkipBuildSelectOnStart);
-
-            int elementTransitionMs = SkillSystemBuilderDefaults.ElementTransitionMs;
-            if (design != null
-                && ElementSystemHeader.TryParse(design.Document, elementTransitionMs, out ElementSystemHeader elementHdr))
-                elementTransitionMs = elementHdr.SelectionTransitionMs;
-            var elementMenu = root.AddComponent<ElementRadialMenuHud>();
-            elementMenu.BindTheme(ctx.Assets.HudTheme);
-            elementMenu.Configure(
-                director, skills, playerStatus, tuning, view.CanvasRoot, elementTransitionMs);
-            ctx.ElementMenu = elementMenu;
-            ctx.Player.GetComponent<MoveInputController>()?.BindElementMenu(elementMenu);
-            ctx.CameraOrbitController?.BindElementMenu(elementMenu);
-            ctx.PlayerTargetingController?.BindElementMenu(elementMenu);
         }
+
+        static RuleEngineV4CombatContext CombatContext(WorldContext ctx) =>
+            ctx.RuleEngineV4Combat ?? RuleEngineV4ManifestationAdapter.Bind(ctx.RuleEngineV4SentenceHost);
 
         static void LogDesignWarning(string message) => Debug.LogWarning(message);
 
         static void VerifyBindingPipeline(
-            ElementSystemDesign design,
-            ElementSystemAssetCatalog assets,
+            EquipmentCatalog equipment,
+            SliceRuntimeAssetCatalog assets,
             RuneManager runes,
             SkillFactory factory,
             EquipmentItem weapon)
         {
-            if (design == null || assets == null || runes == null || factory == null || weapon == null)
+            if (equipment == null || assets == null || runes == null || factory == null || weapon == null)
             {
-                Debug.LogWarning("[BindingReady] v6.1.1 preflight atlandı: bağımlılık eksik.");
+                Debug.LogWarning("[BindingReady] dilim preflight atlandı: bağımlılık eksik.");
                 return;
             }
 
             int elementId = assets.Elements.Count > 0 ? assets.Elements[0].Id : 0;
             var buildSkills = runes.BuildSkills(factory, weapon, elementId);
             Skill smoke = factory.Create(1, 1, weapon, elementId);
-            if (assets.Runes.Count != 12 || assets.Weapons.Count != 10
-                || assets.Elements.Count != 6 || buildSkills.Count != SkillSystemBuilderDefaults.ExpectedBuildSkillCount
+            if (assets.Runes.Count != 6 || assets.Weapons.Count != 2
+                || buildSkills.Count != SkillSystemBuilderDefaults.ExpectedBuildSkillCount
                 || smoke.Resolution.Identity.Verb.Value != "1"
                 || smoke.Resolution.Identity.Adjective.Value != "1")
             {
                 throw new System.InvalidOperationException(
-                    "v6 binding preflight 12/10/6 SO, 36 build skill ve 1-1 smoke bekler.");
+                    "dilim binding preflight 6/2 SO, 36 build skill ve 1-1 smoke bekler.");
             }
 
             DebugConfig.DevLog(
-                $"[BindingReady] JSON {design.Version} → SO 12/10/6 → "
+                $"[BindingReady] dilim gramer → SO 6/2 → "
                 + $"buildSkills={buildSkills.Count} → smoke={smoke.DisplayName} → "
-                + $"weapon={weapon.Name} → element={assets.Elements[0].DisplayName}");
+                + $"weapon={weapon.Name}");
         }
 
-        static EquipmentBonusResolver LoadPrototypeEquipment(out EquipmentItem weapon)
+        static EquipmentBonusResolver LoadSliceEquipment(out EquipmentItem weapon)
         {
             weapon = null;
-            if (!ElementSystemJsonLoader.TryLoad(out ElementSystemDesign design))
+            if (!SliceCombatBootstrap.TryLoad(out _, out EquipmentCatalog catalog, out _))
                 return new EquipmentBonusResolver();
 
             try
             {
-                EquipmentCatalog catalog = design.Equipment;
                 weapon = catalog.FindWeapon(4);
                 return new EquipmentBonusResolver(catalog);
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[Equipment] katalog okunamadı: {e.Message}");
+                Debug.LogWarning($"[Equipment] dilim katalog okunamadı: {e.Message}");
                 return new EquipmentBonusResolver();
             }
         }

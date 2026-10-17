@@ -58,7 +58,12 @@ public class ReleaseBuildPerfTests
         string debug = Game("Composition/Builders/DebugToolsBuilder.cs");
         string hex = Game("Composition/Builders/HexagonInputBuilder.cs");
         Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var frameHud").Count, Is.EqualTo(1));
-        Assert.That(Regex.Matches(hud, @"if \(DebugConfig\.Enabled\)\s*\{\s*var practice").Count, Is.EqualTo(1));
+        // Dodge denemesi BossDirector kurulduktan sonra bağlanır: DebugToolsBuilder.BuildDebugTools içinde,
+        // o da yalnız #if + DebugConfig.Enabled kapısı arkasında çağrılır (aşağıdaki iki satır).
+        Assert.That(hud, Does.Not.Contain("DodgePracticeController"));
+        Assert.That(Regex.Matches(debug, @"static void BuildDebugTools\(WorldContext ctx\)\s*\{[^}]*var practice").Count, Is.EqualTo(1));
+        Assert.That(Regex.Matches(debug, @"#if UNITY_EDITOR \|\| DOVUS_DEBUG\s*if \(DebugConfig\.Enabled\)\s*\{\s*BuildDebugTools\(ctx\);").Count, Is.EqualTo(1));
+        Assert.That(Regex.Matches(debug, @"#if UNITY_EDITOR \|\| DOVUS_DEBUG\s*static void BuildDebugTools").Count, Is.EqualTo(1));
         Assert.That(debug, Does.Contain("if (DebugConfig.Enabled)"));
         Assert.That(debug, Does.Contain("var v6Panel"));
         Assert.That(hex, Does.Contain("DebugConfig.Enabled && _tuning.Hud.ShowSentenceDebugHud"));
@@ -98,7 +103,10 @@ public class ReleaseBuildPerfTests
     [TestCase(9, TuningSchema.LoadDecision.DiscardStale)]
     [TestCase(10, TuningSchema.LoadDecision.DiscardStale)]
     [TestCase(11, TuningSchema.LoadDecision.DiscardStale)]
-    [TestCase(12, TuningSchema.LoadDecision.Apply)]
+    [TestCase(12, TuningSchema.LoadDecision.DiscardStale)]
+    [TestCase(13, TuningSchema.LoadDecision.DiscardStale)]
+    [TestCase(14, TuningSchema.LoadDecision.DiscardStale)]
+    [TestCase(15, TuningSchema.LoadDecision.Apply)]
     public void StaleSave_NeverWins(int stored, TuningSchema.LoadDecision expected)
     {
         Assert.That(TuningSchema.Decide(stored), Is.EqualTo(expected));
@@ -114,8 +122,8 @@ public class ReleaseBuildPerfTests
         var options = new JsonSerializerOptions { IncludeFields = true };
         string json = JsonSerializer.Serialize(new CombatTuning(), options);
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).Substring(0, 16);
-        Assert.That(TuningSchema.Version, Is.EqualTo(12));
-        Assert.That(hash, Is.EqualTo("04EF089C127B7A05"),
+        Assert.That(TuningSchema.Version, Is.EqualTo(15));
+        Assert.That(hash, Is.EqualTo("8D3DC9D11223B4C4"),
             "CombatTuning varsayılanı değişti: TuningSchema.Version'ı artır, bu parmak izini ve sürüm satırını güncelle.");
     }
 
@@ -138,13 +146,10 @@ public class ReleaseBuildPerfTests
         Assert.That(Regex.Matches(Game("Team/TeamComboHost.cs"), @"_boss\.GetComponent<BossReactorController>\(\)").Count, Is.EqualTo(1),
             "yalnız CachedBossReactor içinde");
         Assert.That(Game("Actors/DodgeMotionController.cs"), Does.Contain("_reactorCache"));
-        foreach (string f in new[] { "Actors/PlayerTargetingController.cs", "Skills/ManifestationDirector.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
+        foreach (string f in new[] { "Actors/PlayerTargetingController.cs", "Skills/RuleEngineV4SentenceHost.cs", "Skills/Weapons/WeaponPassiveRuntime.cs" })
             Assert.That(Game(f), Does.Not.Contain("FindObjectsByType<TargetableHost>"), f);
-        foreach (string f in new[] { "Skills/ManifestationDirector.cs", "Skills/ManifestationDirector.VerbExecution.cs", "Skills/ManifestationDirector.MechanicWorld.cs" })
+        foreach (string f in new[] { "Skills/RuleEngineV4SentenceHost.cs", "Skills/RuleEngineV4SentenceHost.VerbExecution.cs", "Skills/RuleEngineV4SentenceHost.Damage.cs" })
             Assert.That(Regex.Matches(Game(f), @"(?<!_playerVitalsCache = )_player\.GetComponent<PlayerVitalsHost>\(\)").Count, Is.EqualTo(0), f);
-        string summon = Game("Skills/Execution/SummonExecutor.cs");
-        Assert.That(summon, Does.Contain("_weaponPathClass"));
-        Assert.That(summon, Does.Contain("_targetCollider"));
     }
 
     [Test]
@@ -152,8 +157,8 @@ public class ReleaseBuildPerfTests
     {
         foreach (string f in new[]
                  {
-                     "Skills/ManifestationDirector.MechanicWorld.cs", "Skills/Motion/MotionTemplateDriver.cs",
-                     "Skills/Execution/SummonExecutor.cs", "Team/TeamComboHost.cs", "Boss/HostileProjectileHost.cs",
+                     "Skills/RuleEngineV4SentenceHost.Damage.cs",
+                     "Team/TeamComboHost.cs", "Boss/HostileProjectileHost.cs",
                      "Boss/AttackTelegraphView.cs"
                  })
         {

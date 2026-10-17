@@ -345,7 +345,7 @@ namespace Dovus.Game.Actors
         }
 
         /// <summary>
-        /// O-anim(c): ManifestationDirector'daki var olan sürdürülen cast / kalkan sinyallerini
+        /// O-anim(c): RuleEngineV4SentenceHost'daki var olan sürdürülen cast / kalkan sinyallerini
         /// Animator'a iletir — binder bu bool'lara göre CastChannel/CastGuard'ın otomatik dönüş
         /// geçişini kilitler (bkz. MixamoAnimatorBind). Parametre yoksa no-op.
         /// </summary>

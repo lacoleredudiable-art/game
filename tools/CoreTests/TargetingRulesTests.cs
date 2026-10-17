@@ -17,14 +17,7 @@ public sealed class TargetingRulesTests
 {
     static SkillMotor LoadMotor()
     {
-        string path = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        if (!File.Exists(path))
-            path = Path.GetFullPath(Path.Combine(
-                TestContext.CurrentContext.TestDirectory,
-                "..", "..", "..", "..", "docs", "element-sistemi.json"));
-        return SkillMotor.FromJson(File.ReadAllText(path));
+        return SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
     }
 
     [Test]

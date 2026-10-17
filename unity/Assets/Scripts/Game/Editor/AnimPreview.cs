@@ -13,7 +13,7 @@ namespace Dovus.Game.Editor
     /// <summary>
     /// Animasyon (b) elde silah sunumu için Play Mode yardımcıları — Unity_RunCommand
     /// snippet'lerinden çağrılır (bkz. anim-capture-howto.md). Yalnız normal oyun yollarını
-    /// kullanır (ManifestationDirector.SetWeaponLoadout, HexagonInputController.TryDebugCastSkill,
+    /// kullanır (RuleEngineV4SentenceHost.SetWeaponLoadout, HexagonInputController.TryDebugCastSkill,
     /// BuildSelectHud'in kendi Button'ı); System.Reflection yok, hasar/zamanlamaya dokunmaz.
     /// </summary>
     public static class AnimPreview
@@ -38,12 +38,12 @@ namespace Dovus.Game.Editor
         }
 
         /// <summary>
-        /// Normal loadout/swap yolu: ManifestationDirector.SetWeaponLoadout. <paramref name="weaponKeyOrName"/>
+        /// Normal loadout/swap yolu: RuleEngineV4SentenceHost.SetWeaponLoadout. <paramref name="weaponKeyOrName"/>
         /// animations_key ("kilic") ya da görünen ad ("Kılıç") olabilir.
         /// </summary>
         public static bool Equip(string weaponKeyOrName)
         {
-            var md = Object.FindAnyObjectByType<ManifestationDirector>();
+            var md = Object.FindAnyObjectByType<RuleEngineV4SentenceHost>();
             if (md == null)
                 return false;
 
@@ -58,7 +58,7 @@ namespace Dovus.Game.Editor
             return true;
         }
 
-        static EquipmentItem Find(ManifestationDirector md, string key)
+        static EquipmentItem Find(RuleEngineV4SentenceHost md, string key)
         {
             foreach (EquipmentItem w in md.AvailableWeapons)
             {

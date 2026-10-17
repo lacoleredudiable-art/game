@@ -3,47 +3,36 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Dovus.Core.Element;
 using Dovus.Core.Grammar;
-using Dovus.Core.Motion;
 using NUnit.Framework;
 
-using Dovus.Core.Shared;
 namespace IntegrationTests;
 
 [TestFixture]
 public class SkillDataIntegrationTests
 {
-    static string LoadDocsJson() => File.ReadAllText(RepoPaths.Docs("element-sistemi.json"));
+    static string LoadSliceJson() => RepoPaths.BuildSliceGrammarJson();
 
-    static string LoadMotionJson() => File.ReadAllText(RepoPaths.Docs("motion-templates.json"));
+    static readonly int[] SliceRunes = { 1, 2, 3, 4, 6, 9 };
 
     [Test]
-    public void SpecJson_MatchesRuntimeResources_ByteIdentical()
+    public void SliceGrammar_ResourcesCopy_IsReadable()
     {
-        string docs = RepoPaths.Docs("element-sistemi.json");
-        string runtime = Path.Combine(RepoPaths.ResourcesElementSystem, "element-sistemi.json");
-        Assert.That(File.Exists(runtime), Is.True, runtime);
-        Assert.That(File.ReadAllBytes(docs), Is.EqualTo(File.ReadAllBytes(runtime)));
-
-        string motionDocs = RepoPaths.Docs("motion-templates.json");
-        string motionRuntime = Path.Combine(RepoPaths.ResourcesElementSystem, "motion-templates.json");
-        Assert.That(File.Exists(motionRuntime), Is.True, motionRuntime);
-        Assert.That(File.ReadAllBytes(motionDocs), Is.EqualTo(File.ReadAllBytes(motionRuntime)));
+        Assert.That(File.Exists(RepoPaths.RuleEngineV4Json), Is.True);
+        SkillMotor motor = SkillMotor.FromJson(LoadSliceJson());
+        Assert.That(motor.IsV61, Is.True);
+        Assert.That(motor.RuneCount, Is.EqualTo(SliceRunes.Length));
     }
 
     [Test]
-    public void All144Skills_ResolveWithJsonDefinedStringFields()
+    public void SliceSkills_ResolveWithJsonDefinedStringFields()
     {
-        // CoreTests zaten çözüm / benzersiz id / motion 144 kontrolünü yapıyor; burada motor çıktısındaki
-        // string alanların JSON'da tanımlı kümelere düştüğünü doğruluyoruz (spec drift yakalama).
-        SkillMotor motor = SkillMotor.FromJson(LoadDocsJson());
-        MotionTemplateCatalog motion = MotionTemplateCatalog.FromJson(LoadMotionJson());
-        JsonLexicon lex = JsonLexicon.FromFile(RepoPaths.Docs("element-sistemi.json"));
+        SkillMotor motor = SkillMotor.FromJson(LoadSliceJson());
+        JsonLexicon lex = JsonLexicon.FromJson(LoadSliceJson());
 
         var skillIds = new HashSet<string>(StringComparer.Ordinal);
-        for (int verb = 1; verb <= 12; verb++)
-        for (int adjective = 1; adjective <= 12; adjective++)
+        foreach (int verb in SliceRunes)
+        foreach (int adjective in SliceRunes)
         {
             SkillResolution skill = motor.Resolve(new[] { verb, adjective });
             string id = $"{verb}-{adjective}";
@@ -54,7 +43,6 @@ public class SkillDataIntegrationTests
             Assert.That(skill.Identity.Verb.IsEmpty, Is.False, $"{id} VerbId");
             Assert.That(skill.Identity.VerbName, Is.Not.Empty, $"{id} VerbName");
             Assert.That(string.IsNullOrEmpty(skill.Presentation.Hitbox.ToString()), Is.False, $"{id} Hitbox");
-            Assert.That(motion.TryGet((SkillId)id, out _), Is.True, $"{id} motion");
 
             if (!string.IsNullOrEmpty(skill.Identity.Element))
                 lex.AssertInSet(skill.Identity.Element, JsonLexicon.ElementIds, $"{id} ElementId");
@@ -74,10 +62,9 @@ public class SkillDataIntegrationTests
                 lex.AssertInSet(kv.Value, JsonLexicon.TargetBehaviorValues, $"{id} target_behavior {kv.Key}");
         }
 
-        Assert.That(skillIds.Count, Is.EqualTo(144));
+        Assert.That(skillIds.Count, Is.EqualTo(SliceRunes.Length * SliceRunes.Length));
     }
 
-    /// <summary>JSON'dan tanımlı string kümeleleri — yalnızca integration drift testi için.</summary>
     sealed class JsonLexicon
     {
         public static readonly HashSet<string> ElementIds = new(StringComparer.Ordinal);
@@ -97,14 +84,21 @@ public class SkillDataIntegrationTests
             "hitbox", "action", "cast_mobility", "family", "target_mode", "damage_type"
         };
 
-        public static JsonLexicon FromFile(string path)
+        public static JsonLexicon FromJson(string json)
         {
-            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            using var doc = JsonDocument.Parse(json);
+            return FromDocument(doc);
+        }
+
+        public static JsonLexicon FromFile(string path) => FromJson(File.ReadAllText(path));
+
+        static JsonLexicon FromDocument(JsonDocument doc)
+        {
             Walk(doc.RootElement);
-            for (int i = 1; i <= 12; i++)
+            foreach (int id in SliceRunes)
             {
-                VerbIds.Add(i.ToString());
-                AdjectiveIds.Add(i.ToString());
+                VerbIds.Add(id.ToString());
+                AdjectiveIds.Add(id.ToString());
             }
 
             foreach (var el in doc.RootElement.GetProperty("elements").EnumerateArray())
@@ -113,7 +107,6 @@ public class SkillDataIntegrationTests
                     ElementIds.Add(idNum.GetInt32().ToString());
             }
 
-            // Motor varsayılanları JSON'da her skill satırında tekrarlanmıyor (SkillMotor verb fallback).
             CastMobilities.Add("free_move");
             foreach (var kv in doc.RootElement.GetProperty("adjective_mods").EnumerateObject())
             {
@@ -127,9 +120,7 @@ public class SkillDataIntegrationTests
                     SilhouetteAxes.Add(cat.GetString());
             }
 
-            // state_machine capability değerleri (target behavior ile aynı sözlük ailesi).
             Walk(doc.RootElement.GetProperty("state_machine"));
-
             return new JsonLexicon();
         }
 

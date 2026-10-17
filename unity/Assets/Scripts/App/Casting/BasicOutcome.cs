@@ -9,7 +9,6 @@ using Dovus.Core.Passives;
 using Dovus.Core.Equipment;
 using Dovus.Core.Casting;
 using Dovus.Core.Grammar;
-using Dovus.Core.Mechanic;
 
 namespace Dovus.App.Casting
 {

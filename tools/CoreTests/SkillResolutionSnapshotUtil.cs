@@ -17,13 +17,10 @@ static class SkillResolutionSnapshotUtil
     public static string SnapshotPath() =>
         Path.Combine(RepoRoot(), "tools", "CoreTests", "Data", "skill-resolution-snapshot.tsv");
 
-    public static SkillMotor LoadMotor()
-    {
-        string path = Path.Combine(RepoRoot(), "docs", "element-sistemi.json");
-        if (!File.Exists(path))
-            path = Path.Combine(RepoRoot(), "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json");
-        return SkillMotor.FromJson(File.ReadAllText(path));
-    }
+    public static SkillMotor LoadMotor() =>
+        SkillMotor.FromJson(SliceGrammarTestPaths.ReadSliceGrammarJson());
+
+    static readonly int[] SliceRunes = { 1, 2, 3, 4, 6, 9 };
 
     public static IReadOnlyList<string> CaptureLines(in SkillResolution skill)
     {
@@ -80,8 +77,8 @@ static class SkillResolutionSnapshotUtil
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var sb = new StringBuilder();
-        for (int verb = 1; verb <= 12; verb++)
-        for (int adj = 1; adj <= 12; adj++)
+        foreach (int verb in SliceRunes)
+        foreach (int adj in SliceRunes)
         {
             SkillResolution skill = motor.Resolve(new[] { verb, adj });
             sb.AppendLine($"combo\t{verb}\t{adj}");

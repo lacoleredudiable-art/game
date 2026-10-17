@@ -31,7 +31,7 @@ namespace Dovus.Game.Composition.Builders
             var v6Panel = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.GrammarDebugHud>();
             v6Panel.Configure(
                 ctx.HexagonInputController,
-                ctx.ManifestationDirector,
+                ctx.RuleEngineV4SentenceHost,
                 ctx.HexagonRoot.GetComponent<BuildSelectHud>(),
                 ctx.HexagonView.CanvasRoot,
                 ctx.PlayerVitalsHost,
@@ -41,6 +41,9 @@ namespace Dovus.Game.Composition.Builders
             var teamDebug = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.TeamDebugHud>();
             teamDebug.Configure(ctx.TeamAccess, ctx.Runtime.DebugPanelsChrome);
             CreateGozcu(ctx);
+            // Dodge denemesi: BossDirector HudBuilder'dan sonra kurulur, bu yüzden burada bağlanır.
+            var practice = ctx.HexagonRoot.AddComponent<Dovus.Game.DevTools.DodgePracticeController>();
+            practice.Bind(ctx.Player.transform, ctx.Boss.transform, ctx.BossDirector, ctx.Clock);
         }
 
         static void CreateGozcu(WorldContext ctx)
@@ -56,7 +59,16 @@ namespace Dovus.Game.Composition.Builders
                 rules,
                 ctx.Player != null ? ctx.Player.transform : null,
                 ctx.MainCamera,
-                ctx.ManifestationDirector);
+                () =>
+                {
+                    if (ctx.RuleEngineV4Combat != null)
+                        return ctx.RuleEngineV4Combat.EquippedWeaponNumber();
+                    if (ctx.EquippedWeapon == null)
+                        return 0;
+                    string id = ctx.EquippedWeapon.Id ?? string.Empty;
+                    int colon = id.LastIndexOf(':');
+                    return int.TryParse(colon >= 0 ? id.Substring(colon + 1) : id, out int w) ? w : 0;
+                });
             CameraBossBody body = ctx.FollowCameraController != null ? ctx.FollowCameraController.BossBody : null;
             if (body != null)
                 gozcu.WatchBossBody(body.Root, body.RadiusM, body.TopAboveRootM);

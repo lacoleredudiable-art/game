@@ -29,15 +29,17 @@ namespace Dovus.Core.Status
         public int PoiseStunMs { get; private set; } = 1000;
 
         public static MobilityCcData FromJson(string json) =>
-            FromDocument(ElementSystemDocument.Parse(json));
+            FromDocument(GrammarJsonDocument.Parse(json));
 
-        public static MobilityCcData FromDocument(ElementSystemDocument doc) =>
+        public static MobilityCcData FromDocument(GrammarJsonDocument doc) =>
             FromJsonRoot(doc.Root);
 
         public static MobilityCcData FromJsonRoot(JsonValue root)
         {
             var data = new MobilityCcData();
             JsonValue node = root["mobility_cc"];
+            if (node.Kind != JsonKind.Object)
+                return data;
 
             ReadStringMap(node["fiil_base_mobility"], data._verbMobility);
             ReadStringMap(node["sifat_mobility_override"], data._adjectiveOverride);
@@ -153,6 +155,8 @@ namespace Dovus.Core.Status
             "agir" => HeavyPoise,
             _ => MediumPoise
         };
+
+        internal IReadOnlyDictionary<StatusKind, double> CcDurationsMs => _ccDurationMs;
 
         void ParsePriorityPair(string key, string result)
         {

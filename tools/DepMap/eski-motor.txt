@@ -1,0 +1,14 @@
+# Eski motor dosyaları: göreli yola (unity/Assets/Scripts altı) uygulanan regex, satır başına bir tane.
+# Kaynak: 14-kodlama-plani.md Aşama 3 (eski motor silindi).
+# Başlangıç listesi: yalnız belgede ADIYLA geçenler. Belgede olmayan dosya eklenmez; v4'ün
+# kullandığı bir dosya buraya girerse PR'da yazılır. v4 kök dosyaları (yolunda RuleEngineV4) sayılmaz.
+(^|/)ManifestationDirector[^/]*\.cs$
+(^|/)MechanicGrammar[^/]*\.cs$
+(^|/)SkillExecutor[^/]*\.cs$
+(^|/)ISkillExecutor[^/]*\.cs$
+(^|/)SummonExecutor[^/]*\.cs$
+(^|/)MechanicField[^/]*\.cs$
+(^|/)MechanicWall[^/]*\.cs$
+(^|/)MechanicWorldRuntime[^/]*\.cs$
+(^|/)JsonEffectRuntime[^/]*\.cs$
+(^|/)MotionTemplateDriver[^/]*\.cs$

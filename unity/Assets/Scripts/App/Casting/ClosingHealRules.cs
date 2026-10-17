@@ -45,5 +45,39 @@ namespace Dovus.App.Casting
             double scaled = healBase * chainBonus * weaponSupportPower * effectScale;
             return Math.Max(0, (int)Math.Round(scaled) /* = Mathf.RoundToInt (yarıda çifte) */);
         }
+
+        public static void SelectHealTargets(
+            bool allyNeeds, bool selfNeeds, float allyRatio, float selfRatio,
+            bool preferAlly, bool preferSelf, int cap,
+            out bool healAlly, out bool healSelf)
+        {
+            bool many = cap >= 2;
+            if (preferAlly)
+            {
+                healAlly = allyNeeds;
+                healSelf = many && selfNeeds;
+                return;
+            }
+            if (preferSelf)
+            {
+                healSelf = selfNeeds;
+                healAlly = many && allyNeeds;
+                return;
+            }
+            if (many)
+            {
+                healAlly = allyNeeds;
+                healSelf = selfNeeds;
+                return;
+            }
+            if (allyNeeds && selfNeeds)
+            {
+                healAlly = allyRatio < selfRatio;
+                healSelf = !healAlly;
+                return;
+            }
+            healAlly = allyNeeds;
+            healSelf = !allyNeeds && selfNeeds;
+        }
     }
 }

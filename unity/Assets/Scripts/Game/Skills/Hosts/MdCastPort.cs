@@ -21,19 +21,19 @@ namespace Dovus.Game.Skills.Hosts
 {
 public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<PendingClosing>
     {
-        readonly ManifestationDirector _md;
+        readonly RuleEngineV4SentenceHost _md;
         Transform _basicImpactTarget;
         LivingEffect _closingLogic;
         SkillResolution _lastCastSkill;
         float _lastCastDealt;
         RuleEngineV4DirectorBridge _ruleEngineV4;
         internal RuleEngineV4DirectorBridge RuleEngineV4Bridge =>
-            _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(_md);
+            _ruleEngineV4 ??= new RuleEngineV4DirectorBridge(RuleEngineV4ManifestationAdapter.Bind(_md));
 
         /// <summary>FireClosing başında yakalanan logic (eski koddaki yerel değişkenle aynı örnek).</summary>
         internal void BeginClosing(LivingEffect logic) => _closingLogic = logic;
 
-        internal MdCastPort(ManifestationDirector md) => _md = md;
+        internal MdCastPort(RuleEngineV4SentenceHost md) => _md = md;
 
         internal void NotifyRuleEngineV4Dealt(float dealt) => _lastCastDealt = dealt;
 
@@ -82,103 +82,33 @@ public sealed class MdCastPort : ICastPort<PendingClosing>, IBasicStrikePort<Pen
             _md._castSideEffects.ApplySkillMotionIframe(skill, motion);
         }
 
-        public bool TryBeginMotionTemplate(SkillResolution skill, PendingClosing ctx) =>
-            !(RuleEngineV4Feature.Enabled && RuleEngineV4Bridge.OwnsSkill(skill))
-            && _md.TryBeginMotionTemplate(skill, ctx);
-
         public void NoteSustainedCast(SkillResolution skill) => _md.NoteSustainedCast(skill);
 
         public void NotifyCast(SkillId skillId) => _md.TeamHub.NotifyCast(skillId);
-
-        public SkillExecutorRoute Route(SkillResolution skill) =>
-            _md._skillExecutorRouter.Route(skill, _md._equippedWeapon);
-
-        public SkillExecutorRoute ApplyMechanicWorldRoute(
-            SkillResolution skill,
-            SkillExecutorRoute route) =>
-            _md.ApplyMechanicWorldRoute(_md.MechanicPlanFor(skill), route);
-
-        public void SetLastExecutorKind(SkillExecutorKind kind) => _md.LastExecutorKind = kind;
 
         public void ApplySelfCastEffects(SkillResolution skill) => _md.ApplySelfCastEffects(skill);
 
         public void NoteJsonCast(SkillResolution skill, PendingClosing ctx) =>
             _md.NoteJsonCast(skill, ctx.Closing);
 
-        public void BeginMechanicPlan(PendingClosing ctx, SkillResolution skill)
-        {
-            LivingEffect logic = _closingLogic;
-            if (logic == null)
-                return;
-            _md.BeginMechanicPlan(
-                skill,
-                new Vector3(logic.DirX, 0f, logic.DirZ),
-                new Vector3(logic.TipX, _md._player.position.y, logic.TipZ));
-        }
-
-        public void ArmTemplateDelivery(
-            SkillResolution skill,
-            PendingClosing ctx,
-            in SkillMotionPlan motion) =>
-            _md.ArmTemplateDelivery(skill, ctx, motion);
-
-        public bool TryLaunchExecutor(
-            SkillExecutorKind kind,
-            PendingClosing ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion)
-        {
-            _md.EnsureLaunchServices();
-            if (RuleEngineV4Feature.Enabled
-                && RuleEngineV4Bridge.TryLaunch(ctx, skill, in motion, out float v4Dealt))
-            {
-                _lastCastDealt = v4Dealt;
-                return true;
-            }
-            return _md._executorLauncher.TryLaunch(kind, ctx, skill, motion);
-        }
-
-        public void ScheduleFollowUps(
-            SkillExecutorKind kind,
-            PendingClosing ctx,
-            SkillResolution skill,
-            in SkillMotionPlan motion) =>
-            _md.ScheduleFollowUpLaunches(kind, ctx, skill, motion);
-
-        public float ApplyFallbackDelivery(
+        public bool TryLaunchSkill(
             PendingClosing ctx,
             SkillResolution skill,
             in SkillMotionPlan motion,
-            in SkillExecutorRoute route)
+            out float dealt)
         {
-            LivingEffect logic = _closingLogic;
-            if (logic == null)
-                return 0f;
-
-            if (RuleEngineV4Feature.Enabled)
-                return _lastCastDealt;
-
-            if (route.IsStub)
-                DebugConfig.DevLog($"[SkillExecutor] stub → LivingEffect: {route.Reason}");
-            _md.LastExecutorKind = SkillExecutorKind.Fallback;
-            _md.ApplyBossClosing(logic, ctx.Closing, skill);
-            bool bossReached = _md._boss != null && _md.IsClosingInRange(logic, ctx.Closing);
-            float dealt = 0f;
-            if (bossReached)
+            dealt = 0f;
+            _md.EnsureLaunchServices();
+            if (!RuleEngineV4Bridge.OwnsSkill(skill))
             {
-                dealt = _md.ApplyClosingDamage(
-                    ctx.Closing,
-                    skill,
-                    isBasicStrike: false,
-                    motion.SlashCommitMult);
+                Debug.LogError(
+                    $"[V4-FALLBACK] MdCastPort: dilim dışı skill {skill.Identity.Id}; eski executor yolu kaldırıldı.");
+                return false;
             }
-
-            _md.ApplyClosingStatuses(ctx, skill, bossReached);
-            if (bossReached)
-                _md.ApplyMechanicHitEffects(_md.LastMechanicPlan, new Vector3(logic.TipX, 0f, logic.TipZ));
-            _md.ApplyClosingHeal(ctx.Closing, skill);
+            if (!RuleEngineV4Bridge.TryLaunch(ctx, skill, in motion, out dealt))
+                return false;
             _lastCastDealt = dealt;
-            return dealt;
+            return true;
         }
 
         public void ApplyCooldown(SkillResolution skill, PendingClosing ctx, bool cosmeticIfDisabled)

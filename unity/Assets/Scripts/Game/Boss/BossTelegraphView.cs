@@ -46,6 +46,29 @@ namespace Dovus.Game.Boss
         Vector3 _baseScale;
         static Texture2D _glowTex;
 
+        // O-4.9: o an çizili alan (kayma tarafı seçerken "dolu" sayılır). Hide() temizler.
+        bool _areaOn;
+        Vector3 _areaCenter;
+        float _areaRadiusM;
+        float _areaArcHalfDeg;
+        Vector3 _areaForward;
+
+        /// <summary>Aktif alan telegraph'ı (slam, koni, atılış, ağ alanı) bu noktayı kaplıyor mu? Mermi/volley burada yok.</summary>
+        public bool CoversPoint(float x, float z)
+        {
+            if (!_areaOn)
+                return false;
+            float dx = x - _areaCenter.x;
+            float dz = z - _areaCenter.z;
+            float d2 = dx * dx + dz * dz;
+            if (d2 > _areaRadiusM * _areaRadiusM)
+                return false;
+            if (_areaArcHalfDeg >= 180f || d2 < 1e-8f)
+                return true;
+            float ang = Vector3.Angle(_areaForward, new Vector3(dx, 0f, dz));
+            return ang <= _areaArcHalfDeg;
+        }
+
         public void Bind(GameTuning colors, BossTuning boss, Transform bossXform)
         {
             _colors = colors;
@@ -167,6 +190,7 @@ namespace Dovus.Game.Boss
 
         public void Hide()
         {
+            _areaOn = false;
             if (_disc != null && _disc.gameObject.activeSelf)
                 _disc.gameObject.SetActive(false);
             if (_cone != null && _cone.gameObject.activeSelf)
@@ -201,6 +225,10 @@ namespace Dovus.Game.Boss
                 _cone.gameObject.SetActive(false);
             if (!_disc.gameObject.activeSelf)
                 _disc.gameObject.SetActive(true);
+            _areaOn = true;
+            _areaCenter = world;
+            _areaRadiusM = radiusM;
+            _areaArcHalfDeg = 180f;
             _disc.position = new Vector3(world.x, DiscHeightY, world.z);
             _disc.localScale = new Vector3(radiusM * 2f, DiscThicknessScale, radiusM * 2f);
             Color c = color;
@@ -224,6 +252,10 @@ namespace Dovus.Game.Boss
             if (!_disc.gameObject.activeSelf)
                 _disc.gameObject.SetActive(true);
 
+            _areaOn = true;
+            _areaCenter = _bossXform.position;
+            _areaRadiusM = radiusM;
+            _areaArcHalfDeg = 180f;
             _disc.position = new Vector3(_bossXform.position.x, DiscHeightY, _bossXform.position.z);
             _disc.localScale = new Vector3(radiusM * 2f, DiscThicknessScale, radiusM * 2f);
             Color c = color;
@@ -246,6 +278,11 @@ namespace Dovus.Game.Boss
             fwd.y = 0f;
             if (fwd.sqrMagnitude < BossTelegraphViewDefaults.PlanarDirEpsilonSqr)
                 fwd = Vector3.forward;
+            _areaOn = true;
+            _areaCenter = _bossXform.position;
+            _areaRadiusM = radiusM;
+            _areaArcHalfDeg = _arcHalfDeg;
+            _areaForward = fwd.normalized;
             _cone.SetPositionAndRotation(
                 new Vector3(_bossXform.position.x, DiscHeightY, _bossXform.position.z),
                 Quaternion.LookRotation(fwd.normalized, Vector3.up));

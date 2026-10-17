@@ -56,7 +56,6 @@ namespace Dovus.Tests.EditMode
         [Test]
         public void Slice108_AllPlansValid()
         {
-            Assert.That(RuleEngineV4Feature.Enabled, Is.False);
             var planner = Planner();
             foreach (int rune in RuleEngineV4Slice.Runes)
             foreach (int adj in RuleEngineV4Slice.Runes)

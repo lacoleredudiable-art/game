@@ -40,15 +40,15 @@ public class DocsTruthTests
         foreach (string rel in new[]
                  {
                      "docs/OYUN.md",
-                     "docs/PLAN.md",
                      "docs/MAP.md",
                      "docs/ARCHITECTURE.md",
                      "docs/unity-notlari.md",
-                     "docs/agent-task-template.md",
                      "docs/asset-references.md",
                      "docs/asset-yedegi.md",
                      "docs/design/aglarin-kralicesi.md",
                      "docs/AGENTS.md",
+                     "docs/tasarim/00-OKU-BENI.md",
+                     "docs/tasarim/14-kodlama-plani.md",
                      "tools/AGENTS.md",
                      "tools/capture/README.md",
                      "unity/Assets/Scripts/Core/AGENTS.md",
@@ -62,9 +62,6 @@ public class DocsTruthTests
     static readonly HashSet<string> PathAllowlist = new(StringComparer.OrdinalIgnoreCase)
     {
         "archive/capture-scripts",
-        "docs/play-sweep/pr35-final-4x.csv",
-        "docs/play-sweep/headless-baseline.sha256",
-        "docs/play-sweep/known-play-diffs.txt",
     };
 
     [Test]
@@ -143,8 +140,7 @@ public class DocsTruthTests
         Assert.That(i1, Is.GreaterThan(i0));
         string gen = text.Substring(i0 + begin.Length, i1 - i0 - begin.Length);
 
-        string jsonPath = Path.Combine(root, "unity", "Assets", "Resources", "ElementSystem", "element-sistemi.json");
-        string json = File.ReadAllText(jsonPath);
+        string json = SliceGrammarTestPaths.ReadSliceGrammarJson();
         JsonValue rootJson = MiniJson.Parse(json);
         int combo = rootJson["combo_system"]["current_max_length"].AsInt(-1);
         Assert.That(gen, Does.Contain($"**{combo}**"));
@@ -153,10 +149,10 @@ public class DocsTruthTests
         float bossRaw = rootJson["global_rules"]["boss_stats_default"]["max_hp"].AsFloat(BossDefaults.FallbackBossMaxHp);
         int playerHp = CombatScale.MagnitudeInt(playerRaw);
         int bossHp = CombatScale.MagnitudeInt(bossRaw);
-        Assert.That(gen, Does.Contain("400,000"));
-        Assert.That(gen, Does.Contain("88,000,000"));
-        Assert.That(playerHp, Is.EqualTo(400_000));
-        Assert.That(bossHp, Is.EqualTo(88_000_000));
+        Assert.That(gen, Does.Contain("4,000,000"));
+        Assert.That(gen, Does.Contain("60,000,000"));
+        Assert.That(playerHp, Is.EqualTo(4_000_000));
+        Assert.That(bossHp, Is.EqualTo(60_000_000));
 
         var dodge = new DodgeTuning();
         Assert.That(gen, Does.Contain(dodge.MaxCharges.ToString()));
@@ -247,6 +243,10 @@ public class DocsTruthTests
         foreach (string rel in new[]
                  {
                      "docs/durum.md",
+                     "docs/PLAN.md",
+                     "docs/agent-task-template.md",
+                     "docs/tasarim/11-onarim-plani.md",
+                     "docs/element-sistemi-notlar.json",
                      "docs/ARCHITECTURE-PLAN.md",
                      "docs/core-layers.md",
                      "docs/skill-model.md",

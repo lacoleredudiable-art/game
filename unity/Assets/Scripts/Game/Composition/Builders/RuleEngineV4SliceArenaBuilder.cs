@@ -21,6 +21,7 @@ namespace Dovus.Game.Composition.Builders
             root.transform.SetParent(ctx.Host.transform, false);
 
             Transform columns = BuildColumns(root.transform, arena);
+            ctx.SliceColumns = columns;
             BuildOuterWall(root.transform, arena);
             RuleEngineV4SliceArenaShellBuilder.BuildWall(root.transform, arena);
             RuleEngineV4SliceArenaShellBuilder.BuildBeyondGround(root.transform, (visuals ?? RuleEngineV4SliceArenaVisuals.Disabled).Beyond,

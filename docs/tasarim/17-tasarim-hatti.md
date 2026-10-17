@@ -2,10 +2,12 @@
 
 Sürüm 1.0 · 12 Ekim 2026 · Kullanıcı: Mustafa
 
-Boss, arena ve görsel dil için yapılacak işlerin sırası. Teknik onarım `11-onarim-plani.md`'dedir; bu belge onu
-kapsamaz. **Mevcut arena ve boss (Ağların Kraliçesi, kaburgalar, köy duvarı, kozalar) temel alınmaz; her şey
-sıfırdan tasarlanır.** Adımlar sırayla yapılır; bir adım bitmeden sonrakine geçilmez. Biten adım ✔ ile
-işaretlenir ve tarihi yazılır.
+Boss, arena ve görsel dil için yapılacak işlerin sırası. Teknik dilim stabilizasyonu **`14-kodlama-plani.md`
+Aşama 4–8** (şu an Kraliçe dilimi); bu belge **Kül Ejderi + Krater** entegrasyonunu planlar. Core'da
+`KulEjderiBrain` / `BossActionRunner` iskeleti hazır (#204/#224); sahne ve asset E aşamasında.
+
+**Mevcut arena ve boss (Ağların Kraliçesi, kaburgalar, köy duvarı, kozalar) uzun vadede kalkar (A3); krater
+sıfırdan tasarlanır.** Adımlar sırayla; biten ✔ ve tarih.
 
 ## A. Kararlar (sohbette, kullanıcı verir)
 

@@ -7,7 +7,6 @@ using Dovus.Core.Grammar;
 using Dovus.Core.Hud;
 using Dovus.Core.Input;
 using Dovus.Core.Manifestation;
-using Dovus.Core.Mechanic;
 using Dovus.Core.Passives;
 using Dovus.Core.Status;
 using Dovus.Core.Tuning;
@@ -29,9 +28,9 @@ namespace Dovus.Game.Skills.Hosts
 public sealed class MdClosingHost
         : IClosingStatusHost, IClosingHealHost, IClosingDamageHost
     {
-        readonly ManifestationDirector _md;
+        readonly RuleEngineV4SentenceHost _md;
 
-        internal MdClosingHost(ManifestationDirector md) => _md = md;
+        internal MdClosingHost(RuleEngineV4SentenceHost md) => _md = md;
 
         public Transform Player => _md._player;
         public AllyDummyController Ally => _md._ally;
@@ -51,7 +50,6 @@ public sealed class MdClosingHost
         public int SlotQueryCastId => _md.CastSession.SlotQueryCastId;
         public GameClockHost Clock => _md._clock;
         public TeamComboAccess TeamAccess => _md._team;
-        public MechanicGrammar MechanicEngine => _md.MechanicEngine;
         public BossVitals BossVitals => _md._bossVitals;
         Transform IClosingStatusHost.Boss =>
             _md._boss != null ? _md._boss.transform : null;
