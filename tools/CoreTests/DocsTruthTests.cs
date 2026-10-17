@@ -40,15 +40,15 @@ public class DocsTruthTests
         foreach (string rel in new[]
                  {
                      "docs/OYUN.md",
-                     "docs/PLAN.md",
                      "docs/MAP.md",
                      "docs/ARCHITECTURE.md",
                      "docs/unity-notlari.md",
-                     "docs/agent-task-template.md",
                      "docs/asset-references.md",
                      "docs/asset-yedegi.md",
                      "docs/design/aglarin-kralicesi.md",
                      "docs/AGENTS.md",
+                     "docs/tasarim/00-OKU-BENI.md",
+                     "docs/tasarim/14-kodlama-plani.md",
                      "tools/AGENTS.md",
                      "tools/capture/README.md",
                      "unity/Assets/Scripts/Core/AGENTS.md",
@@ -243,6 +243,10 @@ public class DocsTruthTests
         foreach (string rel in new[]
                  {
                      "docs/durum.md",
+                     "docs/PLAN.md",
+                     "docs/agent-task-template.md",
+                     "docs/tasarim/11-onarim-plani.md",
+                     "docs/element-sistemi-notlar.json",
                      "docs/ARCHITECTURE-PLAN.md",
                      "docs/core-layers.md",
                      "docs/skill-model.md",

@@ -116,20 +116,15 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 - **Test:** Yay ile 5 düz vuruş: oyuncu konumu değişmez (≤ 2 cm). Kılıç aynı.
 
 ### C2 ✅ Eski motorun alan ve duvarları — `a5c5bd0e` (#191)
-- **Belirti:** ekranın %87'sini kaplayan efekt (`MechanicField`); kamera `MechanicWall` içinde.
-- **Yer:** `Game/Skills/Mechanics/MechanicWorldRuntime.cs` (satır 84, 118, 217),
-  `ManifestationDirector.zMechanicsServices.cs` satır 68. Dilim kontrolü yok.
-- **Düzeltme:** `RuleEngineV4Feature.Enabled` iken `MechanicWorldRuntime` alan/duvar üretmez; üretmeye
-  kalkarsa `[V4-FALLBACK] eski motor`.
+- **Belirti:** ekranın %87'sini kaplayan efekt; kamera eski duvar içinde.
+- **Sonuç:** Aşama 3 — eski `MechanicWorldRuntime` dilim yolu kaldırıldı; v4.5 tek yol.
 - **Ölçüt:** Gözcü `efekt_ekran_kaplama@Mechanic*` ve `kamera_collider_icinde Mechanic*` = 0.
 
-### C3 ☐ Eski motorun ezdiği değerler
-- `Game/Skills/Launch/CastSideEffects.cs` satır 122 (arena alanını sahne değeriyle eziyor), eski motorun
-  0,85 boss çarpışıcısı (#170 notu). Dilimde okunmaz. → `14` Aşama 3, madde 2.
+### C3 ✅ Eski motorun ezdiği değerler — Aşama 3 (#222)
+- Arena alanı ezmesi ve eski boss çarpışıcı yedekleri dilimde okunmaz; sahne sınırı `kural-motoru-v4.json`.
 
-### C4 ☐ Bağımlılık haritası
-- Dilimin eriştiği eski motor dosyası sayısı ölçülür; C1–C3 sonrası yeniden ölçülür (her PR'da düşmeli).
-  → `14` Aşama 3, madde 1.
+### C4 ✅ Bağımlılık haritası — Aşama 3
+- `tools/DepMap/depmap.py`: dilimde eski motor dosyası **0** (`DepMap = 0`).
 
 ---
 
@@ -142,7 +137,7 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 - **Yer:** `FollowCameraController.cs` (ResolveYaw), `.Collision.cs` satır 42–78, `.LockOn.cs`.
 - **Ölçüt:** Gözcü `kamera_aci_hizi` = 0, `kamera_collider_icinde` = 0.
 
-### D2 ☐ Dodge görünümü (5.2)
+### D2 ✅ Dodge görünümü (5.2) — Aşama 1
 - İki faz (0,25 + 0,40 s, O-4.4a), kor parlaması (O-4.6a), iz yalnız süzülmede (O-4.10), takla ayağı zemin
   üstünde (Gözcü `ayak_zemin_alti`).
 - **Yer:** `DodgeMotionController.cs`, `DodgeTuning.cs` (`GlideTailMs` 120 → 400), `Ortak_Takla` klip ayarı.
@@ -168,8 +163,8 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 ### D8 ☐ Skill: Sabit yapıları (S6)
 - Diken, şifa kaynağı, duvar, tuzak, basamak taşı (3-4 basamak taşı bugün katı bir küp).
 
-### D9 ☐ Yürürken minyon ve koza engel
-- #171 yalnız boss ve dostu kapsadı; minyon (yarıçap 0,5) ve koza (0,6) eklenir.
+### D9 ✅ Yürürken minyon ve koza engel — Aşama 2
+- Minyon (yarıçap 0,5) ve koza (0,6) engel olarak eklendi.
 
 ### D10 ☐ Boss efektlerinin ekran kaplaması
 - O-9.1 (%25). C2 sonrası kalan `efekt_ekran_kaplama` satırları; 2-6 (Yay) mavi şekil.
@@ -185,8 +180,8 @@ Durum işaretleri: ⏳ verildi / devam · ☐ sırada · ✅ bitti.
 
 ---
 
-## E — Ayar masası (Adım 6)
-Plan `11` Adım 6.
+## E — Ayar masası
+`14-kodlama-plani.md` Aşama 8.
 
 ---
 
@@ -206,14 +201,14 @@ _(Ajanlar buraya yazar; madde numarası, bulan PR, kısa açıklama.)_
 | Y9 | #173 | Zehir/yanma tiki oyuncuda her karede `CeilToInt` ile en az 1 can düşürüyor: Zehir Nefesi toplamı 240 yerine 253 (#173 ölçtü). Düzeltme: küsurat biriktirilir. Kırmızı `[Ignore]`'lu test #173'te | D3 (sayı hataları) |
 | Y10 | #173 | Panel "Hasar" kaydırıcısı dilimde etkisiz; "Oyuncu can tavanı" etiketi gerçek canı (1000) değil ayar değerini gösteriyor | A3 |
 | Y11 | #173 | Zehir Nefesi konisi kodda 6 m / 40° yarı açı; O-6.17'de 8 m / 60° | D3 (sayı hataları) |
-| Y12 | #173 | `BossCombatProfile` boss JSON'unu değil `element-sistemi.json`'u okuyor | B3 (sessiz yedekler) |
+| Y12 | #173 | ~~`element-sistemi.json` yedek yolu~~ — dosya ve yol kaldırıldı (Aşama 3) | kapandı |
 | Y13 | #173 | Gözcü duman testi boss'u donduruyor; boss saldırılarını kapsamıyor (ör. boss efekti kaplaması duman testinde görünmez) | D10 |
 | Y14 | #169, #173 | Telefonda 3 kez `MeshCollider doesn't exist` (APK'da kod ayıklama MeshCollider'ı siliyor) | B3 |
 | Y15 | #174 | Dilimde panel SIFIRLA boss denge çubuğunu 300'den 100'e çekiyor ve `[V4-FALLBACK]` yazıyor | B3 |
 | Y16 | #174 | `TuningPanelHud.IsOpen` panel yok edilince sıfırlanmıyor (dokunma girişi kilitli kalabilir) | B3 |
 | Y17 | #174 | Zehir değerleri dilimde koddan geliyor; `slice_boss_attacks` dışındaki zehir ayarlarının JSON karşılığı belgede net değil | D3 |
 | Y18 | #174 | Panelde FOV kaydırıcısı yok; FOV yalnız logda görünüyor | E (ayar masası) |
-| Y19 | #174 | Geliştirici APK'sında DevHp açık: oyuncunun gerçek can havuzu 1e9 (ölümsüz). Telefon testlerinde boss hasarı oyuncuyu öldürmez | B3 |
+| Y19 | #174 | DevHp varsayılanı telefon testinde kapatıldı / belgelendi (`14` §5 deneme döngüsü ertelendi) | ✅ |
 | Y20 | 2.5 | Tek oyun saati yok: dünya saati (GameClockHost), kamera, efekt ömürleri (~30 dosya) ve dokunuş süresi `Time.unscaledTime`/`realtimeSinceStartup` ile çalışıyor; duman testi deterministik değil. Hepsi tek enjekte edilebilir saate bağlanır; bitince Gözcü `efekt_ekran_kaplama` cırcırı da engelleyici olur | C4 sonrası (Adım 4) |
 | Y21 | 2.5 | Ajan bilgisayarındaki Unity önbelleğinde 108 shadergraph'ın 102'si bozuk içe aktarılmıştı (`ShaderGraphMetadata`); yeniden içe aktarıldı (repo değişmedi). Daha önceki APK'larda shadergraph'lı malzemeler eksik/yedek shader'la çıkmış olabilir. Sonraki APK'da telefonda görsel kontrol | Adım 2 sonu telefon kontrolü / D11 |
 | Y22 | #176 | Kılıç tutuş açısı (`Grip_R` / `Silah_Kilic`): Mixamo kesişi boyunca kılıç ileri yöne hiç yaklaşmıyor (MX 25–36 arasında ileri yönle en az 94°); vuruş anında namlu yana bakıyor. Tutuş `d631970d`'de 0°'ye alınmıştı | D13 (Kılıç kesiş zinciri) |

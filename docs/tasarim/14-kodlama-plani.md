@@ -2,7 +2,7 @@
 
 Sürüm 1.0 · 14 Ekim 2026 (Mustafa onayladı) · Kullanıcı: Mustafa · master `3c4c345` (#183 sonrası)
 
-Bu plan `11-onarim-plani.md`'nin yerine geçer. Eski plan kurallar (`13`, yeni `AGENTS.md`/`CLAUDE.md`)
+Güncel tek kodlama planı (eski PLAN.md ve onarım planı kaldırıldı). Kaynak kurallar (`13`, `AGENTS.md`/`CLAUDE.md`)
 konmadan önce çıkmıştı: her PR tek küçük düzeltme ve her PR'da ~30 dk yerel test (O_ PlayMode + Gözcü + APK).
 Bu planda iş **aşamalara** bölünür; **her aşama telefonda görülen bir oyun gelişmesiyle biter ve telefon testi
 yalnız aşama sonunda yapılır.**
@@ -31,21 +31,29 @@ Bu düzen için değişen satırlar (planla aynı PR'da):
 - `AGENTS.md` Çalışma biçimi / Testler: "her PR'dan önce O_ + Gözcü" → "her aşama sonunda"; "oynanışı değiştiren her
   PR'da APK kaydı" → "her aşama PR'ında".
 - `CLAUDE.md`: "Her oturum tek görev" kalır; görev = aşamanın bir maddesi ya da aşamanın tamamı.
-- `00-OKU-BENI.md` ve `13` başlığı: "İş sırası `11`" → "`14`". `11` arşiv notuyla kalır.
+- `00-OKU-BENI.md` ve `13` başlığı: iş sırası `14`.
 
 ---
 
-## 2. Bitmiş olanlar (envanterde işaretsiz duranlar)
-**B2** silah değişince yürüme klibi (#181), **C1** düz vuruş yerinde (#177), **D1** kamera boss yakını (#179).
-`12`'de işaretlendi.
+## 2. Tamamlanan aşamalar (17 Ekim 2026)
+
+| Aşama | Özet | Durum |
+|-------|------|--------|
+| **1 — Dodge** | Mükemmel dodge kaldırıldı; 2 faz; zincir takla; i-frame parlaması; O-4.9 kayma | **✅** |
+| **2 — Temiz ekran** | UI sadeleştirme, kamera, B3 `[V4-FALLBACK]`, görsel teşhis (#196–#222) | **✅** |
+| **3 — Eski motor silindi** | Tek yol `RuleEngineV4SentenceHost`; `DepMap = 0` | **✅** |
+
+**Core iskeletleri (Unity bağlantısı 4–8'de):** `Hit`, `Trial`, `Team`, `Cancel`, `Targeting`, `Boss` (`KulEjderiBrain`, `BossActionRunner`) — #204/#224.
+
+Envanter: **B2** (#181), **C1** (#177), **D1** (#179) ve `12` maddeleri işaretli.
 
 ---
 
-## 3. Aşamalar
+## 3. Aşamalar (sıradaki: 4–8)
 
 Sıra, telefonda en çok fark edilecek olandan en az bağımlılığı olana doğru. Her aşama bir öncekinin üstüne kurulur.
 
-### Aşama 1 — Dodge: "Kalahan affetmez, dodge affeder"
+### Aşama 1 ✅ — Dodge: "Kalahan affetmez, dodge affeder"
 Kaynak: `13` §3 [K] (dodge'a bağımlı boss; mükemmel dodge [RED]), `09` [K] i-frame, `10` O-4.4–O-4.11.
 1. Mükemmel/kusursuz dodge kodda kaldırılır: hak iadesi, ×1,3 vuruş, 0,2 s ağır çekim, özel ses/titreşim
    (`PerfectDodgeRule`, `ExchangeResolver`, `DodgeTuning`, `FeelTuning`, `CombatFeelDirector`, panel). Belgede
@@ -58,8 +66,8 @@ Kaynak: `13` §3 [K] (dodge'a bağımlı boss; mükemmel dodge [RED]), `09` [K] 
 bas → takla, ayak yere gömülmüyor; kaçış boyunca karakterin kenarı turuncu parlıyor; boss'un Bacak Çakması
 dairesinden dodge ile geçince hasar yok; artık "kusursuz dodge" ağır çekimi ve hak iadesi yok.
 
-### Aşama 2 — Temiz ekran: eski motor dilimden çıkıyor
-Kaynak: `11` Adım 3–4 (K3, K4), envanter B3, C2, C3, C4, D9, D10, Y12, Y14, Y15, Y16.
+### Aşama 2 ✅ — Temiz ekran
+Kaynak: envanter B3, C2, C3, C4, D9, D10, Y12, Y14, Y15, Y16; video teşhis #196–#222.
 1. `MechanicWorldRuntime` dilimde alan/duvar üretmez (C2); eski motorun ezdiği değerler okunmaz (C3).
 2. Kalan sessiz yedekler `[V4-FALLBACK]` yazar, yedek görüntü oynatmaz (B3; Y12, Y14 MeshCollider, Y15, Y16).
 3. Boss efektleri ekranın %25'inden fazlasını kaplamaz (O-9.1, D10).
@@ -69,8 +77,8 @@ Kaynak: `11` Adım 3–4 (K3, K4), envanter B3, C2, C3, C4, D9, D10, Y12, Y14, Y
 **Telefonda göreceğin:** 3 dk Kılıç + Yay ile dövüş; ekranı kaplayan dev efekt yok, kamera hiçbir duvarın içine
 girmiyor, minyon ve kozanın içinden yürünmüyor; logcat'te `[V4-FALLBACK]` satırı 0.
 
-### Aşama 3 — Eski motoru sil
-Kaynak: AGENTS.md "taşıma bitince silinecek", `11` Adım 4, envanter C3, C4. Mustafa 15 Ekim'de öne aldı
+### Aşama 3 ✅ — Eski motoru sil
+Kaynak: envanter C3, C4. Mustafa 15 Ekim'de öne aldı
 (eski Aşama 3 "Deneme döngüsü" planından çıktı, bkz. §5). Dal `asama/3-eski-motor-sil`; her madde ayrı PR.
 1. Bağımlılık haritası (C4): dilimin eriştiği eski motor dosyası sayısını çıkaran araç; sayı her PR'da yeniden
    ölçülür, PR'a yazılır ve düşmelidir.
@@ -127,7 +135,7 @@ Kılıç `Kilic_VUR_b`, `_c` klipleri gelmeden 3 kesiş zinciri yapılmaz.
 art arda dokunuşta kesişler sırayla geliyor.
 
 ### Aşama 8 — Ayar masası
-Kaynak: `11` Adım 6, Y4, Y10, Y18, D11 (ortam ışığı).
+Kaynak: `12` E bölümü, Y4, Y10, Y18, D11 (ortam ışığı).
 Görünüş/his ayarları telefonda kaydırıcıyla, A/B, Kaydet, Dışa aktar.
 
 **Telefonda göreceğin:** yürüme hızını, kamera açısını ve dodge süresini telefonda değiştirip kaydedebiliyorsun;

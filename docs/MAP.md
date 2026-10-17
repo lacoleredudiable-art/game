@@ -1,6 +1,6 @@
 # MAP.md — konu → dosya → giriş noktası
 
-**Nasıl kullanılır:** Görevde bir konu adı geçiyorsa bu tabloda bul; yalnız listelenen dosyayı aç. Giriş noktası, okumaya başlayacağın tip ve metot. Kök `AGENTS.md` sert kurallar; iş sırası `docs/PLAN.md`; mimari `docs/ARCHITECTURE.md`; oyun özeti `docs/OYUN.md`. Doğrulama: `tools/verify.ps1`.
+**Nasıl kullanılır:** Görevde bir konu adı geçiyorsa bu tabloda bul; yalnız listelenen dosyayı aç. Giriş noktası, okumaya başlayacağın tip ve metot. Kök `AGENTS.md` sert kurallar; iş sırası `docs/tasarim/14-kodlama-plani.md`; mimari `docs/ARCHITECTURE.md`; oyun özeti `docs/OYUN.md`. Doğrulama: `tools/verify.ps1`.
 
 **Büyük dosya uyarısı:** `RuleEngineV4SentenceHost` (partial'lar), `HexagonInputController`, `BossDirector`, `GameTuning` — tam dosya okuma; önce giriş noktası, `Select-String` ile daralt. Kurulum `Game/Composition/Builders/*`.
 

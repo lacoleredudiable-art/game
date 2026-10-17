@@ -1,6 +1,10 @@
 # Ağların Kraliçesi — tasarım (onaylı) + uygulama durumu
 
-**Tasarım:** ONAYLANDI (2026-10-02). **Uygulama:** aktif boss sahnede `aglarin_kralicesi` (`Prototype.unity` `ActiveBossId`); saldırı seçimi `App/Boss/BossAttackSelector`, yürütme `BossDirector` + `App/Boss/BossMechanicStatusMap` (FireCone etkileri JSON/`MechanicStatusMap` — sabit `BossDirector` L820 değil).
+> **Dilim notu (17 Ekim 2026):** Kraliçe, **Aşama 4–8** alfa diliminin test boss'udur (`14-kodlama-plani.md`).
+> Uzun vadeli ürün boss'u **Kül Ejderi** (`docs/tasarim/18-kul-ejderi.md`); arena `19-krater-arenasi.md`
+> (`17-tasarim-hatti.md`). Kraliçe asset'leri ejderha geçişinde kalkacak (karar A3).
+
+**Tasarım:** ONAYLANDI (2026-10-02). **Uygulama:** aktif boss sahnede `aglarin_kralicesi` (`Prototype.unity` `ActiveBossId`); saldırı seçimi `App/Boss/BossAttackSelector`, yürütme `BossDirector` + `App/Boss/BossMechanicStatusMap` (FireCone etkileri JSON/`MechanicStatusMap`).
 Kaynak şema: `unity/Assets/Resources/Bosses/aglarin-kralicesi.json`, `BossAttackKind`, `BossAttack`, `BossAttackControl`.
 Sayı kuralı: JSON `vitals.total_hp` / `player_hp` (120/22) **okunmuyor**; oyun canı dilim grameri `global_rules` × `CombatScale` (400.000 / 88.000.000). Faz `%` aralıkları boss JSON `phases` ile uygulanır.
 
@@ -133,7 +137,7 @@ Karadul şemasının aynısı + saldırı başına isteğe bağlı yeni alanlar:
 | 3.3 | `BossDirector`: yeni türlerin çözümü, `on_hit_status`, FireCone etkilerinin veriden okunması | — |
 | 3.4 | Telegraph + ağ alanı + (Karar 1A ise) boss `MotionTemplateBodyHost` ile sıçrayış | 1, 2 |
 | 3.5 | Bootstrap'ta boss seçimi + HUD | 2, 3 |
-| 3.6 | Doğrulama: CoreTests, AtomSim, SweepV2 kapısı | — |
+| 3.6 | Doğrulama: CoreTests, IntegrationTests, GameCompile, O_ PlayMode | — |
 | 3.7 | CC0 örümcek modeli: bul, içe aktar, Editor bind ile animator, `BossView` eşlemesi | 2 |
 
 Model gereksinimi (Karar 2B): CC0 lisanslı, kendi animasyonları olan örümcek (en az idle, yürüme, saldırı, ölüm; varsa sıçrama ve vurulma). Mixamo insansı klipleri kullanılmaz. Eksik klip, mevcut en yakın klibe düşer.

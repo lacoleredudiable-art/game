@@ -2,7 +2,7 @@
 
 > Prototip turunda pahalıya öğrenilmiş operasyonel tuzaklar. Tasarım kararı yok, hepsi
 > "şunu yapma, çalışmıyor" cinsinden. Unity'ye ya da cihaza dokunacak görevde okunur.
-> 16 Eylül: operasyon notları arşivlendi; güncel iş listesi `docs/PLAN.md`.
+> 16 Eylül: operasyon notları arşivlendi; güncel iş sırası `docs/tasarim/14-kodlama-plani.md`.
 
 ## Sahne ve derleme
 

@@ -1,5 +1,5 @@
 # Eski motor dosyaları: göreli yola (unity/Assets/Scripts altı) uygulanan regex, satır başına bir tane.
-# Kaynak: AGENTS.md "DONDURULDU" maddesi, 11-onarim-plani.md Adım 4, 14-kodlama-plani.md Aşama 3 madde 5.
+# Kaynak: 14-kodlama-plani.md Aşama 3 (eski motor silindi).
 # Başlangıç listesi: yalnız belgede ADIYLA geçenler. Belgede olmayan dosya eklenmez; v4'ün
 # kullandığı bir dosya buraya girerse PR'da yazılır. v4 kök dosyaları (yolunda RuleEngineV4) sayılmaz.
 (^|/)ManifestationDirector[^/]*\.cs$

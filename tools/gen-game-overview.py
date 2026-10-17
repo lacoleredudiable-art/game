@@ -223,14 +223,18 @@ def build_generated_section() -> str:
 def wrap_manual(manual: str, generated: str) -> str:
     header = (
         "# OYUN.md — tek oyun özeti\n\n"
-        "Alfa prototip: tek boss dövüşü, altıgen kombo girdisi, dodge ve CD/mana kapıları.\n"
-        "Sayılar aşağıdaki üretilmiş blokta; elle yazılan kısım yalnız akış.\n\n"
+        "Alfa **dilim** (Aşama A): tek boss dövüşü, altıgen kombo, dodge ve CD/mana kapıları. "
+        "Tam oyun vizyonu `docs/tasarim/13-vizyon-ve-cerceve.md`; hedef boss/arena `18`/`19`.\n"
+        "Sayılar aşağıdaki üretilmiş blokta; bu bölüm akış özetidir.\n\n"
         "## Bir dövüş nasıl akar\n\n"
         "Sol joystick hareket. Sağ altıgende ilk nokta fiil, ikinci nokta (en fazla bir) sıfat; "
-        "cümle tamamlanınca `CastPipeline` skill'i çözer ve `RuleEngineV4SentenceHost` v4 yolunu yürütür. "
-        "Merkeze kısa dokunuş düz vuruş. Dodge ayrı düğme: iki hak, 6 sn dolum; çift basış birleşik kaçış. "
-        "Mükemmel dodge yalnız **görsel donma** (dünya/boss/CD akmaya devam). Boss saldırıları `BossBrain` + `BossDirector`; "
-        "oyuncu canı `PlayerHealth`, ölçek `CombatScale`.\n\n"
+        "cümle tamamlanınca `CastPipeline` skill'i çözer, yürütme yalnız "
+        "`RuleEngineV4SentenceHost` + `kural-motoru-v4.json` (v4.5 tek yol). "
+        "Merkeze kısa dokunuş düz vuruş. Dodge ayrı düğme: **2 hak**, **6 sn**/hak dolum; çift basış "
+        "birleşik kaçış (zincir takla). İki faz: patlama + süzülme; i-frame boyunca kor turuncusu parlama; "
+        "engel, minyon ve dost yüzeyinde kayma, duvara yapışmama (O-4.9). **Mükemmel dodge yoktur** "
+        "(kaldırıldı; `13` §3). Boss saldırıları `BossBrain` + `BossDirector`; can `PlayerHealth`, ölçek "
+        "`CombatScale`. Aktif dilim boss: Ağların Kraliçesi; sonraki hedef: Kül Ejderi (`17`–`20`).\n\n"
     )
     return f"{header}{GEN_BEGIN}\n{generated.rstrip()}\n{GEN_END}\n"
 

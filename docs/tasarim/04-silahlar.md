@@ -16,7 +16,7 @@ Hazırlayan: GameDesign, 9 Ekim 2026. Silahlar yeniden tasarlanacak; bu dosya bu
 - İşaretten çıkan skillde oyuncu hareketi kendi yerinde yapar, hareketin kordan yankısı işarette belirir. Menzil işarete kadar olan mesafeye uygulanır, işaretten sonrası sıfatın şekline aittir.
 
 ### Menzil tablosu
-Kaynak: `element-sistemi.json` içindeki `range_mult` × 6 m (v3 kural kitabındaki varsayılan erişim). Sayılar test değeri, dengelemede ayarlanır.
+Kaynak: `kural-motoru-v4.json` → `weapons[]` menzil çarpanları ve `scale` (dilimde Kılıç + Yay). Sayılar test değeri, dengelemede ayarlanır.
 
 *Not (AS-05): Bu tablo yalnız menzil kaynağıdır. Dövüş tarzı için `silah-fiil-120.md` Tarz satırları, ritim için aşağıdaki ritim tablosu geçerlidir; buradaki tarz/ritim sütunları eski kısa özettir. Kılıç: yerinde iaido, kınsız (K 21:05); Küre yavaşlığı ritim değeridir (K 21:10b); Kalkan VUR = ağır adım + kenarla indirme, omuz hücumu Hareket'te (K 21:05).*
 

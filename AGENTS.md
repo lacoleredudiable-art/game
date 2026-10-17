@@ -39,7 +39,7 @@ tasarım sorusu olarak döner.
 2. Sahne koddan kurulur (`GameBootstrapHost`). `.unity` / `.prefab` YAML dosyaları asla elle düzenlenmez.
 3. Sayı koda yazılmaz: oynanış sayıları `kural-motoru-v4.json` ya da `*Defaults` const'larından gelir.
    Sayı uydurma; kaynakta yoksa PR'da "kaynakta yok" diye yaz.
-4. Sessiz geri dönüş yasak: v4 bayrağı açıkken yeni yol başarısız olursa eski yola düşülmez;
+4. Sessiz geri dönüş yasak: v4.5 tek yoldur; eksik veri ya da durumda sessiz yedek çalışmaz,
    `Debug.LogError("[V4-FALLBACK] <yer>: <sebep>")` yazılır.
 5. Skill sırasında konumu tek bir sahip yazar (PositionOwnership'e kayıtlı). v4 komutları (KendiniTasi, It, dodge)
    bu sahiplik kuralına uyar; ikinci bir gizli konum yazan yol eklenmez.

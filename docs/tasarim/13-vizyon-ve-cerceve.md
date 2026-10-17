@@ -55,8 +55,8 @@ Ortamdan türetilen kısıtlar (Ö, tahmin):
   **~10.000'de 1**.
 - **[K]** Boss tek atma yetenekleri; dodge'a bağımlı. Mesele mükemmel dodge değil, doğru yerde doğru dodge.
 - **[K] [RED] Mükemmel dodge kaldırıldı.** İlk zamanların prototipiydi, gerekli değil. "Dodge dodge'dur.
-  Kalahan affetmez, dodge affeder." README ve kural kitabındaki mükemmel dodge satırları bu karara göre
-  güncellenmeli (→ A-13.13).
+  Kalahan affetmez, dodge affeder." README, `OYUN.md`, `gen-game-overview.py` ve ilgili belgeler güncellendi
+  (→ A-13.13 ✅).
 
 ## 4. Başarısızlığın okunabilirliği (Ö; K'nın Kalahan anlatımından türetildi)
 
@@ -313,7 +313,7 @@ Kullanıcı kararı (kâğıt sınıfı):
 | A-13.10 | Ağ topolojisi: yerel/hotspot mu, yalnız internet mi? | aynı masa → yerel öncelikli |
 | A-13.11 | Hareket'in yalnız Saldırı'da olması bilinçli mi? (tank/destek konum aracı yalnız dodge) | bilinçliyse tasarıma yazılsın |
 | A-13.12 | Destek otomatik hedefi "en yakın dost" mu "en çok hasar alan" mı? | Odaklı-Yansıma'daki kol Şifa'da da olsun; sürükleme istisna |
-| A-13.13 | Mükemmel dodge hangi belgelerden/kodlardan silinecek? | README + kural kitabı dodge bölümü + `10-olculer.md` dodge maddeleri; liste çıkarılacak |
+| A-13.13 | Mükemmel dodge hangi belgelerden/kodlardan silinecek? | **[K] ✅ Tamamlandı (17 Ekim 2026):** kod (`PerfectDodgeRule` vb.), README, OYUN üretici, `10` [RED] satırları |
 | A-13.14 | Kalahan hem ezberlenebilir hem korkutucuydu; ikisi birlikte nasıl durur? | — |
 
 Oyunda ölçüm (başlangıç tahmini yazılır, oynanarak bulunur):
