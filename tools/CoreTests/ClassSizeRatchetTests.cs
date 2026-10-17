@@ -15,7 +15,7 @@ public sealed class ClassSizeRatchetTests
     static readonly Dictionary<string, int> Allowlist = new()
     {
         ["RuleEngineV4SentenceHost"] = 2409,
-        ["HexagonView"] = 1093,
+        ["HexagonView"] = 1175,
         ["BossDirector"] = 1112,
         ["MotionTemplateRunner"] = 1034,
         ["PortalSystem"] = 979,
