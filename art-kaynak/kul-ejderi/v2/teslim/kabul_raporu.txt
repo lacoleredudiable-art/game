@@ -1,0 +1,70 @@
+seyreltme ejder_bas: 14284 -> 13000
+seyreltme ejder_govde: 57114 -> 12996
+kanat çift yüzü atıldı: 79996 -> 39998; ayrılan kenar 1680
+seyreltme ejder_kanatlar: 39998 -> 4000
+kanat yeniden çift yüz: 7976
+ağırlık ejder_bas: en çok 2 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_govde: en çok 4 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_kanatlar: en çok 4 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_kalp: en çok 1 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_plakalar: en çok 1 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_pul_alin: en çok 1 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_pul_boyun: en çok 2 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_pul_sag_pence: en çok 2 etki, ağırlıksız köşe 0, toplamı≠1 0
+ağırlık ejder_pul_sol_pence: en çok 2 etki, ağırlıksız köşe 0, toplamı≠1 0
+LOD1 ejder_bas: 13000 -> 6500 üçgen
+LOD1 ejder_govde: 12996 -> 6498 üçgen
+LOD1 ejder_kanatlar: 7976 -> 3986 üçgen
+bütçe LOD0: bas 13000, govde 12996, kanatlar 7976, kalp 80, plakalar 640, pul_alin 176, pul_boyun 204, pul_sag_pence 228, pul_sol_pence 280 → toplam 35580 / 36000
+bütçe LOD1: toplam 18592
+ejder_bas: açık kenar 0  X -6.2..6.2 Z 7.5..28.5 H -0.0..16.1
+ejder_govde: açık kenar 42  X -18.2..11.7 Z 12.0..57.6 H -1.8..15.2
+ejder_kanatlar: açık kenar 3892  X -31.4..31.4 Z 26.2..59.3 H 2.4..20.0
+ejder_kalp: açık kenar 0  X -1.3..1.3 Z 21.1..23.3 H 2.6..5.6
+ejder_plakalar: açık kenar 0  X -2.5..2.4 Z 19.7..20.8 H 1.8..6.3
+ejder_pul_alin: açık kenar 0  X -1.0..0.8 Z 10.4..11.6 H 5.5..7.2
+ejder_pul_boyun: açık kenar 0  X -0.8..0.8 Z 17.2..18.6 H 10.0..11.8
+ejder_pul_sag_pence: açık kenar 0  X 7.5..9.0 Z 12.9..14.7 H -0.0..1.7
+ejder_pul_sol_pence: açık kenar 0  X -9.0..-7.0 Z 12.8..14.7 H 0.2..1.8
+ejder_bas_LOD1: açık kenar 0  X -6.2..6.2 Z 7.5..28.5 H -0.0..16.1
+ejder_govde_LOD1: açık kenar 42  X -18.2..11.7 Z 12.0..57.6 H -1.8..15.2
+ejder_kanatlar_LOD1: açık kenar 2658  X -31.0..31.0 Z 26.3..59.1 H 3.6..19.9
+poz Klip_Dogrulus@1: baş H 2.5..16.4, en güney Z 6.9, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Klip_Dogrulus@120: baş H 10.1..24.8, en güney Z 8.5, yer altı (<-0,3 m) %0.46, X -31.4..31.4
+poz Klip_Gogus_Yere@1: baş H 10.1..24.8, en güney Z 8.5, yer altı (<-0,3 m) %0.46, X -31.4..31.4
+poz Klip_Gogus_Yere@120: baş H 5.7..20.2, en güney Z 7.2, yer altı (<-0,3 m) %1.43, X -31.4..31.4
+poz Klip_Olum@1: baş H 5.7..20.2, en güney Z 7.2, yer altı (<-0,3 m) %1.43, X -31.4..31.4
+poz Klip_Olum@90: baş H 0.9..15.1, en güney Z 6.1, yer altı (<-0,3 m) %2.15, X -31.4..31.4
+poz Klip_Uyanis@1: baş H 1.7..16.2, en güney Z 7.0, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Klip_Uyanis@120: baş H 2.5..16.4, en güney Z 6.9, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Agiz_Acik@1: baş H -0.8..16.1, en güney Z 7.5, yer altı (<-0,3 m) %1.31, X -31.4..31.4
+poz Poz_Agiz_Soluk@1: baş H -1.5..16.1, en güney Z 7.5, yer altı (<-0,3 m) %2.17, X -31.4..31.4
+poz Poz_Bas_Goge@1: baş H 8.7..24.8, en güney Z 10.1, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Bas_Kalkik@1: baş H 8.7..20.0, en güney Z 6.8, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Bas_Saga_Cekik@1: baş H 4.9..17.4, en güney Z 9.7, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Bas_Sola_Cekik@1: baş H 4.9..17.3, en güney Z 9.7, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Bas_Yere_Vurmus@1: baş H 2.0..16.3, en güney Z 6.7, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Dogrulmus@1: baş H 10.1..24.8, en güney Z 8.5, yer altı (<-0,3 m) %0.46, X -31.4..31.4
+poz Poz_Dogrulmus_Nefes@1: baş H 12.0..27.5, en güney Z 8.0, yer altı (<-0,3 m) %0.46, X -31.4..31.4
+poz Poz_Dogrulmus_Pence_L_Havada@1: baş H 10.1..24.8, en güney Z 8.5, yer altı (<-0,3 m) %0.46, X -31.4..31.4
+poz Poz_Dogrulmus_Pence_R_Havada@1: baş H 10.1..24.8, en güney Z 8.5, yer altı (<-0,3 m) %0.46, X -31.4..31.4
+poz Poz_Gogus_Yerde@1: baş H 5.7..20.2, en güney Z 7.2, yer altı (<-0,3 m) %1.43, X -31.4..31.4
+poz Poz_Kanat_L_Acik@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %1.04, X -45.6..31.4
+poz Poz_Kanat_L_Supurme_Basi@1: baş H -0.0..16.1, en güney Z -5.3, yer altı (<-0,3 m) %1.04, X -20.2..31.4
+poz Poz_Kanat_L_Supurme_Sonu@1: baş H -0.0..16.1, en güney Z -20.1, yer altı (<-0,3 m) %1.04, X -19.8..31.4
+poz Poz_Kanat_R_Acik@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %1.04, X -31.4..45.6
+poz Poz_Kanat_R_Supurme_Basi@1: baş H -0.0..16.1, en güney Z -5.3, yer altı (<-0,3 m) %1.04, X -31.4..20.2
+poz Poz_Kanat_R_Supurme_Sonu@1: baş H -0.0..16.1, en güney Z -20.1, yer altı (<-0,3 m) %1.04, X -31.4..19.8
+poz Poz_Nefes_Cekme@1: baş H 4.3..16.8, en güney Z 7.3, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Pence_L_Acik@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %0.75, X -31.4..31.4
+poz Poz_Pence_L_Havada@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %0.77, X -31.4..31.4
+poz Poz_Pence_L_Supurme_Sonu@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %0.90, X -31.4..31.4
+poz Poz_Pence_L_Yerde@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %1.00, X -31.4..31.4
+poz Poz_Pence_R_Acik@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %0.75, X -31.4..31.4
+poz Poz_Pence_R_Havada@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %0.78, X -31.4..31.4
+poz Poz_Pence_R_Supurme_Sonu@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %0.90, X -31.4..31.4
+poz Poz_Pence_R_Yerde@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %1.02, X -31.4..31.4
+poz Poz_Plaka_Acik@1: baş H -0.0..16.1, en güney Z 7.5, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Sendeleme@1: baş H 2.7..16.6, en güney Z 7.3, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+poz Poz_Yatis@1: baş H 2.5..16.4, en güney Z 6.9, yer altı (<-0,3 m) %1.04, X -31.4..31.4
+aksiyon doldurma: 1194 kemik-aksiyon çifti dinlenmeye sabitlendi

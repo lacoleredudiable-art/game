@@ -47,7 +47,7 @@ geçer, değiştirilmez. Görünüm kuralları `16-sanat-incili.md`'dedir.
 ## 3. Ejderhanın gövdesi (duvar ve yamaç)
 
 `18` KE-2.2'deki yerleşim. Gövde sabit kaya kütlesidir; baş, boyun, pençeler ve kanatlar canlandırılır. Gövdenin
-ölçüleri Tripo kaba modelinden (`ejder_govde` v0, 12 Ekim) ölçülmüştür.
+ölçüleri v2 modelden (`art-kaynak/kul-ejderi/v2/ejder.blend`, 17 Ekim) ölçülmüştür.
 
 | Kimlik | Parça | Konum | Ölçü | Not |
 |---|---|---|---|---|
@@ -55,8 +55,8 @@ geçer, değiştirilmez. Görünüm kuralları `16-sanat-incili.md`'dedir.
 | KA-3.2 | Ön pençeler | Sol (−8, 13,7), sağ (8, 13,7); tırnak ucu Z 11,3 | 5,2 × 4,2 m taban; bacak dirsekte (Z 16,4, 4,5 m) geriye bükülür, omuz (±7,4, 18,9, 9,8) göğse girer | KE-2.4 |
 | KA-3.3 | Boyun | Göğsün ortasından (0, 19), 10–12 m yükseklikten başın arkasına (0, 16,5) iner | Kalınlık 5 m | Göğsün kesik ön yüzünü kapatır |
 | KA-3.4 | Göğüs ve omuzlar | Ön yüz Z ≈ 18 (duvar çizgisi), X −10…10 | Sırt Z = 20'de 14 m, Z = 25'te 17 m yükseklikte | Azimut 330°–30° arasında duvarın kendisi ejderhanın göğsüdür |
-| KA-3.5 | Sırt ve kanatlar | Z 18–58; kanatlar Z 25–55 arasında X ±18'e yayılır, krater kenarının üstünde | En yüksek nokta 18 m (Z ≈ 35) | Kanatlar Kanat Savuruşu'nda açılır (KE-6.6) |
-| KA-3.6 | Kuyruk | Kanatların altına kıvrılı, görünmez | — | Ayrı model yok |
+| KA-3.5 | Sırt ve kanatlar | Sırt Z 18–58, en yüksek yeri 15 m; kanatlar dinlenmede sırtın üstünde yarı katlı, uçları X ±31, Z 26–59 (krater kenarının üstünden görünür) | Kanatların en yüksek noktası 20 m | Kanatlar Kanat Savuruşu'nda açılır ve güney kenara kadar süpürür (KE-6.6) |
+| KA-3.6 | Kuyruk | Batı yamacında kıvrılı, Z 40–56, X −18'e kadar; arka bacaklar Z 34–39'da gövdenin iki yanında | Yerden ~2–6 m | Görünür, saldırmaz (`18` KE-2.2); gövde dosyasında, kemikleri `Kuyruk_01–06` |
 | KA-3.7 | Kanat sektörleri | Azimut 300°–330° ve 30°–60° arasında duvarın görünen yüksekliği 6–7 m (kanadın ucu duvarın üstünden görünsün) | — | Kanat Savuruşu'nun hazırlığı okunur |
 
 ---

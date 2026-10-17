@@ -24,7 +24,7 @@ hiç kıpırdamaz (`18` KE-2.2). Dört parça üretilir, Blender'da birleştiril
 | AL-1.3 | Ön bacak + pençe | Evet, bir tane; Blender'da aynalanır | `ejder_on.fbx` içinde | Canlı |
 | AL-1.4 | Göğüs ve omuzlar | AL-1.1'den kesilir | `ejder_on.fbx` içinde | Canlı (faz 2'de kalkar) |
 | AL-1.5 | Gövde ve kanatlar | AL-1.1'den kesilir — **v0 ✔ 12 Ekim** (baş ve bacaklar kesildi, 10 000 üçgen, arena konumunda) | `ejder_govde.fbx` | Gövde sabit, kanatlar canlı (Kanat Savuruşu) |
-| AL-1.6 | Kuyruk | Yok (kanatların altında kıvrılı; Kanat Savuruşu kararı 12 Ekim) | — | — |
+| AL-1.6 | Kuyruk | v2'de var: batı yamacında kıvrılı, `Kuyruk_01–06` kemikleri, gövde mesh'inde (17 Ekim, `18` KE-2.2) | `ejder.fbx` | Görünür, saldırmaz |
 
 ### 1.2 Tripo istemleri
 
@@ -86,13 +86,13 @@ Model bunları sağlamadan Unity'ye girmez. FBX'i bana gönderirsen ölçüleri 
 |---|---|---|---|
 | AL-1.16 | Ölçü (baş) | Çene yerdeyken 7 m yükseklik, burun ucundan kafatası arkasına 9 m | KE-2.3 |
 | AL-1.17 | Ölçü (pençe) | Taban 5,2 × 4,2 m, bilek 1,6 m, dirsek 4,5 m, omuz 9,8 m yükseklikte (Tripo bacağı ×10, üst kol 2 kat uzatılıp göğse yatırıldı) | KE-2.4, KA-3.2 |
-| AL-1.18 | Ölçü (bütün) | Burun Z 7,5; gövde Z 18–58, X ±18, 18 m yükseklik (KA-3) | KE-2.2 |
-| AL-1.19 | Üçgen | `ejder_on` ≤ 26 000 (baş + boyun 14 000, göğüs 4 000, her bacak 4 000) · `ejder_govde` (kanatlar dahil) ≤ 10 000 → toplam ≤ 36 000 | O-15.6 |
+| AL-1.18 | Ölçü (bütün) | v2: burun Z 7; gövde Z 12–58 (göğüs ön yüzü Z ≈ 18), sırt 15 m; kanatlar dinlenmede X ±31, 20 m (KA-3) | KE-2.2 |
+| AL-1.19 | Üçgen | v2 (tek dosya `ejder.fbx`, 17 Ekim): baş 13 000 · gövde (bacak, kuyruk dahil) 13 000 · kanatlar 4 000 tek yüz × 2 (çift yüz) · kalp + plakalar + 4 pul ~1 600 → **35 580 / 36 000**; LOD1 18 592. Rapor: `art-kaynak/kul-ejderi/v2/teslim/kabul_raporu.txt` | O-15.6 |
 | AL-1.20 | Doku | Her dosya tek doku seti; `ejder_on` 2048, gövde 1024 + tekrarlayan kaya ayrıntı dokusu. Albedo SI-5.3 ailesine çekilir: taban #3A4048 (±5 L\*), boynuz ve pençe #5B5A57, yukarı bakan yüzlerde kül. **Emission maskesi** ayrı kanal: gözler, pul araları, göğüs çatlakları (kalp), boyun çatlakları. Doku ASTC | SI-5.3–5.5, O-15.7 |
 | AL-1.21 | Kesimler | Alt çene ayrı parça (en çok 10° açılır, SI-8.6); göz kapakları şekil anahtarı (blend shape) ya da kemik (göz kırpma, SI-8.2); göğüs plakaları ayrı parçalar (faz 3'te açılır, KE-7.1) ve altında kalp (kor çekirdek) | SI-8, KE-7 |
 | AL-1.22 | Yön ve pivot | Bütün dosyalar arena koordinatlarında, sıfır noktası arena merkezi (0, 0, 0); Unity'de konum ve dönüş sıfır, baş güneye (−Z) bakar. Blender'da arena doğusu −X, kuzeyi −Y'dir (Unity sol el, Blender sağ el); bu kurala uymayan dosya aynalanmış çıkar | O-16.1 |
 | AL-1.23 | İskelet (`ejder_on`) | Gogus → Boyun_1–5 → Bas (→ Cene, v1); Gogus → Omuz_L/R → Kol_Ust → Kol_Alt → Pence (parmak kemikleri yok); Goz_Kapak şekil anahtarı (v1). L = batı, R = doğu. Adlar Türkçe karakter içermez | O-16.6 |
-| AL-1.24 | İskelet (`ejder_govde`) | Kok (sabit) → Gogus; Kok → Kanat_L_01–05, Kanat_R_01–05 | KE-6.6, KE-6.1 |
+| AL-1.24 | İskelet (v2, tek iskelet `ejder_on`) | Kok → Omurga_1 → Omurga_2 → Gogus → (Boyun_1–5 → Bas → Cene; Omuz → Kol → Pence; Plaka_1–4, Kalp); Omurga_2 → Kanat_L/R_01–06; Kok → Arka bacaklar, Kuyruk_01–06 | KE-6.6, KE-6.1 |
 | AL-1.25 | Dışa aktarım | FBX, ölçek 1,0, "Apply Transform" açık, Y yukarı / Z ileri (Blender: ileri −Z, yukarı Y), adlar `ejder_on`, `ejder_govde` | O-16.1, O-16.6 |
 | AL-1.26 | Kontrol sayfası | Ön, yan, arka, oyun kamerası açısı (arena başlangıcından, (0, −14)) × 3 poz (yatıyor, faz 2 doğrulmuş, faz 3 göğüs yerde) = 12 görüntü | O-16.8 |
 
@@ -125,7 +125,8 @@ yeniden yapılmaz. Yalnız 4 sinema anı klip olarak yapılır. Oyuncu karakterl
 | AL-1.40 | `Poz_Gogus_Yerde` | Gogus, bacaklar, boyun, baş | Faz 3 bekleme (baş 10 m) |
 | AL-1.41 | `Poz_Plaka_Acik` | Göğüs plakaları | Kor Mührü başarısı (kalp açık) |
 | AL-1.42 | `Poz_Kanat_L_Acik` / `_R_` | Kanat_L/R_01–05 | Kanat Savuruşu hazırlığı |
-| AL-1.43 | `Poz_Kanat_L_Supurme_Sonu` / `_R_` | Kanat zinciri | Kanat Savuruşu sonu |
+| AL-1.43a | `Poz_Kanat_L_Supurme_Basi` / `_R_` | Kanat zinciri | Kanat Savuruşu etkin süresinin başı: kanat kuzeybatıda yere iner (17 Ekim) |
+| AL-1.43 | `Poz_Kanat_L_Supurme_Sonu` / `_R_` | Kanat zinciri (ölçek 1,2) | Kanat Savuruşu sonu: uç Z −18,5 (KE-6.6) |
 | AL-1.44 | `Poz_Sendeleme` | Hepsi | Sendeleme (baş yerde yan yatık) |
 | AL-1.45 | `Poz_Agiz_Acik` | Cene | Ayrı katman: soluk, kükreme, replik (çene en çok 10°, SI-8.6) |
 
